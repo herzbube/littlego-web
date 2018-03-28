@@ -99,7 +99,25 @@ namespace LittleGoWeb
     </div>
 
     <div id="container-main-app">
-        <h1>Little Go for the web</h1>
+        <!--
+            Navigation is expanded in medium and larger breakpoints. Also important:
+            Toggler requires a color scheme class, otherwise it's not shown.
+        -->
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+            <span class="navbar-brand">Little Go for the web</span>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-items" aria-controls="navbar-items" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div id="navbar-items" class="collapse navbar-collapse nav-pills justify-content-end">
+                <div class="navbar-nav">
+                    <!-- No clunky list element necessary in Bootstrap -->
+                    <a class="nav-item nav-link" href="#">Game requests</a>
+                    <a class="nav-item nav-link active" href="#">Games in progress</a>
+                    <a class="nav-item nav-link" href="#">Finished games</a>
+                    <a class="nav-item nav-link" href="#">Logout</a>
+                </div>
+            </div>
+        </nav>
         <div class="container-fluid">
             <div class="row">
                 <div id="left-hand-side" class="col-8">
