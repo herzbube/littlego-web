@@ -120,13 +120,47 @@ namespace LittleGoWeb
         </nav>
         <div class="container-fluid">
             <div class="row">
-                <div id="left-hand-side" class="col-8">
+                <!--
+                    On xs and md we use all 12 columns, i.e. the entire width,
+                    because the board and the right-hand-side elements are
+                    vertically stacked (in this case "right-hand-side" is a
+                    misnomer). On md, lg and xl we use only 8 columns because
+                    the board must share the available horizontal space with
+                    the right-hand-side elements.
+                -->
+                <div id="left-hand-side" class="col-12 col-md-8">
                     <div id="container-board">
                         <canvas id="board" class="placeholder" />
                     </div>
                 </div>
-                <div id="right-hand-side" class="col-4">
+                <!--
+                    The next div causes a line break when it is in effect.
+                    d-md-none hides the div on md, lg and xl, which means
+                    that on those breakpoints it has no effect - the board
+                    and the right-hand-side elements therefore co-exist on the
+                    same row without line break. Conversely, the div takes
+                    effect on xs and sm - the board and the right-hand-side
+                    elements therefore are vertically stacked (in this case
+                    "right-hand-side" is a misnomer).
+                -->
+                <div class="w-100 d-md-none"></div>
+                <!--
+                    On xs and md we use all 12 columns, i.e. the entire width,
+                    because the board and the right-hand-side elements are
+                    vertically stacked (in this case "right-hand-side" is a
+                    misnomer). On md, lg and xl we use only 4 columns because
+                    the right-hand-side elements must share the available
+                    horizontal space with the board.
+                -->
+                <div id="right-hand-side" class="col-12 col-md-4">
                     <div class="row">
+                        <!--
+                            Regardless of how much horizontal space the
+                            right-hand-side elements take up, we distribute
+                            that space evenly among the black and white
+                            player information areas - both get 6 out of 12
+                            columns.
+                        -->
                         <div class="col-6">
                            <div id="player-black" class="placeholder">
                                 <small>Player black placeholder</small>
