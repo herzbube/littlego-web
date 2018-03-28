@@ -73,3 +73,57 @@ This is how the application is bootstrapped:
 1. The client-side application displays the login form.
 1. When the user logs in, the client-side application hides the login form and instead displays the main application container.
 
+## Third party dependencies
+
+This project has dependencies to a number of third party libraries. These dependencies are managed via the Composer package and dependency manager. The dependencies are listed in the file `composer.php` in the project root folder.
+ 
+Before you can install the required third party libraries you must make sure that you have Composer installed on your system. Refer to the [Composer manual](https://getcomposer.org/doc/00-intro.md) for details. On macOS X the simplest way to make Composer available system-wide probably is via [Homebrew](https://brew.sh/). These are the necessary commands:
+
+```
+brew tap homebrew/homebrew-php   # only necessary if homebrew-php has not been tapped yet
+brew install composer
+```
+
+Once Composer is ready to use you can install third party libraries by running Composer's ```install``` command. The exact syntax depends on how you installed Composer on your system. If in doubt, refer to Composer's manual. Here are two suggestions that might work for you:
+
+```
+cd /path/to/project/root
+
+# If you installed Composer via Homebrew:
+composer install
+
+# If you installed Composer as a standalone PHP archive (.phar):
+php composer.phar install
+```
+
+## Running a local web server for development
+
+If you don't have an actual web server available for testing during development, then a "poor man" solution that nevertheless should be sufficient is to run PHP's integrated web server.
+
+If this is what you want, then run this script:
+
+```
+cd /path/to/project/root
+./script/startWebServer.sh
+```
+
+On Windows you can try to run `startWebServer.bat`. This batch script has not been tested, though.
+
+The web server is now available from this URL: `http://localhost:8000`. If you need a different hostname and/or TCP port then you have to manually edit `The web server is now available from this URL: `http://localhost:8000`. If you need a different hostname and/or TCP port then you have to manually edit `the script.
+`.
+
+
+## Running the WebSocket server
+
+The WebSocket server implemented in this project is based on the [Ratchet](http://socketo.me/) PHP library.
+
+To run the WebSocket server, either locally during development or after deploying the project to an actual web server, run this script:
+
+```
+cd /path/to/project/root
+./script/startWebSocketServer.sh
+```
+
+On Windows you can try to run `startWebSocketServer.bat`. This batch script has not been tested, though.
+
+The web server is now available from this URL: `ws://localhost:8001`. If you need a different hostname and/or TCP port then you have to manually edit the file `src/config/config.php`.

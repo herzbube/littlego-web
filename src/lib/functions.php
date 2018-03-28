@@ -144,6 +144,28 @@ ENDOFOUTPUT;
 
         echo $output;
     }
-}
 
-?>
+    // ----------------------------------------------------------------------
+    // Starts the Ratchet web socket server.
+    //
+    // You typically obtain the Config object parameter by executing the
+    // function startupApplication().
+    //
+    // Notes:
+    // - An autoloader must be in place before this function is called.
+    // - This is a blocking function never returns control to the caller.
+    // ----------------------------------------------------------------------
+    function startWebSocketServer(Config $config) : void
+    {
+        $server = \Ratchet\Server\IoServer::factory(
+            new \Ratchet\Http\HttpServer(
+                new \Ratchet\WebSocket\WsServer(
+                    new \LittleGoWeb\WebSocketServer()
+                )
+            ),
+            $config->webSocketPort
+        );
+
+        $server->run();
+    }
+}
