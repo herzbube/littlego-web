@@ -73,6 +73,7 @@ namespace LittleGoWeb
     <!-- Main application JS -->
     <script src="js/littlego-web.js"></script>
     <!-- TODO: Add more scripts, e.g. Go class library -->
+    <script src="js/littlego-web-session.js"></script>
 
     <title>Little Go for the web</title>
 </head>
@@ -114,7 +115,7 @@ namespace LittleGoWeb
                     <a class="nav-item nav-link" href="#">Game requests</a>
                     <a class="nav-item nav-link active" href="#">Games in progress</a>
                     <a class="nav-item nav-link" href="#">Finished games</a>
-                    <a class="nav-item nav-link" href="#">Logout</a>
+                    <a id="logout-button" class="nav-item nav-link" href="#">Logout</a>
                 </div>
             </div>
         </nav>
