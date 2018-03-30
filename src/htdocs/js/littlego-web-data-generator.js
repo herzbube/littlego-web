@@ -20,7 +20,7 @@ function createGameRequestsJsonObjects()
     return [
         {
             "id" : 1,
-            "createTime" : gameRequestStartDate2MillisecondsSinceTheEpoch(GAMEREQUEST_STARTDATE_LESS_THAN_1_HOUR_AGO),
+            "createTime" : startDate2MillisecondsSinceTheEpoch(STARTDATE_LESS_THAN_1_HOUR_AGO),
             "requestedBoardSize" : BOARDSIZE_19,
             "requestedStoneColor" : COLOR_BLACK,
             "requestedHandicap" : 0,
@@ -30,7 +30,7 @@ function createGameRequestsJsonObjects()
         },
         {
             "id" : 2,
-            "createTime" : gameRequestStartDate2MillisecondsSinceTheEpoch(GAMEREQUEST_STARTDATE_3_HOURS_AGO),
+            "createTime" : startDate2MillisecondsSinceTheEpoch(STARTDATE_3_HOURS_AGO),
             "requestedBoardSize" : BOARDSIZE_9,
             "requestedStoneColor" : COLOR_WHITE,
             "requestedHandicap" : 2,
@@ -40,7 +40,7 @@ function createGameRequestsJsonObjects()
         },
         {
             "id" : 3,
-            "createTime" : gameRequestStartDate2MillisecondsSinceTheEpoch(GAMEREQUEST_STARTDATE_1_DAY_AGO),
+            "createTime" : startDate2MillisecondsSinceTheEpoch(STARTDATE_1_DAY_AGO),
             "requestedBoardSize" : BOARDSIZE_13,
             "requestedStoneColor" : GAMEREQUEST_DONTCARE,
             "requestedHandicap" : GAMEREQUEST_DONTCARE,
@@ -50,7 +50,7 @@ function createGameRequestsJsonObjects()
         },
         {
             "id" : 4,
-            "createTime" : gameRequestStartDate2MillisecondsSinceTheEpoch(GAMEREQUEST_STARTDATE_7_DAYS_AGO),
+            "createTime" : startDate2MillisecondsSinceTheEpoch(STARTDATE_7_DAYS_AGO),
             "requestedBoardSize" : GAMEREQUEST_DONTCARE,
             "requestedStoneColor" : GAMEREQUEST_DONTCARE,
             "requestedHandicap" : GAMEREQUEST_DONTCARE,
@@ -62,37 +62,36 @@ function createGameRequestsJsonObjects()
 }
 
 // Calculates and returns a "milliseconds since the epoch" value that
-// matches the specified "game request start date" value.
+// matches the specified start date value.
 //
-// Use one of the various GAMEREQUEST_STARTDATE_... constants as the
-// parameter value.
+// Use one of the various STARTDATE_... constants as the parameter value.
 //
-// For instance, if you specify GAMEREQUEST_STARTDATE_3_HOURS_AGO then
-// this function returns a Date object that causes the game request
-// to be displayed with a start date of "3 hours ago".
+// For instance, if you specify STARTDATE_3_HOURS_AGO then this function
+// returns a "milliseconds since the epoch" value that causes the start
+// date to be displayed as "3 hours ago".
 //
-// This is helper function to generate fake game request data.
+// This is helper function to generate fake data.
 // TODO: Remove this function if it is no longer needed.
-function gameRequestStartDate2MillisecondsSinceTheEpoch(gameRequestStartDate)
+function startDate2MillisecondsSinceTheEpoch(startDate)
 {
     var timespanInMilliseconds;
-    switch (gameRequestStartDate)
+    switch (startDate)
     {
-        case GAMEREQUEST_STARTDATE_LESS_THAN_1_HOUR_AGO:
+        case STARTDATE_LESS_THAN_1_HOUR_AGO:
             timespanInMilliseconds = MILLISECONDS_HALF_HOUR;
             break;
-        case GAMEREQUEST_STARTDATE_3_HOURS_AGO:
+        case STARTDATE_3_HOURS_AGO:
             timespanInMilliseconds = MILLISECONDS_1_HOUR * 3 + MILLISECONDS_HALF_HOUR;
             break;
-        case GAMEREQUEST_STARTDATE_1_DAY_AGO:
+        case STARTDATE_1_DAY_AGO:
             timespanInMilliseconds = MILLISECONDS_1_DAY + MILLISECONDS_1_HOUR;
             break;
-        case GAMEREQUEST_STARTDATE_7_DAYS_AGO:
+        case STARTDATE_7_DAYS_AGO:
             // Less than
             timespanInMilliseconds = MILLISECONDS_1_DAY * 7 + MILLISECONDS_1_HOUR;
             break;
         default:
-            throw new Error("Unsupported game request start date: " + gameRequestStartDate);
+            throw new Error("Unsupported game request start date: " + startDate);
     }
 
     var currentDate = new Date();
