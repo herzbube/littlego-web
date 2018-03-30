@@ -57,12 +57,13 @@ function komiToString(komi)
     {
         case 0:
             return "None";
+        case 0.5:
+            return entityFractionOneHalf;
         case 5:
         case 6:
         case 7:
         case 8:
             return "" + komi;
-        case 0.5:
         case 5.5:
         case 6.5:
         case 7.5:
