@@ -74,10 +74,16 @@ namespace LittleGoWeb
     <!-- Library scripts -->
     <script src="js/littlego-web-constants.js"></script>
     <script src="js/littlego-web-functions.js"></script>
+    <script src="js/littlego-web-data-generator.js"></script>
     <script src="js/littlego-web-model.js"></script>
     <script src="js/littlego-web-session.js"></script>
     <!-- Main script that starts the application -->
     <script src="js/littlego-web.js"></script>
+    <!--
+        TODO: The PHP script that serves this page should read all local
+        JS files, paste them together and serve everything as one huge
+        inline script.
+    -->
 
     <title>Little Go for the web</title>
 </head>
