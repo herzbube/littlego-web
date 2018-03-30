@@ -15,7 +15,7 @@ function boardSizeToString(boardSize)
         case BOARDSIZE_15:
         case BOARDSIZE_17:
         case BOARDSIZE_19:
-            return "" + boardSize + "x" + boardSize;
+            return "" + boardSize + "&nbsp;x&nbsp;" + boardSize;
         default:
             throw new Error("Unsupported board size value: " + boardSize);
     }
