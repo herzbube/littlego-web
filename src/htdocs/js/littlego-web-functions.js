@@ -104,3 +104,30 @@ function scoringSystemToString(scoringSystem)
             throw new Error("Unsupported scoring system value: " + scoringSystem);
     }
 }
+
+function gameRequestCreateTimeToString(createTime)
+{
+    var currentTime = new Date().getTime();
+    var elapsedTimeInMilliseconds = currentTime - createTime;
+
+    if (elapsedTimeInMilliseconds < MILLISECONDS_1_HOUR)
+    {
+        return "<1 hour ago"
+    }
+    else if (elapsedTimeInMilliseconds < MILLISECONDS_1_DAY)
+    {
+        var elapsedTimeInHours = Math.floor(elapsedTimeInMilliseconds / MILLISECONDS_1_HOUR);
+        if (elapsedTimeInHours === 1)
+            return "1 hour ago"
+        else
+            return "" + elapsedTimeInHours + " hours ago"
+    }
+    else
+    {
+        var elapsedTimeInDays = Math.floor(elapsedTimeInMilliseconds / MILLISECONDS_1_DAY);
+        if (elapsedTimeInDays === 1)
+            return "1 day ago"
+        else
+            return "" + elapsedTimeInDays + " days ago"
+    }
+}

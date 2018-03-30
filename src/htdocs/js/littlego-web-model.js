@@ -36,9 +36,7 @@ var GameRequest = (function ()
     {
         this.id = jsonObject.id;
 
-        // TODO: Convert into an elapsed time string. We have the following
-        // categories: "<1 hour ago", "n hours ago", "n days ago".
-        this.createTime = jsonObject.createTime;
+        this.createTime = gameRequestCreateTimeToString(jsonObject.createTime);
 
         if (-1 === jsonObject.requestedBoardSize)
             this.requestedBoardSize = STRING_DONTCARE;
