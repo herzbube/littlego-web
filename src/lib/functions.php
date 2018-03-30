@@ -141,7 +141,10 @@ namespace LittleGoWeb
                     <!-- Content is filled in dynamically -->
                 </tbody>
             </table>
-            <p><small>(*) = Don't care</small></p>
+            <div class="row">
+                <div class="col-6"><small>(*) = Don't care</small></div>
+                <div class="col-6 text-right"><button id="button-new-game-request" class="btn btn-success" data-toggle="modal" data-target="#notYetImplemented">New game</button></div>
+            </div>
         </div>
         <div id="container-games-in-progress" class="container-fluid">
             <!-- md, lg and xl should have sufficient space to not need scrolling -->
@@ -239,6 +242,26 @@ namespace LittleGoWeb
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="notYetImplemented" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notYetImplementedLabel">We are sorry!</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>This function has not been implemented yet.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
