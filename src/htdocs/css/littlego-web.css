@@ -35,6 +35,14 @@
         margin-bottom: 1em;
     }
 
+    .data-retrieval-placeholder {
+        /*
+            The placeholder is a table cell with colspan="n". We want the
+            text to be displayed across all columns.
+         */
+        text-align: center;
+    }
+
     #container-board {
         position: relative;
         /* Make the board container square. */

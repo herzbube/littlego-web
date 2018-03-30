@@ -159,13 +159,13 @@
     {
         var appContainerID = "container-game-requests";
         clearDataTable(appContainerID);
-        addPlaceholderMessageToDataTable(appContainerID);
+        addPlaceholderMessageToDataTable(appContainerID, NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE);
 
         // TODO Retrieve current game requests from the server. At the
         // moment we generate static fake data.
         var gameRequests = createGameRequests();
 
-        removePlaceholderMessageFromDataTable(appContainerID, NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE);
+        removePlaceholderMessageFromDataTable(appContainerID);
 
         // Rebuild the table with the new data
         var tableBody = $("#" + appContainerID + " tbody");
@@ -204,6 +204,7 @@
         var placerHolderRow = createNewRow(tableBody);
         var placeHolderCell = createNewCell(placerHolderRow);
 
+        placeHolderCell.addClass(CLASS_DATA_RETRIEVAL_PLACEHOLDER);
         placeHolderCell.attr("colspan", numberOfColumns);
         fillCell(placeHolderCell, "Retrieving data ...");
     }

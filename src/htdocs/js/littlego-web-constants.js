@@ -83,6 +83,11 @@ const ID_BUTTON_HGIH_SCORES = PREFIX_ID_BUTTON + TAB_NAME_HIGH_SCORES ;
 const ID_BUTTON_LOGOUT = PREFIX_ID_BUTTON + "logout";
 
 // ----------------------------------------------------------------------
+// Application classes
+// ----------------------------------------------------------------------
+const CLASS_DATA_RETRIEVAL_PLACEHOLDER = "data-retrieval-placeholder";
+
+// ----------------------------------------------------------------------
 // Bootstrap classes
 // ----------------------------------------------------------------------
 const BOOTSTRAP_CLASS_NAV_ITEM = "nav-item";
