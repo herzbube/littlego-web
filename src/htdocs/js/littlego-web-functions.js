@@ -21,18 +21,18 @@ function boardSizeToString(boardSize)
     }
 }
 
-// Converts the specified stone color value into a string that is suitable
+// Converts the specified color value into a string that is suitable
 // for displaying in the UI. Throws an Error object for invalid values.
-function stoneColorToString(stoneColor)
+function colorToString(color)
 {
-    switch (stoneColor)
+    switch (color)
     {
-        case STONECOLOR_BLACK:
+        case COLOR_BLACK:
             return "Black";
-        case STONECOLOR_WHITE:
+        case COLOR_WHITE:
             return "White";
         default:
-            throw new Error("Unsupported stone color value: " + stoneColor);
+            throw new Error("Unsupported color value: " + color);
     }
 }
 

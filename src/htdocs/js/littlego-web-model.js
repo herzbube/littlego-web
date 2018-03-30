@@ -48,7 +48,7 @@ var GameRequest = (function ()
         if (-1 === jsonObject.requestedStoneColor)
             this.requestedStoneColor = STRING_DONTCARE;
         else
-            this.requestedStoneColor = stoneColorToString(jsonObject.requestedStoneColor);
+            this.requestedStoneColor = colorToString(jsonObject.requestedStoneColor);
 
         if (-1 === jsonObject.requestedHandicap)
             this.requestedHandicap = STRING_DONTCARE;
