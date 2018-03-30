@@ -70,10 +70,14 @@ namespace LittleGoWeb
           "port" : "$config->webSocketPort"
       };
     </script>
-    <!-- Main application JS -->
-    <script src="js/littlego-web.js"></script>
-    <!-- TODO: Add more scripts, e.g. Go class library -->
+
+    <!-- Library scripts -->
+    <script src="js/littlego-web-constants.js"></script>
+    <script src="js/littlego-web-functions.js"></script>
+    <script src="js/littlego-web-model.js"></script>
     <script src="js/littlego-web-session.js"></script>
+    <!-- Main script that starts the application -->
+    <script src="js/littlego-web.js"></script>
 
     <title>Little Go for the web</title>
 </head>

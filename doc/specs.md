@@ -97,7 +97,7 @@ Optionale weitere Anforderungen:
 * PAR-022 : Das System zeigt einen Fehler an, wenn der Benutzer eine Spielanfrage starten will aber die Limite erreicht ist.
 * PAR-023 : Der Benutzer wählt die Eigenschaften des Spiels, für das er eine Spielanfrage startet.
 * PAR-024 : Der Benutzer wählt die Brettgrösse. Zur Verfügung stehen die Optionen: Egal, 7x7, 9x9, 11x11, 13x13, 15x15, 17x17, 19x19.
-* PAR-025 : Der Benutzer wählt den Startspieler. Zur Verfügung stehen die Optionen: Egal, Schwarz, Weiss, Zufällig.
+* PAR-025 : Der Benutzer wählt die Steinfarbe. Zur Verfügung stehen die Optionen: Egal, Schwarz, Weiss, Zufällig.
 * PAR-026 : Der Benutzer wählt das Handicap. Zur Verfügung stehen die Optionen: Egal, Kein Handicap, 2 Steine, 3 Steine, [...], 9 Steine.
 * PAR-027 : Der Benutzer wählt das Komi. Zur Verfügung stehen die Optionen: Egal, Kein Komi, 0.5 Komi, 5 Komi, 5.5 Komi, 6 Komi, [...], 8 Komi.
 * PAR-028 : Der Benutzer wählt die Ko-Regel. Zur Verfügung stehen die Optionen: Egal, Einfaches Ko, Positional Superko, Situational Superko.
@@ -122,9 +122,9 @@ Optionale weitere Anforderungen:
 * PAR-053 : Das System verwendet bei denjenigen Spiel-Eigenschaften, für die nur eine der gepaarten Spielanfragen den Wert "Egal" hat, den konkreten Wert der jeweils anderen Spielanfrage.
 * PAR-054 : Das System ermittelt bei denjenigen Spiel-Eigenschaften, für die **beide** gepaarten Spielanfragen den Wert "Egal" haben, automatisch einen konkreten Wert aus der folgenden Liste von Default-Werten:
   * Brettgrösse = 19x19
-  * Startspieler = Zufällig
+  * Steinfarbe = Zufällig
   * Handicap = Keines
-  * Komi = Keines
+  * Komi = 7.5 bei Area Scoring ohne Handicap, 6.5 bei Territory Scoring ohne Handicap, 0.5 bei Handicap
   * Ko-Regel = Einfach
   * Wertungs-System = Area Scoring
 * PAR-055 : Das System versucht immer dann, eine Paarung zu erstellen, wenn eine neue Spielanfrage in die Matchmaking Queue gelangt.
@@ -282,10 +282,10 @@ Optionale Anforderungen:
 
 * SCORE-050 : Das System führt pro Benutzer und für das gesamte System eine Spielstatistik sowie verschiedene High Scores.
 * SCORE-051 : Das System führt die Spielstatistik nach verschiedenen Spiel-Kategorien, sowie über alle Partien insgesamt.
-* SCORE-052 : Das System zählt in der Spielstatistik, wieviele Partienin jeder Spiel-Kategorie gespielt wurden.
+* SCORE-052 : Das System zählt in der Spielstatistik, wieviele Partien in jeder Spiel-Kategorie gespielt wurden.
 * SCORE-053 : Das System führt die High Scores nach den gleichen Kategorien wie die Spielstatistik
 * SCORE-054 : Das System zeichnet pro Spiel-Kategorie diejenigen Partien mit den 5 höchsten Wertungen auf. Die Aufzeichnung beinhaltet die Eigenschaften der Partie, das Datum, an dem die Partie beendet wurde, sowie die Wertung.
-* SCORE-055 : Das System kategorisiert Spiele wie folgt: Pro Wertungs-System, pro Brettgrösse, pro Spielfarbe, mit/ohne Handicap, mit/ohne Komi.
+* SCORE-055 : Das System kategorisiert Spiele wie folgt: Pro Wertungs-System, pro Brettgrösse, pro Steinfarbe, mit/ohne Handicap, mit/ohne Komi.
 
 ### Informationen an den Benutzer
 
