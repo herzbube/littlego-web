@@ -275,7 +275,7 @@
     //
     // The specified table cell must be a jQuery object representing
     // a "td" element.
-    function addActionToCell(tableCell, actionText, actionType)
+    function addActionToCell(tableCell, actionText, actionType, eventHandler)
     {
         var newActionElement = document.createElement("button");
 
@@ -294,8 +294,17 @@
         var bootstrapButtonStyleClass = actionType2BootstrapButtonClass(actionType);
         newAction.addClass(bootstrapButtonStyleClass);
 
+        if (eventHandler === undefined)
+        {
+            newAction.attr(BOOTSTRAP_ATTRIBUTE_DATA_TOGGLE, BOOTSTRAP_ATTRIBUTE_VALUE_MODAL);
+            newAction.attr(BOOTSTRAP_ATTRIBUTE_DATA_TARGET, "#" + ID_MODAL_NOT_YET_IMPLEMENTED);
+        }
+        else
+        {
+            newAction.on("click", eventHandler);
+        }
+
         // TODO: Add ID of the data item to the action element
-        // TODO: Add event handler to the action element
 
         return newAction;
     }

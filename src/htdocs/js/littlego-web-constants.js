@@ -82,13 +82,16 @@ const ID_BUTTON_FINISHED_GAMES = PREFIX_ID_BUTTON + TAB_NAME_FINISHED_GAMES;
 const ID_BUTTON_HGIH_SCORES = PREFIX_ID_BUTTON + TAB_NAME_HIGH_SCORES ;
 const ID_BUTTON_LOGOUT = PREFIX_ID_BUTTON + "logout";
 
+// Modals
+const ID_MODAL_NOT_YET_IMPLEMENTED = "notYetImplemented";
+
 // ----------------------------------------------------------------------
 // Application classes
 // ----------------------------------------------------------------------
 const CLASS_DATA_RETRIEVAL_PLACEHOLDER = "data-retrieval-placeholder";
 
 // ----------------------------------------------------------------------
-// Bootstrap classes
+// Bootstrap classes, attributes and values
 // ----------------------------------------------------------------------
 const BOOTSTRAP_CLASS_NAV_ITEM = "nav-item";
 const BOOTSTRAP_CLASS_ACTIVE = "active";
@@ -99,3 +102,8 @@ const BOOTSTRAP_CLASS_BUTTON_PRIMARY = "btn-outline-primary";
 const BOOTSTRAP_CLASS_BUTTON_SECONDARY = "btn-outline-secondary";
 const BOOTSTRAP_CLASS_BUTTON_SUCCESS = "btn-outline-success";
 const BOOTSTRAP_CLASS_BUTTON_DANGER = "btn-outline-danger";
+
+const BOOTSTRAP_ATTRIBUTE_DATA_TOGGLE = "data-toggle";
+const BOOTSTRAP_ATTRIBUTE_DATA_TARGET = "data-target";
+
+const BOOTSTRAP_ATTRIBUTE_VALUE_MODAL = "modal";
