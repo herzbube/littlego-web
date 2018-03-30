@@ -131,3 +131,20 @@ function gameRequestCreateTimeToString(createTime)
             return "" + elapsedTimeInDays + " days ago"
     }
 }
+
+function actionType2BootstrapButtonClass(actionType)
+{
+    switch (actionType)
+    {
+        case ACTION_TYPE_PRIMARY:
+            return BOOTSTRAP_CLASS_BUTTON_PRIMARY;
+        case ACTION_TYPE_SECONDARY:
+            return BOOTSTRAP_CLASS_BUTTON_SECONDARY;
+        case ACTION_TYPE_SUCCESS:
+            return BOOTSTRAP_CLASS_BUTTON_SUCCESS;
+        case ACTION_TYPE_DANGER:
+            return BOOTSTRAP_CLASS_BUTTON_DANGER;
+        default:
+            throw new Error("Unsupported action type value: " + actionType);
+    }
+}

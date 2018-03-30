@@ -177,8 +177,8 @@
             });
 
             var actionsCell = createNewCell(dataRow);
-            addActionToCell(actionsCell, "Resume");
-            addActionToCell(actionsCell, "Cancel");
+            addActionToCell(actionsCell, "Resume", ACTION_TYPE_PRIMARY);
+            addActionToCell(actionsCell, "Cancel", ACTION_TYPE_DANGER);
         })
     }
 
@@ -273,7 +273,7 @@
     //
     // The specified table cell must be a jQuery object representing
     // a "td" element.
-    function addActionToCell(tableCell, actionName)
+    function addActionToCell(tableCell, actionText, actionType)
     {
         var newActionElement = document.createElement("button");
 
@@ -284,9 +284,14 @@
         // We need a jQuery object
         var newAction = tableCell.children().last()
 
-        newAction.text(actionName);
+        newAction.html(actionText);
 
-        // TODO: Add Bootstrap classes to the action element
+        newAction.addClass(BOOTSTRAP_CLASS_BUTTON);
+        newAction.addClass(BOOTSTRAP_CLASS_BUTTON_SMALL);
+        newAction.addClass(BOOTSTRAP_CLASS_BUTTON_BLOCKLEVEL);
+        var bootstrapButtonStyleClass = actionType2BootstrapButtonClass(actionType);
+        newAction.addClass(bootstrapButtonStyleClass);
+
         // TODO: Add ID of the data item to the action element
         // TODO: Add event handler to the action element
 
