@@ -104,6 +104,7 @@
         // We want to handle the logout process ourselves.
         event.preventDefault();
 
+        updateGamesInProgressData();
         activateTab(TAB_NAME_GAMES_IN_PROGRESS);
     }
 
@@ -160,6 +161,14 @@
         var appContainerID = ID_CONTAINER_GAME_REQUESTS;
         var numberOfColumns = NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE;
         var dataRetrievalFunction = createGameRequests;
+        updateDataTable(appContainerID, numberOfColumns, dataRetrievalFunction);
+    }
+
+    function updateGamesInProgressData()
+    {
+        var appContainerID = ID_CONTAINER_GAMES_IN_PROGRESS;
+        var numberOfColumns = NUMBER_OF_COLUMNS_GAMES_IN_PROGRESS_TABLE;
+        var dataRetrievalFunction = createGamesInProgress;
         updateDataTable(appContainerID, numberOfColumns, dataRetrievalFunction);
     }
 

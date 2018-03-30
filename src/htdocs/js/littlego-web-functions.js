@@ -105,6 +105,18 @@ function scoringSystemToString(scoringSystem)
     }
 }
 
+// Converts the specified number of moves played value into a string that is
+// suitable for displaying in the UI. Throws an Error object for invalid values.
+function numberOfMovesPlayedToString(numberOfMovesPlayed)
+{
+    if (numberOfMovesPlayed === 0)
+        return "None";
+    else if (numberOfMovesPlayed >0)
+        return "" + numberOfMovesPlayed;
+    else
+        throw new Error("Unsupported number of moves played value: " + numberOfMovesPlayed);
+}
+
 // Converts the specified game request create time value into a string that is
 // suitable for displaying in the UI. Throws an Error object for invalid values.
 function gameRequestCreateTimeToString(createTime)

@@ -15,12 +15,12 @@
 // {
 //   "id" : 12345,                   // a unique ID
 //   "createTime" : 123457890,       // milliseconds since the epoch
-//   "requestedBoardSize" : 19,      // valid values: 7, 9, 11, 13, 15, 17, 19
-//   "requestedStoneColor" : 0,      // valid values: 0 (= black), 1 (= white)
-//   "requestedHandicap" : 0,        // valid values: 0, 2-9
-//   "requestedKomi" : 7.5,          // valid values: 0, 0.5, 5.0, 5.5, [...], 8.0
-//   "requestedKoRule" : 0,          // valid values: 0 (= simple ko), 1 (= positional superko), 2 (= situational superko)
-//   "requestedScoringSystem": 0,    // valid values: 0 (= area scoring), 1 (= territory scoring)
+//   "requestedBoardSize" : 19,      // valid values: see GameInProgress
+//   "requestedStoneColor" : 0,      // valid values: see GameInProgress
+//   "requestedHandicap" : 0,        // valid values: see GameInProgress
+//   "requestedKomi" : 7.5,          // valid values: see GameInProgress
+//   "requestedKoRule" : 0,          // valid values: see GameInProgress
+//   "requestedScoringSystem": 0,    // valid values: see GameInProgress
 // };
 //
 // All "requested..." properties can also have the value -1, which
@@ -99,6 +99,79 @@ var GameRequest = (function ()
     };
 
     return GameRequest;
+})();
+
+// ----------------------------------------------------------------------
+// The GameInProgress class represents a server-side game in progress.
+// GameInProgress objects are model objects whose values are suitable for
+// displaying in the UI. GameInProgress objects are created from JSON
+// objects that were transmitted by the server. A GameInProgress object
+// uses the same property names that are specified in the JSON format.
+//
+// This is the JSON format:
+//
+// var jsonObject =
+// {
+//   "id" : 12345,                 // a unique ID
+//   "startTime" : 123457890,      // milliseconds since the epoch
+//   "boardSize" : 19,             // valid values: 7, 9, 11, 13, 15, 17, 19
+//   "handicap" : 0,               // valid values: 0, 2-9
+//   "komi" : 7.5,                 // valid values: 0, 0.5, 5.0, 5.5, [...], 8.0
+//   "koRule" : 0,                 // valid values: 0 (= simple ko), 1 (= positional superko), 2 (= situational superko)
+//   "scoringSystem": 0,           // valid values: 0 (= area scoring), 1 (= territory scoring)
+//   "numberOfMovesPlayed" : 32,   // valid values: 0-n
+//   "nextMoveColor" : 1,          // valid values: 0 (= black), 1 (= white)
+// };
+// ----------------------------------------------------------------------
+var GameInProgress = (function ()
+{
+    "use strict";
+
+    // Creates a new GameInProgress object from the data in the specified
+    // JSON object.
+    function GameInProgress(jsonObject)
+    {
+        this.id = jsonObject.id;
+
+        this.startTime = gameRequestCreateTimeToString(jsonObject.startTime);
+        this.boardSize = boardSizeToString(jsonObject.boardSize);
+        this.handicap = handicapToString(jsonObject.handicap);
+        this.komi = komiToString(jsonObject.komi);
+        this.koRule = koRuleToString(jsonObject.koRule);
+        this.scoringSystem = scoringSystemToString(jsonObject.scoringSystem);
+        this.numberOfMovesPlayed = numberOfMovesPlayedToString(jsonObject.numberOfMovesPlayed);
+        this.nextMoveColor = colorToString(jsonObject.nextMoveColor);
+    }
+
+    // Returns an array that contains the values that make up the GameInProgress
+    // object. The values are suitable for display in a data table in the UI.
+    //
+    // The order of the array elements matches the columns of the data table.
+    GameInProgress.prototype.getDataTableValues = function()
+    {
+        return [
+            this.startTime,
+            this.id,
+            this.boardSize,
+            this.handicap,
+            this.komi,
+            this.koRule,
+            this.scoringSystem,
+            this.numberOfMovesPlayed,
+            this.nextMoveColor
+        ];
+    };
+
+    // Returns an array of DataItemAction objects.
+    GameInProgress.prototype.getDataItemActions = function()
+    {
+        return [
+            new DataItemAction("Resume", ACTION_TYPE_PRIMARY ),
+            new DataItemAction("Resign", ACTION_TYPE_DANGER )
+        ];
+    };
+
+    return GameInProgress;
 })();
 
 // ----------------------------------------------------------------------
