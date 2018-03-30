@@ -26,13 +26,13 @@
         // listen for the form's "submit" event (in fact the form cannot
         // be submitted at all, the button is not a submit button),
         // instead we perform just regular click handling.
-        $("#login-form").on("submit", onLogin);
+        $("#" + ID_LOGIN_FORM).on("submit", onLogin);
 
-        $("#button-game-requests").on("click", onGameRequests);
-        $("#button-games-in-progress").on("click", onGamesInProgress);
-        $("#button-finished-games").on("click", onFinishedGames);
-        $("#button-high-scores").on("click", onHighScores);
-        $("#button-logout").on("click", onLogout);
+        $("#" + ID_BUTTON_GAME_REQUESTS).on("click", onGameRequests);
+        $("#" + ID_BUTTON_GAMES_IN_PROGRESS).on("click", onGamesInProgress);
+        $("#" + ID_BUTTON_FINISHED_GAMES).on("click", onFinishedGames);
+        $("#" + ID_BUTTON_HGIH_SCORES).on("click", onHighScores);
+        $("#" + ID_BUTTON_LOGOUT).on("click", onLogout);
     });
 
     function onSessionValidationComplete(session)
@@ -42,8 +42,8 @@
         if (session.isValid())
         {
             // Main containers
-            $("#container-login-form").hide();
-            $("#container-main-app").show();
+            $("#" + ID_CONTAINER_LOGIN_FORM).hide();
+            $("#" + ID_CONTAINER_MAIN_APP).show();
 
             // App containers
             // TODO Make the initial selection dynamic: If the user has games
@@ -52,19 +52,20 @@
             // area. If the user has no games in progress then show the game
             // requests section - even if that section is empty, because then
             // at least the user can immediately submit a new game request.
-            makeAppContainerVisible("container-play");
+            makeAppContainerVisible(ID_CONTAINER_GAME_REQUESTS);
             // Although we don't show the "games in progress" list, we
             // technically are still in that section.
-            makeNavItemActive("button-games-in-progress");
+            makeNavItemActive(ID_BUTTON_GAME_REQUESTS);
+            updateGameRequestsData();
         }
         else
         {
             // Main containers
-            $("#container-login-form").show();
-            $("#container-main-app").hide();
+            $("#" + ID_CONTAINER_LOGIN_FORM).show();
+            $("#" + ID_CONTAINER_MAIN_APP).hide();
 
             // This is necessary after a logout
-            $("#email-address").focus();
+            $("#" + ID_INPUT_EMAIL_ADDRESS).focus();
         }
     }
 
@@ -76,15 +77,15 @@
 
         // TODO Form validation
 
-        var emailAddress = $("#email-address").val();
-        var password = $("#password").val();
+        var emailAddress = $("#" + ID_INPUT_EMAIL_ADDRESS).val();
+        var password = $("#" + ID_INPUT_PASSWORD).val();
         // TODO: Add a checkbox to the login form and query its value
         var persistSession = true;
 
         // Triggers onSessionValidationComplete
         theSession.login(emailAddress, password, persistSession);
 
-        $("#login-form")[0].reset();
+        $("#" + ID_LOGIN_FORM)[0].reset();
     }
 
     function onGameRequests(event)
@@ -94,7 +95,7 @@
         event.preventDefault();
 
         updateGameRequestsData();
-        activateTab("game-requests");
+        activateTab(TAB_NAME_GAME_REQUESTS);
     }
 
     function onGamesInProgress(event)
@@ -103,7 +104,7 @@
         // We want to handle the logout process ourselves.
         event.preventDefault();
 
-        activateTab("games-in-progress");
+        activateTab(TAB_NAME_GAMES_IN_PROGRESS);
     }
 
     function onFinishedGames(event)
@@ -112,7 +113,7 @@
         // We want to handle the logout process ourselves.
         event.preventDefault();
 
-        activateTab("finished-games");
+        activateTab(TAB_NAME_FINISHED_GAMES);
     }
 
     function onHighScores(event)
@@ -121,7 +122,7 @@
         // We want to handle the logout process ourselves.
         event.preventDefault();
 
-        activateTab("high-scores");
+        activateTab(TAB_NAME_HIGH_SCORES);
     }
 
     function onLogout(event)
@@ -137,14 +138,14 @@
 
     function activateTab(tabName)
     {
-        makeNavItemActive("button-" + tabName);
-        makeAppContainerVisible("container-" + tabName);
+        makeNavItemActive(PREFIX_ID_BUTTON + tabName);
+        makeAppContainerVisible(PREFIX_ID_CONTAINER + tabName);
     }
 
     function makeNavItemActive(navItemID)
     {
-        $(".nav-item.active").removeClass("active");
-        $("#" + navItemID).addClass("active");
+        $("." + BOOTSTRAP_CLASS_NAV_ITEM + "." + BOOTSTRAP_CLASS_ACTIVE).removeClass(BOOTSTRAP_CLASS_ACTIVE);
+        $("#" + navItemID).addClass(BOOTSTRAP_CLASS_ACTIVE);
     }
 
     function makeAppContainerVisible(appContainerID)

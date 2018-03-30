@@ -51,6 +51,42 @@ const ACTION_TYPE_SECONDARY = 1;
 const ACTION_TYPE_SUCCESS = 2;
 const ACTION_TYPE_DANGER = 3;
 
+// ----------------------------------------------------------------------
+// Application IDs
+// ----------------------------------------------------------------------
+const PREFIX_ID_CONTAINER = "container-";
+const PREFIX_ID_BUTTON = "button-";
+
+const TAB_NAME_GAME_REQUESTS = "game-requests";
+const TAB_NAME_GAMES_IN_PROGRESS = "games-in-progress";
+const TAB_NAME_FINISHED_GAMES = "finished-games";
+const TAB_NAME_HIGH_SCORES = "high-scores";
+
+// Login form
+const ID_CONTAINER_LOGIN_FORM = PREFIX_ID_CONTAINER + "login-form";
+const ID_LOGIN_FORM = "login-form";
+const ID_INPUT_EMAIL_ADDRESS = "email-address";
+const ID_INPUT_PASSWORD = "password";
+
+// Main app
+const ID_CONTAINER_MAIN_APP = PREFIX_ID_CONTAINER + "main-app";
+const ID_CONTAINER_GAME_REQUESTS = PREFIX_ID_CONTAINER + TAB_NAME_GAME_REQUESTS;
+const ID_CONTAINER_GAMES_IN_PROGRESS = PREFIX_ID_CONTAINER + TAB_NAME_GAMES_IN_PROGRESS;
+const ID_CONTAINER_FINISHED_GAMES = PREFIX_ID_CONTAINER + TAB_NAME_FINISHED_GAMES;
+const ID_CONTAINER_HIGH_SCORES = PREFIX_ID_CONTAINER + TAB_NAME_HIGH_SCORES;
+
+// Navigation
+const ID_BUTTON_GAME_REQUESTS = PREFIX_ID_BUTTON + TAB_NAME_GAME_REQUESTS;
+const ID_BUTTON_GAMES_IN_PROGRESS = PREFIX_ID_BUTTON + TAB_NAME_GAMES_IN_PROGRESS;
+const ID_BUTTON_FINISHED_GAMES = PREFIX_ID_BUTTON + TAB_NAME_FINISHED_GAMES;
+const ID_BUTTON_HGIH_SCORES = PREFIX_ID_BUTTON + TAB_NAME_HIGH_SCORES ;
+const ID_BUTTON_LOGOUT = PREFIX_ID_BUTTON + "logout";
+
+// ----------------------------------------------------------------------
+// Bootstrap classes
+// ----------------------------------------------------------------------
+const BOOTSTRAP_CLASS_NAV_ITEM = "nav-item";
+const BOOTSTRAP_CLASS_ACTIVE = "active";
 const BOOTSTRAP_CLASS_BUTTON = "btn";
 const BOOTSTRAP_CLASS_BUTTON_SMALL = "btn-sm";
 const BOOTSTRAP_CLASS_BUTTON_BLOCKLEVEL = "btn-block";
