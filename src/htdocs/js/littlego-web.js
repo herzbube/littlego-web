@@ -162,25 +162,29 @@
         addPlaceholderMessageToDataTable(appContainerID, NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE);
 
         // TODO Retrieve current game requests from the server. At the
-        // moment we generate static fake data.
-        var gameRequests = createGameRequests();
+        // moment we fake the asynchronous data retrieval process, then
+        // generate static fake data.
+        var timeoutInMilliseconds = 1000;
+        setTimeout(function() {
+            var gameRequests = createGameRequests();
 
-        removePlaceholderMessageFromDataTable(appContainerID);
+            removePlaceholderMessageFromDataTable(appContainerID);
 
-        // Rebuild the table with the new data
-        var tableBody = $("#" + appContainerID + " tbody");
-        gameRequests.forEach(function(gameRequest) {
-            var dataRow = createNewRow(tableBody);
+            // Rebuild the table with the new data
+            var tableBody = $("#" + appContainerID + " tbody");
+            gameRequests.forEach(function(gameRequest) {
+                var dataRow = createNewRow(tableBody);
 
-            gameRequest.getDataTableValues().forEach(function(dataValue) {
-                var dataCell = createNewCell(dataRow);
-                fillCell(dataCell, dataValue);
-            });
+                gameRequest.getDataTableValues().forEach(function(dataValue) {
+                    var dataCell = createNewCell(dataRow);
+                    fillCell(dataCell, dataValue);
+                });
 
-            var actionsCell = createNewCell(dataRow);
-            addActionToCell(actionsCell, "Resume", ACTION_TYPE_PRIMARY);
-            addActionToCell(actionsCell, "Cancel", ACTION_TYPE_DANGER);
-        })
+                var actionsCell = createNewCell(dataRow);
+                addActionToCell(actionsCell, "Resume", ACTION_TYPE_PRIMARY);
+                addActionToCell(actionsCell, "Cancel", ACTION_TYPE_DANGER);
+            })
+        }, timeoutInMilliseconds)
     }
 
     // Removes all rows from the data table that is located inside the
