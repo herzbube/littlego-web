@@ -157,32 +157,40 @@
 
     function updateGameRequestsData()
     {
-        var appContainerID = "container-game-requests";
+        var appContainerID = ID_CONTAINER_GAME_REQUESTS;
+        var numberOfColumns = NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE;
+        var dataRetrievalFunction = createGameRequests;
+        updateDataTable(appContainerID, numberOfColumns, dataRetrievalFunction);
+    }
+
+    function updateDataTable(appContainerID, numberOfColumns, dataRetrievalFunction)
+    {
         clearDataTable(appContainerID);
-        addPlaceholderMessageToDataTable(appContainerID, NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE);
+        addPlaceholderMessageToDataTable(appContainerID, numberOfColumns);
 
         // TODO Retrieve current game requests from the server. At the
         // moment we fake the asynchronous data retrieval process, then
         // generate static fake data.
         var timeoutInMilliseconds = 1000;
         setTimeout(function() {
-            var gameRequests = createGameRequests();
+            var dataItems = dataRetrievalFunction();
 
             removePlaceholderMessageFromDataTable(appContainerID);
 
             // Rebuild the table with the new data
             var tableBody = $("#" + appContainerID + " tbody");
-            gameRequests.forEach(function(gameRequest) {
+            dataItems.forEach(function(dataItem) {
                 var dataRow = createNewRow(tableBody);
 
-                gameRequest.getDataTableValues().forEach(function(dataValue) {
+                dataItem.getDataTableValues().forEach(function(dataValue) {
                     var dataCell = createNewCell(dataRow);
                     fillCell(dataCell, dataValue);
                 });
 
                 var actionsCell = createNewCell(dataRow);
-                addActionToCell(actionsCell, "Resume", ACTION_TYPE_PRIMARY);
-                addActionToCell(actionsCell, "Cancel", ACTION_TYPE_DANGER);
+                dataItem.getDataItemActions ().forEach(function(dataItemAction) {
+                    addActionToCell(actionsCell, dataItemAction.actionTitle, dataItemAction.actionType);
+                });
             })
         }, timeoutInMilliseconds)
     }

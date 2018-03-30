@@ -2,6 +2,7 @@
 // This file contains all model classes
 // ----------------------------------------------------------------------
 
+// ----------------------------------------------------------------------
 // The GameRequest class represents a server-side game request. GameRequest
 // objects are model objects whose values are suitable for displaying in
 // the UI. GameRequest objects are created from JSON objects that were
@@ -24,6 +25,7 @@
 //
 // All "requested..." properties can also have the value -1, which
 // signifies "don't care".
+// ----------------------------------------------------------------------
 var GameRequest = (function ()
 {
     "use strict";
@@ -83,9 +85,39 @@ var GameRequest = (function ()
             this.requestedHandicap,
             this.requestedKomi,
             this.requestedKoRule,
-            this.requestedScoringSystem,
+            this.requestedScoringSystem
+        ];
+    };
+
+    // Returns an array of DataItemAction objects.
+    GameRequest.prototype.getDataItemActions = function()
+    {
+        return [
+            new DataItemAction("Resume", ACTION_TYPE_PRIMARY ),
+            new DataItemAction("Cancel", ACTION_TYPE_DANGER )
         ];
     };
 
     return GameRequest;
+})();
+
+// ----------------------------------------------------------------------
+// The DataItemAction class represents an action that the user can take in
+// the UI and that operates on a data item.
+// ----------------------------------------------------------------------
+var DataItemAction = (function ()
+{
+    "use strict";
+
+    // Creates a new DataItemAction object with the specified title string
+    // and the specified action type. The title string is displayed in the
+    // UI, the action type defines the visual appearance of the action item
+    // in the UI.
+    function DataItemAction(actionTitle, actionType)
+    {
+        this.actionTitle = actionTitle;
+        this.actionType = actionType;
+    }
+
+    return DataItemAction;
 })();
