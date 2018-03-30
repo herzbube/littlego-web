@@ -131,9 +131,10 @@ namespace LittleGoWeb
             </div>
         </nav>
         <div id="container-game-requests" class="container-fluid">
-            <table>
+            <!-- md, lg and xl should have sufficient space to not need scrolling -->
+            <table class="table table-striped table-bordered table-hover table-responsive-md">
                 <caption>List of game requests</caption>
-                <thead>
+                <thead class="thead-dark">
                     <tr><th>Started</th><th>Request ID</th><th>Board size</th><th>Stone color</th><th>Handicap</th><th>Komi</th><th>Ko rule</th><th>Scoring system</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
@@ -143,9 +144,10 @@ namespace LittleGoWeb
             <p><small>(*) = Don't care</small></p>
         </div>
         <div id="container-games-in-progress" class="container-fluid">
-            <table>
+            <!-- md, lg and xl should have sufficient space to not need scrolling -->
+            <table class="table table-striped table-bordered table-hover table-responsive-md">
                 <caption>List of games in progress</caption>
-                <thead>
+                <thead class="thead-dark">
                     <tr><th>Started</th><th>Game ID</th><th>Board size</th><th>Stone color</th><th>Handicap</th><th>Komi</th><th>Ko rule</th><th>Scoring system</th><th>Moves played</th><th>Next move</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
@@ -154,9 +156,10 @@ namespace LittleGoWeb
             </table>
         </div>
         <div id="container-finished-games" class="container-fluid">
-            <table>
+            <!-- md, lg and xl should have sufficient space to not need scrolling -->
+            <table class="table table-striped table-bordered table-hover table-responsive-md">
                 <caption>List of finished games</caption>
-                <thead>
+                <thead class="thead-dark">
                     <tr><th>End date</th><th>Game ID</th><th>Board size</th><th>Stone color</th><th>Handicap</th><th>Komi</th><th>Ko rule</th><th>Scoring system</th><th>Result</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
