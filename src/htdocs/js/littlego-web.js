@@ -93,6 +93,7 @@
         // We want to handle the logout process ourselves.
         event.preventDefault();
 
+        updateGameRequestsData();
         activateTab("game-requests");
     }
 
@@ -151,5 +152,144 @@
         // Use the direct child selector for better performance
         $("#container-main-app > .container-fluid").hide();
         $("#" + appContainerID).show();
+    }
+
+    function updateGameRequestsData()
+    {
+        var appContainerID = "container-game-requests";
+        clearDataTable(appContainerID);
+        addPlaceholderMessageToDataTable(appContainerID);
+
+        // TODO Retrieve current game requests from the server. At the
+        // moment we generate static fake data.
+        var gameRequests = createGameRequests();
+
+        removePlaceholderMessageFromDataTable(appContainerID, NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE);
+
+        // Rebuild the table with the new data
+        var tableBody = $("#" + appContainerID + " tbody");
+        gameRequests.forEach(function(gameRequest) {
+            var dataRow = createNewRow(tableBody);
+
+            gameRequest.getDataTableValues().forEach(function(dataValue) {
+                var dataCell = createNewCell(dataRow);
+                fillCell(dataCell, dataValue);
+            });
+
+            var actionsCell = createNewCell(dataRow);
+            addActionToCell(actionsCell, "Resume");
+            addActionToCell(actionsCell, "Cancel");
+        })
+    }
+
+    // Removes all rows from the data table that is located inside the
+    // app container with the specified ID.
+    function clearDataTable(appContainerID)
+    {
+        var tableBody = $("#" + appContainerID + " tbody");
+        tableBody.empty();
+    }
+
+    // Adds a placeholder message to the data table that is located
+    // inside the app container with the specified ID. The placeholder
+    // message is suitable to be displayed while data is retrieved
+    // from the server.
+    //
+    // This function expects that the data table contains no other data.
+    function addPlaceholderMessageToDataTable(appContainerID, numberOfColumns)
+    {
+        var tableBody = $("#" + appContainerID + " tbody");
+
+        var placerHolderRow = createNewRow(tableBody);
+        var placeHolderCell = createNewCell(placerHolderRow);
+
+        placeHolderCell.attr("colspan", numberOfColumns);
+        fillCell(placeHolderCell, "Retrieving data ...");
+    }
+
+    // Removes a placeholder message previously added by
+    // addPlaceholderMessageToDataTable() from the data table that is located
+    // inside the app container with the specified ID.
+    //
+    // This function expects that the data table contains no other data
+    // except for the placer holder message.
+    function removePlaceholderMessageFromDataTable(appContainerID)
+    {
+        clearDataTable(appContainerID);
+    }
+
+    // Creates a new table row and adds it as the last row to the
+    // specified table body.
+    //
+    // The specified table body must be a jQuery object representing
+    // a "tbody" element.
+    //
+    // Returns a jQuery object that represents the newly created
+    // "tr" element.
+    function createNewRow(tableBody)
+    {
+        var newRowElement = document.createElement("tr");
+
+        // append() returns the container, not the new child, so the
+        // return value is useless to us
+        tableBody.append(newRowElement);
+
+        // We need a jQuery object, so we can't return newRowElement
+        return tableBody.children().last();
+    }
+
+    // Creates a new table cell and adds it as the last cell to the
+    // specified table row.
+    //
+    // The specified table row must be a jQuery object representing
+    // a "tr" element.
+    //
+    // Returns a jQuery object that represents the newly created
+    // "td" element.
+    function createNewCell(parentRow)
+    {
+        var newCellElement = document.createElement("td");
+
+        // append() returns the container, not the new child, so the
+        // return value is useless to us
+        parentRow.append(newCellElement);
+
+        // We need a jQuery object, so we can't return newCellElement
+        return parentRow.children().last();
+    }
+
+    // Fills the specified cell with the specified value.
+    //
+    // The specified table cell must be a jQuery object representing
+    // a "td" element.
+    function fillCell(tableCell, cellValue)
+    {
+        // Use html(), not text(), to make sure that HTML entities
+        // are rendered
+        tableCell.html(cellValue);
+    }
+
+    // Adds the specified action to the specified cell.
+    //
+    // The specified table cell must be a jQuery object representing
+    // a "td" element.
+    function addActionToCell(tableCell, actionName)
+    {
+        var newActionElement = document.createElement("button");
+
+        // append() returns the container, not the new child, so the
+        // return value is useless to us
+        tableCell.append(newActionElement);
+
+        // We need a jQuery object
+        var newAction = tableCell.children().last()
+
+        newAction.text(actionName);
+
+        // TODO: Add Bootstrap classes to the action element
+        // TODO: Add ID of the data item to the action element
+        // TODO: Add event handler to the action element
+
+        return newAction;
     }
 })();

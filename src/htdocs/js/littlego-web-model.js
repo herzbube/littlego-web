@@ -71,5 +71,23 @@ var GameRequest = (function ()
             this.requestedScoringSystem = scoringSystemToString(jsonObject.requestedScoringSystem);
     }
 
+    // Returns an array that contains the values that make up the GameRequest
+    // object. The values are suitable for display in a data table in the UI.
+    //
+    // The order of the array elements matches the columns of the data table.
+    GameRequest.prototype.getDataTableValues = function()
+    {
+        return [
+            this.createTime,
+            this.id,
+            this.requestedBoardSize,
+            this.requestedStoneColor,
+            this.requestedHandicap,
+            this.requestedKomi,
+            this.requestedKoRule,
+            this.requestedScoringSystem,
+        ];
+    };
+
     return GameRequest;
 })();
