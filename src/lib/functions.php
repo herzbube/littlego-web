@@ -91,7 +91,7 @@ namespace LittleGoWeb
                     <input id="password" class="form-control" name="password" type="password" placeholder="Enter your password" required/>
                 </div>
                 <div class="form-group">
-                    <button id="login-button" class="btn btn-primary">Login</button>
+                    <button id="button-login" class="btn btn-primary">Login</button>
                     <!-- TODO: Remove when form is implemented -->
                     <p><small>DEV MODE: This login form currently does nothing. Enter any values you like.</small></p>
                 </div>
@@ -112,14 +112,53 @@ namespace LittleGoWeb
             <div id="navbar-items" class="collapse navbar-collapse nav-pills justify-content-end">
                 <div class="navbar-nav">
                     <!-- No clunky list element necessary in Bootstrap -->
-                    <a class="nav-item nav-link" href="#">Game requests</a>
-                    <a class="nav-item nav-link active" href="#">Games in progress</a>
-                    <a class="nav-item nav-link" href="#">Finished games</a>
-                    <a id="logout-button" class="nav-item nav-link" href="#">Logout</a>
+                    <a id="button-game-requests" class="nav-item nav-link" href="#">Game requests</a>
+                    <a id="button-games-in-progress" class="nav-item nav-link" href="#">Games in progress</a>
+                    <a id="button-finished-games" class="nav-item nav-link" href="#">Finished games</a>
+                    <a id="button-high-scores" class="nav-item nav-link" href="#">High Scores</a>
+                    <a id="button-logout" class="nav-item nav-link" href="#">Logout</a>
                 </div>
             </div>
         </nav>
-        <div class="container-fluid">
+        <div id="container-game-requests" class="container-fluid">
+            <table>
+                <caption>List of game requests</caption>
+                <thead>
+                    <tr><th>Started</th><th>Request ID</th><th>Board size</th><th>Stone color</th><th>Handicap</th><th>Komi</th><th>Ko rule</th><th>Scoring system</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    <!-- Content is filled in dynamically -->
+                </tbody>
+            </table>
+            <p><small>(*) = Don't care</small></p>
+        </div>
+        <div id="container-games-in-progress" class="container-fluid">
+            <table>
+                <caption>List of games in progress</caption>
+                <thead>
+                    <tr><th>Started</th><th>Game ID</th><th>Board size</th><th>Stone color</th><th>Handicap</th><th>Komi</th><th>Ko rule</th><th>Scoring system</th><th>Moves played</th><th>Next move</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    <!-- Content is filled in dynamically -->
+                </tbody>
+            </table>
+        </div>
+        <div id="container-finished-games" class="container-fluid">
+            <table>
+                <caption>List of finished games</caption>
+                <thead>
+                    <tr><th>End date</th><th>Game ID</th><th>Board size</th><th>Stone color</th><th>Handicap</th><th>Komi</th><th>Ko rule</th><th>Scoring system</th><th>Result</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    <!-- Content is filled in dynamically -->
+                </tbody>
+            </table>
+            <p><small>Result codes: B+n = Black wins by n points, B+Resign = Black wins by resignation, W+n = White wins by n points, W+Resign = White wins by resignation.</small></p>
+        </div>
+        <div id="container-high-scores" class="container-fluid">
+            <p>High scores are not yet available.</p>
+        </div>
+        <div id="container-play" class="container-fluid">
             <div class="row">
                 <!--
                     On xs and md we use all 12 columns, i.e. the entire width,

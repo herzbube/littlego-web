@@ -28,7 +28,11 @@
         // instead we perform just regular click handling.
         $("#login-form").on("submit", onLogin);
 
-        $("#logout-button").on("click", onLogout);
+        $("#button-game-requests").on("click", onGameRequests);
+        $("#button-games-in-progress").on("click", onGamesInProgress);
+        $("#button-finished-games").on("click", onFinishedGames);
+        $("#button-high-scores").on("click", onHighScores);
+        $("#button-logout").on("click", onLogout);
     });
 
     function onSessionValidationComplete(session)
@@ -37,11 +41,25 @@
         // main app container for a very short moment before it's hidden.
         if (session.isValid())
         {
+            // Main containers
             $("#container-login-form").hide();
             $("#container-main-app").show();
+
+            // App containers
+            // TODO Make the initial selection dynamic: If the user has games
+            // in progress then show this section. In addition, if the user
+            // has only one game in progress, then immediately show the play
+            // area. If the user has no games in progress then show the game
+            // requests section - even if that section is empty, because then
+            // at least the user can immediately submit a new game request.
+            makeAppContainerVisible("container-play");
+            // Although we don't show the "games in progress" list, we
+            // technically are still in that section.
+            makeNavItemActive("button-games-in-progress");
         }
         else
         {
+            // Main containers
             $("#container-login-form").show();
             $("#container-main-app").hide();
 
@@ -69,13 +87,69 @@
         $("#login-form")[0].reset();
     }
 
+    function onGameRequests(event)
+    {
+        // We don't want the anchor click to take place.
+        // We want to handle the logout process ourselves.
+        event.preventDefault();
+
+        activateTab("game-requests");
+    }
+
+    function onGamesInProgress(event)
+    {
+        // We don't want the anchor click to take place.
+        // We want to handle the logout process ourselves.
+        event.preventDefault();
+
+        activateTab("games-in-progress");
+    }
+
+    function onFinishedGames(event)
+    {
+        // We don't want the anchor click to take place.
+        // We want to handle the logout process ourselves.
+        event.preventDefault();
+
+        activateTab("finished-games");
+    }
+
+    function onHighScores(event)
+    {
+        // We don't want the anchor click to take place.
+        // We want to handle the logout process ourselves.
+        event.preventDefault();
+
+        activateTab("high-scores");
+    }
+
     function onLogout(event)
     {
         // We don't want the anchor click to take place.
         // We want to handle the logout process ourselves.
         event.preventDefault();
 
-        // Triggers onSessionValidationComplete
+        // Triggers onSessionValidationComplete which in turn hides the
+        // app container and instead shows the login form
         theSession.invalidate();
+    }
+
+    function activateTab(tabName)
+    {
+        makeNavItemActive("button-" + tabName);
+        makeAppContainerVisible("container-" + tabName);
+    }
+
+    function makeNavItemActive(navItemID)
+    {
+        $(".nav-item.active").removeClass("active");
+        $("#" + navItemID).addClass("active");
+    }
+
+    function makeAppContainerVisible(appContainerID)
+    {
+        // Use the direct child selector for better performance
+        $("#container-main-app > .container-fluid").hide();
+        $("#" + appContainerID).show();
     }
 })();

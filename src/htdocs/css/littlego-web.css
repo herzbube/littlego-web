@@ -4,6 +4,14 @@
         background-color: whitesmoke;
     }
 
+    /*
+        Don't display table captions, we have them only for better
+        accessibility support.
+     */
+    table caption {
+        display: none;
+    }
+
     /* TODO: Remove when placeholders are removed */
     .placeholder {
         background-color: white;
