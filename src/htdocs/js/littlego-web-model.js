@@ -93,8 +93,8 @@ var GameRequest = (function ()
     GameRequest.prototype.getDataItemActions = function()
     {
         return [
-            new DataItemAction("Resume", ACTION_TYPE_PRIMARY),
-            new DataItemAction("Cancel", ACTION_TYPE_DANGER)
+            new DataItemAction(OPERATION_TYPE_GAME_REQUEST_RESUME, this, "Resume", ACTION_TYPE_PRIMARY),
+            new DataItemAction(OPERATION_TYPE_GAME_REQUEST_CANCEL, this, "Cancel", ACTION_TYPE_DANGER)
         ];
     };
 
@@ -166,8 +166,8 @@ var GameInProgress = (function ()
     GameInProgress.prototype.getDataItemActions = function()
     {
         return [
-            new DataItemAction("Resume", ACTION_TYPE_PRIMARY),
-            new DataItemAction("Resign", ACTION_TYPE_DANGER)
+            new DataItemAction(OPERATION_TYPE_GAME_IN_PROGRESS_RESUME, this, "Resume", ACTION_TYPE_PRIMARY),
+            new DataItemAction(OPERATION_TYPE_GAME_IN_PROGRESS_RESIGN, this, "Resign", ACTION_TYPE_DANGER)
         ];
     };
 
@@ -241,9 +241,9 @@ var FinishedGame = (function ()
     FinishedGame.prototype.getDataItemActions = function()
     {
         return [
-            new DataItemAction("View", ACTION_TYPE_PRIMARY),
-            new DataItemAction("Email result", ACTION_TYPE_SECONDARY),
-            new DataItemAction("Delete", ACTION_TYPE_DANGER)
+            new DataItemAction(OPERATION_TYPE_FINISHED_GAME_VIEW, this, "View", ACTION_TYPE_PRIMARY),
+            new DataItemAction(OPERATION_TYPE_FINISHED_GAME_EMAIL_RESULT, this, "Email result", ACTION_TYPE_SECONDARY),
+            new DataItemAction(OPERATION_TYPE_FINISHED_GAME_DELETE, this, "Delete", ACTION_TYPE_DANGER)
         ];
     };
 
@@ -258,12 +258,19 @@ var DataItemAction = (function ()
 {
     "use strict";
 
-    // Creates a new DataItemAction object with the specified title string
-    // and the specified action type. The title string is displayed in the
-    // UI, the action type defines the visual appearance of the action item
-    // in the UI.
-    function DataItemAction(actionTitle, actionType)
+    // Creates a new DataItemAction object with the specified operation type,
+    // data item, title string and action type.
+    //
+    // The action performs the operation of the specified type on the
+    // specified data item.
+    //
+    // The action is represented in the UI by the title string. The action
+    // type defines the visual style with which the action is rendered in
+    // the UI.
+    function DataItemAction(operationType, dataItem, actionTitle, actionType)
     {
+        this.operationType = operationType;
+        this.dataItem = dataItem;
         this.actionTitle = actionTitle;
         this.actionType = actionType;
     }

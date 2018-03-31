@@ -207,7 +207,17 @@
 
                 var actionsCell = createNewCell(dataRow);
                 dataItem.getDataItemActions ().forEach(function(dataItemAction) {
-                    addActionToCell(actionsCell, dataItemAction.actionTitle, dataItemAction.actionType);
+                    var dataItemActionEventHandler = eventHandlerForOperationType(dataItemAction.operationType);
+                    if (undefined === dataItemActionEventHandler)
+                    {
+                        addActionToCell(actionsCell, dataItemAction.actionTitle, dataItemAction.actionType);
+                    }
+                    else
+                    {
+                        addActionToCell(actionsCell, dataItemAction.actionTitle, dataItemAction.actionType, function() {
+                            dataItemActionEventHandler(dataItemAction);
+                        });
+                    }
                 });
             })
         }, timeoutInMilliseconds)
@@ -337,5 +347,24 @@
         // TODO: Add ID of the data item to the action element
 
         return newAction;
+    }
+
+    function eventHandlerForOperationType(operationType)
+    {
+        switch (operationType)
+        {
+            case OPERATION_TYPE_GAME_IN_PROGRESS_RESUME:
+            case OPERATION_TYPE_FINISHED_GAME_VIEW:
+            case OPERATION_TYPE_GAME_REQUEST_RESUME:
+            case OPERATION_TYPE_GAME_REQUEST_CANCEL:
+            case OPERATION_TYPE_GAME_IN_PROGRESS_RESIGN:
+            case OPERATION_TYPE_FINISHED_GAME_EMAIL_RESULT:
+            case OPERATION_TYPE_FINISHED_GAME_DELETE:
+                // Returning undefined causes the "not yet implemented" dialog
+                // to pop up when the user attempts the operation.
+                return undefined;
+            default:
+                throw new Error("Unsupported operation type: " + operationType);
+        }
     }
 })();
