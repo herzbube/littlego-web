@@ -148,6 +148,77 @@ function startTimeToString(startTimeInMilliseconds)
     }
 }
 
+// Converts the specified end time value into a string that is suitable for
+// displaying in the UI. Throws an Error object for invalid values.
+function endTimeToString(endTimeInMilliseconds)
+{
+    var currentTime = new Date().getTime();
+    var elapsedTimeInMilliseconds = currentTime - endTimeInMilliseconds;
+
+    if (elapsedTimeInMilliseconds < 0)
+    {
+        // Time is in the future
+        throw new Error("Unsupported end time value: " + endTimeInMilliseconds);
+    }
+    else
+    {
+        var endDate = new Date(endTimeInMilliseconds);
+
+        // TODO: Use local date format
+        var endDateString;
+
+        var dayOfMonth = endDate.getDate();
+        if (dayOfMonth < 10)
+            endDateString = "0" + dayOfMonth;
+        else
+            endDateString = "" + dayOfMonth;
+
+        endDateString += ".";
+
+        var monthOfYear = endDate.getMonth() + 1;
+        if (monthOfYear < 10)
+            endDateString += "0" + monthOfYear;
+        else
+            endDateString += "" + monthOfYear;
+
+        endDateString += "." + endDate.getFullYear();
+
+        return endDateString;
+    }
+}
+
+// Converts the specified winning color and score values into a string that is
+// suitable for displaying in the UI. Throws an Error object for invalid values.
+function winningColorAndScoreToString(winningColor, score)
+{
+    var resultString;
+
+    switch (winningColor)
+    {
+        case COLOR_BLACK:
+            resultString = "B";
+            break;
+        case COLOR_WHITE:
+            resultString = "W";
+            break;
+        case COLOR_NONE:
+            return "Draw";  // immediately return, no string concatenation necessary
+        default:
+            throw new Error("Unsupported winning color value: " + winningColor);
+    }
+
+    resultString += "+";
+
+    if (score === -1)
+        resultString += "Resign";
+    else if (score > 0)
+        resultString += fractionalNumberToString(score);
+    else
+        throw new Error("Unsupported score value: " + score);
+
+    return resultString;
+}
+
 // Returns a nicely formatted HTML string for the specified fractional number.
 //
 // If the specified number is an integer, this function returns the number

@@ -175,6 +175,82 @@ var GameInProgress = (function ()
 })();
 
 // ----------------------------------------------------------------------
+// The FinishedGame class represents a server-side finished game.
+// FinishedGame objects are model objects whose values are suitable for
+// displaying in the UI. FinishedGame objects are created from JSON
+// objects that were transmitted by the server. A FinishedGame object
+// uses the same property names that are specified in the JSON format.
+// A FinishedGame object in addition has a property named "result" which
+// contains the human-readable game result string.
+//
+// This is the JSON format:
+//
+// var jsonObject =
+// {
+//   "id" : 12345,                 // a unique ID
+//   "endTime" : 123457890,        // milliseconds since the epoch
+//   "boardSize" : 19,             // valid values: see GameInProgress
+//   "handicap" : 0,               // valid values: see GameInProgress
+//   "komi" : 7.5,                 // valid values: see GameInProgress
+//   "koRule" : 0,                 // valid values: see GameInProgress
+//   "scoringSystem": 0,           // valid values: see GameInProgress
+//   "winningColor" : 0,           // valid values: 0 (= black), 1 (= white), -1 (= game is a draw)
+//   "score" : 32.5,               // valid values: 1-n, 0 (= game is a draw), -1 (= the other player resigned)
+// };
+// ----------------------------------------------------------------------
+var FinishedGame = (function ()
+{
+    "use strict";
+
+    // Creates a new FinishedGame object from the data in the specified
+    // JSON object.
+    function FinishedGame(jsonObject)
+    {
+        this.id = jsonObject.id;
+
+        this.endTime = endTimeToString(jsonObject.endTime);
+        this.boardSize = boardSizeToString(jsonObject.boardSize);
+        this.handicap = handicapToString(jsonObject.handicap);
+        this.komi = komiToString(jsonObject.komi);
+        this.koRule = koRuleToString(jsonObject.koRule);
+        this.scoringSystem = scoringSystemToString(jsonObject.scoringSystem);
+        this.winningColor = jsonObject.winningColor;
+        this.score = jsonObject.score;
+        this.result = winningColorAndScoreToString(this.winningColor, this.score);
+    }
+
+    // Returns an array that contains the values that make up the FinishedGame
+    // object. The values are suitable for display in a data table in the UI.
+    //
+    // The order of the array elements matches the columns of the data table.
+    FinishedGame.prototype.getDataTableValues = function()
+    {
+        return [
+            this.endTime,
+            this.id,
+            this.boardSize,
+            this.handicap,
+            this.komi,
+            this.koRule,
+            this.scoringSystem,
+            this.result
+        ];
+    };
+
+    // Returns an array of DataItemAction objects.
+    FinishedGame.prototype.getDataItemActions = function()
+    {
+        return [
+            new DataItemAction("View", ACTION_TYPE_PRIMARY),
+            new DataItemAction("Email result", ACTION_TYPE_SECONDARY),
+            new DataItemAction("Delete", ACTION_TYPE_DANGER)
+        ];
+    };
+
+    return FinishedGame;
+})();
+
+// ----------------------------------------------------------------------
 // The DataItemAction class represents an action that the user can take in
 // the UI and that operates on a data item.
 // ----------------------------------------------------------------------

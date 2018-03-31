@@ -163,7 +163,7 @@ namespace LittleGoWeb
             <table class="table table-striped table-bordered table-hover table-responsive-md">
                 <caption>List of finished games</caption>
                 <thead class="thead-dark">
-                    <tr><th>End date</th><th>Game ID</th><th>Board size</th><th>Stone color</th><th>Handicap</th><th>Komi</th><th>Ko rule</th><th>Scoring system</th><th>Result</th><th>Actions</th></tr>
+                    <tr><th>End date</th><th>Game ID</th><th>Board size</th><th>Handicap</th><th>Komi</th><th>Ko rule</th><th>Scoring system</th><th>Result</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
                     <!-- Content is filled in dynamically -->
