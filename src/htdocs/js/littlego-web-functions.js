@@ -117,17 +117,17 @@ function numberOfMovesPlayedToString(numberOfMovesPlayed)
         throw new Error("Unsupported number of moves played value: " + numberOfMovesPlayed);
 }
 
-// Converts the specified game request create time value into a string that is
-// suitable for displaying in the UI. Throws an Error object for invalid values.
-function gameRequestCreateTimeToString(createTime)
+// Converts the specified start time value into a string that is suitable for
+// displaying in the UI. Throws an Error object for invalid values.
+function startTimeToString(startTimeInMilliseconds)
 {
     var currentTime = new Date().getTime();
-    var elapsedTimeInMilliseconds = currentTime - createTime;
+    var elapsedTimeInMilliseconds = currentTime - startTimeInMilliseconds;
 
     if (elapsedTimeInMilliseconds < 0)
     {
-        // Create time is in the future
-        throw new Error("Unsupported game request create time value: " + createTime);
+        // Time is in the future
+        throw new Error("Unsupported start time value: " + startTimeInMilliseconds);
     }
     else if (elapsedTimeInMilliseconds < MILLISECONDS_1_HOUR)
     {

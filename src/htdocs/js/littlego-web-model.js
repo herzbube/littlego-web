@@ -38,7 +38,7 @@ var GameRequest = (function ()
     {
         this.id = jsonObject.id;
 
-        this.createTime = gameRequestCreateTimeToString(jsonObject.createTime);
+        this.createTime = startTimeToString(jsonObject.createTime);
 
         if (-1 === jsonObject.requestedBoardSize)
             this.requestedBoardSize = STRING_DONTCARE;
@@ -133,7 +133,7 @@ var GameInProgress = (function ()
     {
         this.id = jsonObject.id;
 
-        this.startTime = gameRequestCreateTimeToString(jsonObject.startTime);
+        this.startTime = startTimeToString(jsonObject.startTime);
         this.boardSize = boardSizeToString(jsonObject.boardSize);
         this.handicap = handicapToString(jsonObject.handicap);
         this.komi = komiToString(jsonObject.komi);
