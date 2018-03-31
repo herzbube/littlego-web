@@ -93,8 +93,8 @@ var GameRequest = (function ()
     GameRequest.prototype.getDataItemActions = function()
     {
         return [
-            new DataItemAction("Resume", ACTION_TYPE_PRIMARY ),
-            new DataItemAction("Cancel", ACTION_TYPE_DANGER )
+            new DataItemAction("Resume", ACTION_TYPE_PRIMARY),
+            new DataItemAction("Cancel", ACTION_TYPE_DANGER)
         ];
     };
 
@@ -166,8 +166,8 @@ var GameInProgress = (function ()
     GameInProgress.prototype.getDataItemActions = function()
     {
         return [
-            new DataItemAction("Resume", ACTION_TYPE_PRIMARY ),
-            new DataItemAction("Resign", ACTION_TYPE_DANGER )
+            new DataItemAction("Resume", ACTION_TYPE_PRIMARY),
+            new DataItemAction("Resign", ACTION_TYPE_DANGER)
         ];
     };
 
