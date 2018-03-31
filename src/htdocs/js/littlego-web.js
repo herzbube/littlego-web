@@ -53,8 +53,6 @@
             // requests section - even if that section is empty, because then
             // at least the user can immediately submit a new game request.
             makeAppContainerVisible(ID_CONTAINER_GAME_REQUESTS);
-            // Although we don't show the "games in progress" list, we
-            // technically are still in that section.
             makeNavItemActive(ID_BUTTON_GAME_REQUESTS);
             updateGameRequestsData();
         }
@@ -136,6 +134,23 @@
         // Triggers onSessionValidationComplete which in turn hides the
         // app container and instead shows the login form
         theSession.invalidate();
+    }
+
+    function onResumeGameInProgress(dataItemAction)
+    {
+        var gameInProgress = dataItemAction.dataItem;
+
+        makeAppContainerVisible(ID_CONTAINER_PLAY);
+    }
+
+    function onViewFinishedGame(dataItemAction)
+    {
+        var finishedGame = dataItemAction.dataItem;
+
+        makeAppContainerVisible(ID_CONTAINER_PLAY);
+        // Although we don't show the "games in progress" list, we
+        // technically are still in that section.
+        makeNavItemActive(ID_BUTTON_GAMES_IN_PROGRESS);
     }
 
     function activateTab(tabName)
@@ -354,7 +369,9 @@
         switch (operationType)
         {
             case OPERATION_TYPE_GAME_IN_PROGRESS_RESUME:
+                return onResumeGameInProgress;
             case OPERATION_TYPE_FINISHED_GAME_VIEW:
+                return onViewFinishedGame;
             case OPERATION_TYPE_GAME_REQUEST_RESUME:
             case OPERATION_TYPE_GAME_REQUEST_CANCEL:
             case OPERATION_TYPE_GAME_IN_PROGRESS_RESIGN:
