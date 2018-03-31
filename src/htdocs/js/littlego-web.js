@@ -35,6 +35,25 @@
         $("#" + ID_BUTTON_LOGOUT).on("click", onLogout);
     });
 
+    function onLogin(event)
+    {
+        // We don't want form submission to take place.
+        // We want to handle the login process ourselves.
+        event.preventDefault();
+
+        // TODO Form validation
+
+        var emailAddress = $("#" + ID_INPUT_EMAIL_ADDRESS).val();
+        var password = $("#" + ID_INPUT_PASSWORD).val();
+        // TODO: Add a checkbox to the login form and query its value
+        var persistSession = true;
+
+        // Triggers onSessionValidationComplete
+        theSession.login(emailAddress, password, persistSession);
+
+        $("#" + ID_LOGIN_FORM)[0].reset();
+    }
+
     function onSessionValidationComplete(session)
     {
         // TODO: This is executed too late, the user sees the
@@ -65,25 +84,6 @@
             // This is necessary after a logout
             $("#" + ID_INPUT_EMAIL_ADDRESS).focus();
         }
-    }
-
-    function onLogin(event)
-    {
-        // We don't want form submission to take place.
-        // We want to handle the login process ourselves.
-        event.preventDefault();
-
-        // TODO Form validation
-
-        var emailAddress = $("#" + ID_INPUT_EMAIL_ADDRESS).val();
-        var password = $("#" + ID_INPUT_PASSWORD).val();
-        // TODO: Add a checkbox to the login form and query its value
-        var persistSession = true;
-
-        // Triggers onSessionValidationComplete
-        theSession.login(emailAddress, password, persistSession);
-
-        $("#" + ID_LOGIN_FORM)[0].reset();
     }
 
     function onGameRequests(event)
