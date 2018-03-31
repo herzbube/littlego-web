@@ -140,17 +140,14 @@
     {
         var gameInProgress = dataItemAction.dataItem;
 
-        makeAppContainerVisible(ID_CONTAINER_PLAY);
+        activateBoard();
     }
 
     function onViewFinishedGame(dataItemAction)
     {
         var finishedGame = dataItemAction.dataItem;
 
-        makeAppContainerVisible(ID_CONTAINER_PLAY);
-        // Although we don't show the "games in progress" list, we
-        // technically are still in that section.
-        makeNavItemActive(ID_BUTTON_GAMES_IN_PROGRESS);
+        activateBoard();
     }
 
     function activateTab(tabName)
@@ -159,17 +156,33 @@
         makeAppContainerVisible(PREFIX_ID_CONTAINER + tabName);
     }
 
+    function showBoard()
+    {
+        makeAppContainerVisible(ID_CONTAINER_PLAY);
+        makeNavItemActive(ID_BUTTON_GAMES_IN_PROGRESS);
+    }
+
     function makeNavItemActive(navItemID)
     {
-        $("." + BOOTSTRAP_CLASS_NAV_ITEM + "." + BOOTSTRAP_CLASS_ACTIVE).removeClass(BOOTSTRAP_CLASS_ACTIVE);
+        deactivateAllNavItems();
         $("#" + navItemID).addClass(BOOTSTRAP_CLASS_ACTIVE);
+    }
+
+    function deactivateAllNavItems()
+    {
+        $("." + BOOTSTRAP_CLASS_NAV_ITEM + "." + BOOTSTRAP_CLASS_ACTIVE).removeClass(BOOTSTRAP_CLASS_ACTIVE);
     }
 
     function makeAppContainerVisible(appContainerID)
     {
+        hideAllAppContainers();
+        $("#" + appContainerID).show();
+    }
+
+    function hideAllAppContainers()
+    {
         // Use the direct child selector for better performance
         $("#container-main-app > .container-fluid").hide();
-        $("#" + appContainerID).show();
     }
 
     function updateGameRequestsData()
