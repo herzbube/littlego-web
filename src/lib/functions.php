@@ -81,6 +81,7 @@ namespace LittleGoWeb
     <script src="js/littlego-web-viewmodel.js"></script>
     <script src="js/littlego-web-session.js"></script>
     <script src="js/littlego-web-go.js"></script>
+    <script src="js/littlego-web-drawing.js"></script>
     <!-- Main script that starts the application -->
     <script src="js/littlego-web.js"></script>
     <!--
@@ -189,8 +190,8 @@ namespace LittleGoWeb
                     the right-hand-side elements.
                 -->
                 <div id="left-hand-side" class="col-12 col-md-8">
-                    <div id="container-board">
-                        <canvas id="board" class="placeholder" />
+                    <div id="container-board" />
+                        <!-- Content is filled in dynamically -->
                     </div>
                 </div>
                 <!--

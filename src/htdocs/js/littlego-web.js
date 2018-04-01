@@ -169,6 +169,11 @@
     {
         makeAppContainerVisible(ID_CONTAINER_PLAY);
         makeNavItemActive(ID_BUTTON_GAMES_IN_PROGRESS);
+
+        // Start drawing the board AFTER the board container has been
+        // made visible, otherwise the container has width/height 0.
+        var containerBoard = $("#" + ID_CONTAINER_BOARD);
+        drawGoBoard(containerBoard);
     }
 
     function makeNavItemActive(navItemID)
