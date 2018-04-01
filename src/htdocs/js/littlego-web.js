@@ -1,5 +1,13 @@
+// ----------------------------------------------------------------------
+// This file contains the main code that bootstraps the application and
+// performs site navigation.
+// ----------------------------------------------------------------------
+
 (function () {
     "use strict";
+
+    // Declare a few global variables
+    var theSession = null;
 
     // TODO: Establish connection. Include error handling!
     // var websocketUrl =
@@ -9,9 +17,6 @@
     //     + websocketConfig.port;
     // var webSocket = new WebSocket(websocketUrl);
     var theWebSocket = null;
-
-    // Declare a few global variables
-    var theSession = null;
 
     $(document).ready(function ()
     {
