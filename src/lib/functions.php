@@ -75,8 +75,9 @@ namespace LittleGoWeb
     <script src="js/littlego-web-constants.js"></script>
     <script src="js/littlego-web-functions.js"></script>
     <script src="js/littlego-web-data-generator.js"></script>
-    <script src="js/littlego-web-model.js"></script>
+    <script src="js/littlego-web-viewmodel.js"></script>
     <script src="js/littlego-web-session.js"></script>
+    <script src="js/littlego-web-go.js"></script>
     <!-- Main script that starts the application -->
     <script src="js/littlego-web.js"></script>
     <!--

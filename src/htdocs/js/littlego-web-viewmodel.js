@@ -1,10 +1,10 @@
 // ----------------------------------------------------------------------
-// This file contains all model classes
+// This file contains all view model classes
 // ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
 // The GameRequest class represents a server-side game request. GameRequest
-// objects are model objects whose values are suitable for displaying in
+// objects are view model objects whose values are suitable for displaying in
 // the UI. GameRequest objects are created from JSON objects that were
 // transmitted by the server. A GameRequest object uses the same property
 // names that are specified in the JSON format.
@@ -103,7 +103,7 @@ var GameRequest = (function ()
 
 // ----------------------------------------------------------------------
 // The GameInProgress class represents a server-side game in progress.
-// GameInProgress objects are model objects whose values are suitable for
+// GameInProgress objects are view model objects whose values are suitable for
 // displaying in the UI. GameInProgress objects are created from JSON
 // objects that were transmitted by the server. A GameInProgress object
 // uses the same property names that are specified in the JSON format.
@@ -176,7 +176,7 @@ var GameInProgress = (function ()
 
 // ----------------------------------------------------------------------
 // The FinishedGame class represents a server-side finished game.
-// FinishedGame objects are model objects whose values are suitable for
+// FinishedGame objects are view model objects whose values are suitable for
 // displaying in the UI. FinishedGame objects are created from JSON
 // objects that were transmitted by the server. A FinishedGame object
 // uses the same property names that are specified in the JSON format.

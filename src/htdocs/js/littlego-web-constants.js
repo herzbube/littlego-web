@@ -9,6 +9,7 @@ const BOARDSIZE_13 = 13;
 const BOARDSIZE_15 = 15;
 const BOARDSIZE_17 = 17;
 const BOARDSIZE_19 = 19;
+const BOARDSIZE_SMALLEST = BOARDSIZE_7;
 
 const COLOR_NONE = -1;
 const COLOR_BLACK = 0;
@@ -20,6 +21,21 @@ const KORULE_SITUATIONAL_SUPERKO = 2;
 
 const SCORINGSYSTEM_AREA_SCORING = 0;
 const SCORINGSYSTEM_TERRITORY_SCORING = 1;
+
+// The possible directions one can take to get from one GoPoint to another
+// neighbouring GoPoint.
+const GOBOARD_DIRECTION_LEFT = 0;
+const GOBOARD_DIRECTION_RIGHT = 1;
+const GOBOARD_DIRECTION_UP = 2;
+const GOBOARD_DIRECTION_DOWN = 3;
+// Used for iterating all GoPoints. The first point is always A1, on a
+// 19x19 board the last point is T19.
+const GOBOARD_DIRECTION_NEXT = 4;
+// Same as GOBOARD_DIRECTION_NEXT, but for iterating backwards.
+const GOBOARD_DIRECTION_PREVIOUS = 5;
+
+const GOMOVE_TYPE_PLAY = 0;
+const GOMOVE_TYPE_PASS = 0;
 
 const DEFAULT_BOARDSIZE = BOARDSIZE_19;
 const DEFAULT_STONECOLOR = COLOR_BLACK;
