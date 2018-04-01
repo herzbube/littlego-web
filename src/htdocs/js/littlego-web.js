@@ -140,14 +140,18 @@
     {
         var gameInProgress = dataItemAction.dataItem;
 
-        activateBoard();
+        showBoard();
+
+        // TODO: Actually show data for the game in progress.
     }
 
     function onViewFinishedGame(dataItemAction)
     {
         var finishedGame = dataItemAction.dataItem;
 
-        activateBoard();
+        showBoard();
+
+        // TODO: Actually show data for the finished game.
     }
 
     function activateTab(tabName)
