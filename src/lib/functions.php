@@ -71,6 +71,9 @@ namespace LittleGoWeb
       };
     </script>
 
+    <!-- Raphaël library for drawing with SVG -->
+    <script src="js/raphael-2.2.1.min.js"></script>
+
     <!-- Library scripts -->
     <script src="js/littlego-web-constants.js"></script>
     <script src="js/littlego-web-functions.js"></script>
