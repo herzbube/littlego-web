@@ -243,7 +243,7 @@ function fractionalNumberToString(fractionalNumber)
         // change.
         return "" + fractionalNumber;
     }
-    else if (flooredNumber == fractionalNumber)
+    else if (flooredNumber == fractionalNumber)  // use of operator == is intentional
     {
         // Math.floor() did change the type, so the specified number
         // was a fractional type, but the fraction apparently was .0.

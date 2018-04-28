@@ -61,7 +61,6 @@ namespace LittleGoWeb
         {
             $this->clients->detach($conn);
             echo "Connection {$conn->resourceId} has disconnected\n";
-            unset($this->players[$conn->resourceId]);
         }
 
         public function onError(ConnectionInterface $conn, \Exception $e): void

@@ -162,7 +162,6 @@ var Session = (function ()
     // Note: If the Session object represents a valid session at the time this
     // function is invoked, the session is first invalidated. In that case the
     // validityChanged event will fire twice.
-
     Session.prototype.invalidate = function()
     {
         // TODO: Shouldn't we fire validationComplete? Not firing makes life
@@ -201,7 +200,7 @@ var Session = (function ()
             throw new Error("Validation is already in progress");
 
         this.validationInProgress = true;
-    }
+    };
 
     // Internal function. Updates the state of the Session object when an
     // asynchronous validation operation ends. Also fires the
