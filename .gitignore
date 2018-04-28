@@ -5,4 +5,5 @@ vendor/
 .idea/
 
 # Other files
+src/config/config.php
 .DS_Store
