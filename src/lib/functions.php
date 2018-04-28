@@ -108,10 +108,10 @@ namespace LittleGoWeb
                     <input id="login-password" class="form-control" name="password" type="password" placeholder="Enter your password" required/>
                 </div>
                 <div class="form-group">
-                    <button id="button-login" class="btn btn-primary">Login</button>
+                    <button id="button-login" class="btn btn-primary" type="submit">Login</button>
                 </div>
                 <div class="form-group">
-                    <p>Not registered yet? <button id="button-goto-registration" class="btn btn-dark btn-sm">Register</button></p>
+                    <p>Not registered yet? <button id="button-goto-registration" class="btn btn-dark btn-sm" type="button">Register</button></p>
                 </div>
                 <div class="form-group">
                     <div id="alert-login" class="alert alert-danger" role="alert"></div>
@@ -141,8 +141,8 @@ namespace LittleGoWeb
                     <input id="registration-password" class="form-control" name="password" type="password" placeholder="Enter your password" required/>
                 </div>
                 <div class="form-group">
-                    <button id="button-register" class="btn btn-primary">Register</button>
-                    <button id="button-cancel-registration" class="btn btn-secondary">Cancel</button>
+                    <button id="button-register" class="btn btn-primary" type="submit">Register</button>
+                    <button id="button-cancel-registration" class="btn btn-secondary" type="button">Cancel</button>
                     <!-- TODO: Remove when email address verification is implemented -->
                     <p><small>DEV MODE: Email address verification has not been implemented yet. You can enter any email address you like as long as the address format is correct. If the registration data you entered is acceptable (i.e. email address and display name are both unique), registration will immediately succeed and the system will log you in instantly.</small></p>
                 </div>

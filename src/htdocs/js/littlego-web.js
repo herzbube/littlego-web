@@ -113,10 +113,6 @@
 
     function onGotoRegistration(event)
     {
-        // TODO In Firefox, when we repeatedly switch between login and
-        // registration form and we reset the registration form for the
-        // second time, all required fields are shown as invalid. This
-        // does not happen in Safari!
         $("#" + ID_REGISTRATION_FORM)[0].reset();
         $("#" + ID_ALERT_REGISTRATION).hide();
 
