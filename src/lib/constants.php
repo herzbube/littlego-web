@@ -26,6 +26,16 @@ namespace LittleGoWeb
     const SQL_OPERATOR_PARANTHESIS_CLOSE = " ) ";
     const SQL_OPERATOR_ASCENDING = " asc ";
     const SQL_OPERATOR_DESCENDING = " desc ";
+
+    // Data classes defaults
+    const SESSION_SESSIONID_DEFAULT = -1;
+    const SESSION_SESSIONKEY_DEFAULT = "";
+    const SESSION_USERID_DEFAULT = -1;
+    const SESSION_VALIDUNTIL_DEFAULT = -1;
+    const USER_USERID_DEFAULT = -1;
+    const USER_EMAILADDRESS_DEFAULT = "";
+    const USER_DISPLAYNAME_DEFAULT = "";
+    const USER_PASSWORDHASH_DEFAULT = "";
 }
 
 ?>
