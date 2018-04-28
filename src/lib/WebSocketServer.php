@@ -34,20 +34,17 @@ namespace LittleGoWeb
 
         public function onMessage(ConnectionInterface $from, $message): void
         {
-            $convertToAssociativeArray = true;
-            $jsonObject = json_decode($message, $convertToAssociativeArray);
-            if ($jsonObject === null && json_last_error() !== JSON_ERROR_NONE)
-            {
-                echo "JSON data is incorrect";
+            $webSocketMessage = WebSocketMessage::tryCreateMessageFromJson($message);
+            if ($webSocketMessage === null)
                 return;
-            }
-            echo "Received message from connection! ({$from->resourceId})\n";
 
-            $eventType = $jsonObject['action'];
-            switch ($eventType)
+            $messageType = $webSocketMessage->getMessageType();
+            echo "Received message '$messageType' from connection! ({$from->resourceId})\n";
+
+            switch ($messageType)
             {
                 default:
-                    echo "Unknown event type $eventType\n";
+                    echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
             }
         }
 

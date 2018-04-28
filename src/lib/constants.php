@@ -14,6 +14,9 @@ namespace LittleGoWeb
     const WEBSOCKET_HOST_DEFAULT = "localhost";
     const WEBSOCKET_PORT_DEFAULT = 8001;
 
+    // WebSocket messages
+    const WEBSOCKET_JSON_KEY_MESSAGE_TYPE = "messageType";
+    const WEBSOCKET_JSON_KEY_MESSAGE_DATA = "data";
     // SQL query generation
     const PREPARED_STATEMENT_PARAMETER_PREFIX = ":";
     const SQL_QUOTE_CHARACTER = "`";
