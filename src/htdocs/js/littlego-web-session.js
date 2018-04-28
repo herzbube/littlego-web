@@ -272,6 +272,8 @@ var Session = (function ()
                 // We don't really care about any server-side problems on
                 // logout. This session is already invalid, anyway.
 
+                this.validationEnds();
+
                 break;
 
             default:
