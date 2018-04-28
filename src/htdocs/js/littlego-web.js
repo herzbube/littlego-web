@@ -63,8 +63,6 @@
 
         // Triggers onSessionValidationComplete
         theSession.login(emailAddress, password, persistSession);
-
-        $("#" + ID_LOGIN_FORM)[0].reset();
     }
 
     function onSessionValidationComplete(session, errorMessage)
@@ -76,6 +74,11 @@
             // Main containers
             $("#" + ID_CONTAINER_LOGIN_FORM).hide();
             $("#" + ID_CONTAINER_MAIN_APP).show();
+
+            // Make sure that form is back in its initial state in case the
+            // user logs out
+            $("#" + ID_LOGIN_FORM)[0].reset();
+            $("#" + ID_LOGIN_FORM + " .alert").hide();
 
             // App containers
             // TODO Make the initial selection dynamic: If the user has games
@@ -94,7 +97,7 @@
             $("#" + ID_CONTAINER_LOGIN_FORM).show();
             $("#" + ID_CONTAINER_MAIN_APP).hide();
 
-            // This is necessary after a logout
+            // This is necessary after a logout, or when the login failed
             $("#" + ID_INPUT_EMAIL_ADDRESS).focus();
 
             if (errorMessage !== undefined)

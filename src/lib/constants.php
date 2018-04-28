@@ -16,10 +16,12 @@ namespace LittleGoWeb
 
     // WebSocket events (client outgoing/server incoming messages)
     const WEBSOCKET_REQUEST_TYPE_LOGIN = "c2sLogin";
+    const WEBSOCKET_REQUEST_TYPE_LOGOUT = "c2sLogout";
     const WEBSOCKET_REQUEST_TYPE_VALIDATESESSION = "c2sValidateSession";
 
     // WebSocket responses (server outgoing/client incoming messages)
     const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
+    const WEBSOCKET_RESPONSE_TYPE_LOGOUT = "s2cLogoutResponse";
     const WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION = "s2cValidateSessionResponse";
 
     // WebSocket messages

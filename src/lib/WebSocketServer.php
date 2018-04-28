@@ -46,6 +46,9 @@ namespace LittleGoWeb
                 case WEBSOCKET_REQUEST_TYPE_LOGIN:
                     $this->handleLogin($from, $webSocketMessage->getData());
                     break;
+                case WEBSOCKET_REQUEST_TYPE_LOGOUT:
+                    $this->handleLogout($from, $webSocketMessage->getData());
+                    break;
                 case WEBSOCKET_REQUEST_TYPE_VALIDATESESSION:
                     $this->handleValidateSession($from, $webSocketMessage->getData());
                     break;
@@ -137,6 +140,31 @@ namespace LittleGoWeb
             $sessionID = session_id();
 
             return $sessionID;
+        }
+
+        private function handleLogout(ConnectionInterface $from, array $messageData): void
+        {
+            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_LOGOUT;
+
+            $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
+
+            $dbAccess = new DbAccess($this->config);
+            $success = $dbAccess->deleteSessionBySessionKey($sessionKey);
+
+            if ($success)
+            {
+                $webSocketResponseData =
+                    [
+                        WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
+                    ];
+                $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+                $from->send($webSocketMessage->toJsonString());
+            }
+            else
+            {
+                $errorMessage = "Invalid session key";
+                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+            }
         }
 
         private function handleValidateSession(ConnectionInterface $from, array $messageData): void

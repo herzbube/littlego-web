@@ -181,14 +181,16 @@ var Session = (function ()
             // invalidated the other data becomes invalid, too).
         }
 
+        var sessionKey = this.sessionKey;
+
         this.sessionKey = undefined;
         this.userInfo = new UserInfo();
         this.isPersistentSession = false;
 
         this.validationBegins();
-        // TODO Contact the server to invalidate the session. The Session
-        // object has already changed state so that it cannot be used anymore.
-        this.validationEnds();
+
+        var messageData = { sessionKey: sessionKey };
+        sendWebSocketMessage(this.webSocket, WEBSOCKET_REQUEST_TYPE_LOGOUT, messageData);
     };
 
     // Internal function. Updates the state of the Session object when an
@@ -264,6 +266,12 @@ var Session = (function ()
                 delete this.isPersistentSessionRequested;
 
                 this.validationEnds(webSocketMessage.data.errorMessage);
+
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_LOGOUT:
+                // We don't really care about any server-side problems on
+                // logout. This session is already invalid, anyway.
 
                 break;
 
