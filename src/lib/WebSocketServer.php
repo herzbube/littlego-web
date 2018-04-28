@@ -9,10 +9,20 @@ namespace LittleGoWeb
     class WebSocketServer implements MessageComponentInterface
     {
         private $clients;
+        private $config;
 
-        public function __construct()
+        public function __construct(Config $config)
         {
             $this->clients = new \SplObjectStorage;
+            $this->config = $config;
+
+            // We immediately discard the DbAccess object because we don't
+            // really need anything from the database. We try to establish
+            // a database connection merely to detect configuration problems
+            // immediately upon startup of the WebSocket server.
+            new DbAccess($this->config);
+            echo "Successfully established database connection\n";
+
             echo "WebSocket server is now running\n";
         }
 

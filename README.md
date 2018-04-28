@@ -41,6 +41,8 @@ In the unlikely event that you wish to contribute something to this educational 
  |                       exist when you initially clone the repository. The
  |                       folder is created by Composer when you run it for the
  |                       first time.
+ +-- db                  This folder contains database-related stuff, most
+ |                       importantly the database creation script.
  +-- doc                 This folder contains the project documentation. The
  |                       content of this folder is not relevant for running
  |                       the application.
@@ -72,6 +74,20 @@ This is how the application is bootstrapped:
 1. The client-side application connects to the WebSocket server
 1. The client-side application displays the login form.
 1. When the user logs in, the client-side application hides the login form and instead displays the main application container.
+
+## System requirements
+
+#### PHP
+
+PHP 7.1 or newer is required because the project makes use of the PHP feature "nullable return types".
+
+#### Database
+
+Currently this project requires the MySQL database server with a reasonably up-to-date version.
+ 
+Since the project does not use highly specific MySQL features, a product with reasonable compatibility such as MariaDB might also work. However, development and testing have been done with MySQL only.
+
+First steps have been taken to make the project database independent: It uses the PDO database abstraction library, and it generates all SQL queries in a dedicated class `SQLGenerator` (which could be refactored into a generic interface and DBMS-specific implementations).
 
 ## Third party dependencies
 
@@ -109,11 +125,12 @@ cd /path/to/project/root
 
 On Windows you can try to run `startWebServer.bat`. This batch script has not been tested, though.
 
-The web server is now available from this URL: `http://localhost:8000`. If you need a different hostname and/or TCP port then you have to manually edit `The web server is now available from this URL: `http://localhost:8000`. If you need a different hostname and/or TCP port then you have to manually edit `the script.
-`.
+The web server is now available from this URL: `http://localhost:8000`. If you need a different hostname and/or TCP port then you have to manually edit `startWebServer.sh` (or `startWebServer.bat` on Windows).
 
 
 ## Running the WebSocket server
+
+**Important**: Before you run the WebSocket server for the first time, you must **create the database** and **configure the WebSocket server**. See the corresponding sections below.
 
 The WebSocket server implemented in this project is based on the [Ratchet](http://socketo.me/) PHP library.
 
@@ -127,3 +144,29 @@ cd /path/to/project/root
 On Windows you can try to run `startWebSocketServer.bat`. This batch script has not been tested, though.
 
 The web server is now available from this URL: `ws://localhost:8001`. If you need a different hostname and/or TCP port then you have to manually edit the file `src/config/config.php`.
+
+
+## Creating the database
+
+Make sure you have MySQL installed (cf. section "System requirements"). Then use one of the following commands to create the database on the command line:
+
+```
+# For TCP/IP connections
+php db/createDatabase.php hostname port username password
+
+# For socket connections
+php db/createDatabase.php /path/to/socket username password
+```
+
+As an alternative, you can run the database creation SQL script with a tool of your choice, such as phpMyAdmin. The script is located in the file `createDatabase.sql` in the subfolder `db`.
+
+## Configuring the WebSocket server
+
+The WebSocket server configuration is located in the subfolder `src/config`. This folder contains the file `config-template.php` which you can use as a template for creating your own configuration. To create the actual configuration, follow these steps:
+
+1. Copy the template file `config-template.php` to a new file which **must** be named `config.php`.
+1. Open `config.php` in any text editor.
+1. Perform the edits you need. You will at least have to configure the details for accessing the database.
+1. Save your changes.
+
+The WebSocket server is now ready for start. On startup, the Websocket server immediately performs a test connection to the database so that configuration problems are detected without delay. If there is a connection problem, the WebSocket server immediately aborts with an exception.

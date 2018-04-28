@@ -293,7 +293,7 @@ ENDOFOUTPUT;
         $server = \Ratchet\Server\IoServer::factory(
             new \Ratchet\Http\HttpServer(
                 new \Ratchet\WebSocket\WsServer(
-                    new \LittleGoWeb\WebSocketServer()
+                    new \LittleGoWeb\WebSocketServer($config)
                 )
             ),
             $config->webSocketPort
