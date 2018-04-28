@@ -22,8 +22,12 @@
 // (property "onValidationComplete") that gets notified when an asynchronous
 // validation operation has completed. The initial event handler is supplied
 // on construction. When the event fires, the Session object invokes the
-// currently installed event handler with the Session object as the sole
-// parameter.
+// currently installed event handler with the Session object and an optional
+// error message as parameters. The event handler signature looks like this:
+//   handleValidationComplete(session, errorMessage);
+// The error message is set only if the server reports an error in response
+// to the asynchronous operation. The error message is suitable for display
+// to the user.
 //
 // Note that it is not possible to check if a validation operation is currently
 // in progress. This is by design: Users of Session should rely on event
@@ -73,32 +77,25 @@ var Session = (function ()
         this.onValidationComplete = callbackValidationComplete;
         this.validationInProgress = false;
 
+        // We don't store the session key in this.sessionKey
+        // because we want the session to remain invalid
         var sessionKey = localStorage[STORAGEKEY_SESSIONKEY];
 
         this.validationBegins();
 
         if (sessionKey !== undefined)
         {
-            // TODO Check with the server whether the session key is still
-            // valid. If it's not, remove the session key from storage. For
-            // the moment, if a session key is present we treat it as if it
-            // were valid. The state changes below must be performed only
-            // after validation is complete.
-
-            this.sessionKey = sessionKey;
-
-            // TODO: If the session key is valid the server must provide us
-            // with information about the user account associated with the
-            // session. For the moment we fake the information.
-            var userID = 42;
-            var emailAddress = sessionKey;
-            var displayName = emailAddress;
-            this.userInfo = new UserInfo(userID, emailAddress, displayName);
-
-            this.isPersistentSession = true;
+            // Check with the server whether the stored session key is still
+            // valid. If it's not, the message handler will remove the
+            // session key from storage.
+            var messageData = { sessionKey: sessionKey };
+            sendWebSocketMessage(this.webSocket, WEBSOCKET_REQUEST_TYPE_VALIDATESESSION, messageData);
         }
-
-        this.validationEnds();
+        else
+        {
+            // Immediately notify callback
+            this.validationEnds();
+        }
     }
 
     // Returns true if the Session object represents a valid session, false if
@@ -219,7 +216,11 @@ var Session = (function ()
     // asynchronous validation operation ends. Also fires the
     // validationComplete event, i.e. calls the event handler (if one
     // is installed).
-    Session.prototype.validationEnds = function()
+    //
+    // The error message parameter is optional. It is not evaluated by
+    // this function. It is passed on to the event handler of the
+    // validationComplete event.
+    Session.prototype.validationEnds = function(errorMessage)
     {
         if (! this.validationInProgress)
             throw new Error("No validation is in progress");
@@ -227,8 +228,8 @@ var Session = (function ()
         this.validationInProgress = false;
 
         if (this.onValidationComplete !== undefined)
-            this.onValidationComplete(this);
-    }
+            this.onValidationComplete(this, errorMessage);
+    };
 
     // Internal function. Handles incoming WebSocket messages that are
     // responses to messages sent by the Session object.
@@ -238,6 +239,25 @@ var Session = (function ()
 
         switch (webSocketMessage.messageType)
         {
+            case WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION:
+                if (webSocketMessage.data.success)
+                {
+                    this.sessionKey = webSocketMessage.data.sessionKey;
+                    this.userInfo = new UserInfo(webSocketMessage.data.userInfo);
+                    // Session validation occurs only if we have a session key
+                    // in Web Storage, so this automatically becomes a
+                    // persistent session.
+                    this.isPersistentSession = true;
+                }
+                else
+                {
+                    localStorage.removeItem(STORAGEKEY_SESSIONKEY);
+                }
+
+                this.validationEnds(webSocketMessage.data.errorMessage);
+
+                break;
+
             default:
                 // Ignore all messages that are not session related
                 break;
@@ -255,11 +275,14 @@ var UserInfo = (function ()
 {
     "use strict";
 
-    function UserInfo(userID, emailAddress, displayName)
+    function UserInfo(userInfoJsonObject)
     {
-        this.userID = userID;
-        this.emailAddress = emailAddress;
-        this.displayName = displayName;
+        if (userInfoJsonObject !== undefined)
+        {
+            this.userID = userInfoJsonObject.userID;
+            this.emailAddress = userInfoJsonObject.emailAddress;
+            this.displayName = userInfoJsonObject.displayName;
+        }
     }
 
     UserInfo.prototype.isValid = function()

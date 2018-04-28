@@ -110,6 +110,9 @@ namespace LittleGoWeb
                     <!-- TODO: Remove when form is implemented -->
                     <p><small>DEV MODE: This login form currently does nothing. Enter any values you like.</small></p>
                 </div>
+                <div class="form-group">
+                    <div class="alert alert-danger" role="alert" />
+                </div>
             </form>
         </div>
     </div>

@@ -43,6 +43,9 @@ namespace LittleGoWeb
 
             switch ($messageType)
             {
+                case WEBSOCKET_REQUEST_TYPE_VALIDATESESSION:
+                    $this->handleValidateSession($from, $webSocketMessage->getData());
+                    break;
                 default:
                     echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
             }
@@ -59,6 +62,55 @@ namespace LittleGoWeb
         {
             echo "An error has occurred: {$e->getMessage()}\n";
             $conn->close();
+        }
+
+        private function handleValidateSession(ConnectionInterface $from, array $messageData): void
+        {
+            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION;
+
+            $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
+
+            $dbAccess = new DbAccess($this->config);
+
+            $session = $dbAccess->findSessionByKey($sessionKey);
+            if ($session !== null)
+            {
+                $user = $dbAccess->findUserByID($session->getUserID());
+                if ($user !== null)
+                {
+                    $webSocketResponseData =
+                        [
+                            WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
+                            WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY => $sessionKey,
+                            WEBSOCKET_MESSAGEDATA_KEY_USERINFO => $user->toJsonObject()
+                        ];
+                    $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+                    $from->send($webSocketMessage->toJsonString());
+                }
+                else
+                {
+                    $dbAccess->deleteSessionBySessionKey($sessionKey);
+
+                    $errorMessage = "Session has invalid user ID";
+                    $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                }
+            }
+            else
+            {
+                $errorMessage = "Invalid session key";
+                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+            }
+        }
+
+        private function sendErrorResponse(ConnectionInterface $from, string $webSocketResponseType, string $errorMessage): void
+        {
+            $webSocketResponseData =
+                [
+                    WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => false,
+                    WEBSOCKET_MESSAGEDATA_KEY_ERRORMESSAGE => $errorMessage
+                ];
+            $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+            $from->send($webSocketMessage->toJsonString());
         }
     }
 }

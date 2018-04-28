@@ -61,5 +61,15 @@ namespace LittleGoWeb
         {
             $this->passwordHash = $passwordHash;
         }
+
+        public function toJsonObject(): array
+        {
+            return array(
+                WEBSOCKET_MESSAGEDATA_KEY_USERID => $this->userID,
+                WEBSOCKET_MESSAGEDATA_KEY_EMAILADDRESS => $this->emailAddress,
+                WEBSOCKET_MESSAGEDATA_KEY_DISPLAYNAME => $this->displayName
+                // No password hash - this is sensitive and must never leave the system!
+            );
+        }
     }
 }

@@ -18,12 +18,14 @@
 
     $(document).ready(function()
     {
-        // We want to handle the login process without form submission
-        // mechanics because that would require another server request,
-        // but we want to be a single-page app. We therefore don't
-        // listen for the form's "submit" event (in fact the form cannot
-        // be submitted at all, the button is not a submit button),
-        // instead we perform just regular click handling.
+        // Initially hide everything until it becomes clear whether we can
+        // resume a previous session or must login.
+        // TODO: This is executed too late, the user sees the containers
+        // containers for a very short moment before they are hidden.
+        $("#" + ID_CONTAINER_LOGIN_FORM).hide();
+        $("#" + ID_CONTAINER_MAIN_APP).hide();
+        $("#" + ID_LOGIN_FORM + " .alert").hide();
+
         $("#" + ID_LOGIN_FORM).on("submit", onLogin);
 
         $("#" + ID_BUTTON_GAME_REQUESTS).on("click", onGameRequests);
@@ -65,7 +67,7 @@
         $("#" + ID_LOGIN_FORM)[0].reset();
     }
 
-    function onSessionValidationComplete(session)
+    function onSessionValidationComplete(session, errorMessage)
     {
         // TODO: This is executed too late, the user sees the
         // main app container for a very short moment before it's hidden.
@@ -94,6 +96,9 @@
 
             // This is necessary after a logout
             $("#" + ID_INPUT_EMAIL_ADDRESS).focus();
+
+            if (errorMessage !== undefined)
+                $("#" + ID_LOGIN_FORM + " .alert").text(errorMessage).show();
         }
     }
 

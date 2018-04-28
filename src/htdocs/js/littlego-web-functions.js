@@ -278,3 +278,23 @@ function actionType2BootstrapButtonClass(actionType)
             throw new Error("Unsupported action type value: " + actionType);
     }
 }
+
+function generateWebSocketMessage(messageType, messageData)
+{
+    var response =
+        {
+            messageType: messageType,
+            data: messageData
+        };
+
+    return JSON.stringify(response);
+}
+
+function sendWebSocketMessage(webSocket, messageType, messageData)
+{
+    var message = generateWebSocketMessage(
+        messageType,
+        messageData);
+
+    webSocket.send(message);
+}
