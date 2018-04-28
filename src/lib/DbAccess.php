@@ -12,6 +12,7 @@ namespace LittleGoWeb
     {
         private $config;
         private $pdo;
+        private $sqlGenerator;
 
         // Constructs a new DbAccess object. A database connection is
         // established immediately in this constructor using the parameters
@@ -28,6 +29,8 @@ namespace LittleGoWeb
             $this->pdo = new PDO($dsn, $config->dbUsername, $config->dbPassword, $options);
 
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            $this->sqlGenerator = new SqlGenerator($config->dbName);
         }
     }
 }

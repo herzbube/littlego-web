@@ -13,6 +13,19 @@ namespace LittleGoWeb
     // WebSocket server defaults
     const WEBSOCKET_HOST_DEFAULT = "localhost";
     const WEBSOCKET_PORT_DEFAULT = 8001;
+
+    // SQL query generation
+    const PREPARED_STATEMENT_PARAMETER_PREFIX = ":";
+    const SQL_QUOTE_CHARACTER = "`";
+    const SQL_NAME_SEPARATOR = ".";
+    const SQL_OPERATOR_AND = " and ";
+    const SQL_OPERATOR_OR = " or ";
+    const SQL_OPERATOR_EQUALS = " = ";
+    const SQL_OPERATOR_COMMA = ", ";
+    const SQL_OPERATOR_PARANTHESIS_OPEN = " ( ";
+    const SQL_OPERATOR_PARANTHESIS_CLOSE = " ) ";
+    const SQL_OPERATOR_ASCENDING = " asc ";
+    const SQL_OPERATOR_DESCENDING = " desc ";
 }
 
 ?>
