@@ -9,22 +9,15 @@
     // Declare a few global variables
     var theSession = null;
 
-    // TODO: Establish connection. Include error handling!
-    // var websocketUrl =
-    //     "ws://"
-    //     + websocketConfig.hostname
-    //     + ":"
-    //     + websocketConfig.port;
-    // var webSocket = new WebSocket(websocketUrl);
-    var theWebSocket = null;
+    var websocketUrl =
+        "ws://"
+        + websocketConfig.hostname
+        + ":"
+        + websocketConfig.port;
+    var theWebSocket = new WebSocket(websocketUrl);
 
-    $(document).ready(function ()
+    $(document).ready(function()
     {
-        // We can create the Session object only after the document is ready
-        // because the validationComplete event handler needs to show or hide
-        // elements in the DOM.
-        theSession = new Session(theWebSocket, onSessionValidationComplete);
-
         // We want to handle the login process without form submission
         // mechanics because that would require another server request,
         // but we want to be a single-page app. We therefore don't
@@ -38,6 +31,19 @@
         $("#" + ID_BUTTON_FINISHED_GAMES).on("click", onFinishedGames);
         $("#" + ID_BUTTON_HGIH_SCORES).on("click", onHighScores);
         $("#" + ID_BUTTON_LOGOUT).on("click", onLogout);
+
+        theWebSocket.addEventListener("open", function(event) {
+            // We can create the Session object only after the document is
+            // ready because the validationComplete event handler needs to
+            // show or hide elements in the DOM.
+            theSession = new Session(theWebSocket, onSessionValidationComplete);
+        });
+
+        theWebSocket.addEventListener("error", function(event) {
+            // TODO: Add better error message. The following error message
+            // only makes sense to a developer.
+            alert("WebSocket error! Please check if the server is running. Reload the page after restarting the server.");
+        });
     });
 
     function onLogin(event)
