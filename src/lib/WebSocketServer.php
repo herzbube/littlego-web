@@ -49,6 +49,9 @@ namespace LittleGoWeb
                 case WEBSOCKET_REQUEST_TYPE_LOGOUT:
                     $this->handleLogout($from, $webSocketMessage->getData());
                     break;
+                case WEBSOCKET_REQUEST_TYPE_REGISTERACCOUNT:
+                    $this->handleRegisterAccount($from, $webSocketMessage->getData());
+                    break;
                 case WEBSOCKET_REQUEST_TYPE_VALIDATESESSION:
                     $this->handleValidateSession($from, $webSocketMessage->getData());
                     break;
@@ -164,6 +167,65 @@ namespace LittleGoWeb
                 $errorMessage = "Invalid session key";
                 $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
             }
+        }
+
+        private function handleRegisterAccount(ConnectionInterface $from, array $messageData): void
+        {
+            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_REGISTERACCOUNT;
+
+            $emailAddress = $messageData[WEBSOCKET_MESSAGEDATA_KEY_EMAILADDRESS];
+            $displayName = $messageData[WEBSOCKET_MESSAGEDATA_KEY_DISPLAYNAME];
+            $password = $messageData[WEBSOCKET_MESSAGEDATA_KEY_PASSWORD];
+
+            $dbAccess = new DbAccess($this->config);
+
+            $user = $dbAccess->findUserByEmailAddress($emailAddress);
+            if ($user !== null)
+            {
+                $errorMessage = "Another account with this email address already exists";
+                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $user = $dbAccess->findUserByDisplayName($displayName);
+            if ($user !== null)
+            {
+                $errorMessage = "Another account with this display name already exists";
+                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $userID = USER_USERID_DEFAULT;
+            $passwordHash = $this->generatePasswordHash($password);
+            $user = new User($userID, $emailAddress, $displayName, $passwordHash);
+
+            $userID = $dbAccess->insertUser($user);
+            if ($userID === -1)
+            {
+                $errorMessage = "Failed to store user data in database";
+                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $webSocketResponseData =
+                [
+                    WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
+                ];
+            $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+            $from->send($webSocketMessage->toJsonString());
+        }
+
+        private function generatePasswordHash(string $password): string
+        {
+            // Let PHP decide which algorithm to use. This may change over time
+            // when newer PHP versions decide that a more secure algorithm
+            // is required.
+            $hashAlgorithmType = PASSWORD_DEFAULT;
+
+            // Adds a random salt
+            $passwordHash = password_hash($password, $hashAlgorithmType);
+
+            return $passwordHash;
         }
 
         private function handleValidateSession(ConnectionInterface $from, array $messageData): void

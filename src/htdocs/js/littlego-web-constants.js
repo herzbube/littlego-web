@@ -83,6 +83,7 @@ const ACTION_TYPE_DANGER = 3;
 // ----------------------------------------------------------------------
 const PREFIX_ID_CONTAINER = "container-";
 const PREFIX_ID_BUTTON = "button-";
+const PREFIX_ID_ALERT = "alert-";
 
 const TAB_NAME_GAME_REQUESTS = "game-requests";
 const TAB_NAME_GAMES_IN_PROGRESS = "games-in-progress";
@@ -92,8 +93,19 @@ const TAB_NAME_HIGH_SCORES = "high-scores";
 // Login form
 const ID_CONTAINER_LOGIN_FORM = PREFIX_ID_CONTAINER + "login-form";
 const ID_LOGIN_FORM = "login-form";
-const ID_INPUT_EMAIL_ADDRESS = "email-address";
-const ID_INPUT_PASSWORD = "password";
+const ID_INPUT_LOGIN_EMAIL_ADDRESS = "login-email-address";
+const ID_INPUT_LOGIN_PASSWORD = "login-password";
+const ID_BUTTON_GOTO_REGISTRATION = PREFIX_ID_BUTTON + "goto-registration";
+const ID_ALERT_LOGIN = PREFIX_ID_ALERT + "login";
+
+// Registration form
+const ID_CONTAINER_REGISTRATION_FORM = PREFIX_ID_CONTAINER + "registration-form";
+const ID_REGISTRATION_FORM = "registration-form";
+const ID_INPUT_REGISTRATION_EMAIL_ADDRESS = "registration-email-address";
+const ID_INPUT_REGISTRATION_DISPLAY_NAME = "registration-display-name";
+const ID_INPUT_REGISTRATION_PASSWORD = "registration-password";
+const ID_BUTTON_CANCEL_REGISTRATION = PREFIX_ID_BUTTON + "cancel-registration";
+const ID_ALERT_REGISTRATION = PREFIX_ID_ALERT + "registration";
 
 // Main app
 const ID_CONTAINER_MAIN_APP = PREFIX_ID_CONTAINER + "main-app";
@@ -144,9 +156,11 @@ const BOOTSTRAP_ATTRIBUTE_VALUE_MODAL = "modal";
 // WebSocket events (client outgoing/server incoming messages)
 const WEBSOCKET_REQUEST_TYPE_LOGIN = "c2sLogin";
 const WEBSOCKET_REQUEST_TYPE_LOGOUT = "c2sLogout";
+const WEBSOCKET_REQUEST_TYPE_REGISTERACCOUNT = "c2sRegisterAccount";
 const WEBSOCKET_REQUEST_TYPE_VALIDATESESSION = "c2sValidateSession";
 
 // WebSocket responses (server outgoing/client incoming messages)
 const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
 const WEBSOCKET_RESPONSE_TYPE_LOGOUT = "s2cLogoutResponse";
+const WEBSOCKET_RESPONSE_TYPE_REGISTERACCOUNT = "s2cRegisterAccountResponse";
 const WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION = "s2cValidateSessionResponse";

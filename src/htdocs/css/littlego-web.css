@@ -24,7 +24,7 @@
         margin-bottom: 1em;
     }
 
-    #container-login-form
+    #container-login-form, #container-registration-form
     {
         /* Vertically offset from browser window top */
         margin-top: 5%;

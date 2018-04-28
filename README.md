@@ -68,6 +68,7 @@ This is how the application is bootstrapped:
 1. `index.php` reads configuration, which includes WebSocket connection information.
 1. `index.php` serves a HTML document which consists of these parts:
    * The login form
+   * The registration form
    * The main application container
    * A small dynamically generated inline JavaScript snippet which creates an object that holds the WebSocket connection information
    * Several `<script>` elements that reference all the JavaScript fragements that together make up the client-side application code.

@@ -95,23 +95,59 @@ namespace LittleGoWeb
 <body>
     <div id="container-login-form" class="container-fluid">
         <div class="row justify-content-center">
-            <form id="login-form">
-                <h1>Little Go for the web</h1>
+            <form id="login-form" class="col-sm-10 col-md-8 col-lg-6">
                 <div class="form-group">
-                    <label for="email-address">Email address:</label>
-                    <input id="email-address" class="form-control" name="email-address" type="email" placeholder="Enter your email address" required/>
+                    <h1>Login</h1>
                 </div>
                 <div class="form-group">
-                    <label for="password">Password:</label>
-                    <input id="password" class="form-control" name="password" type="password" placeholder="Enter your password" required/>
+                    <label for="login-email-address">Email address:</label>
+                    <input id="login-email-address" class="form-control" name="email-address" type="email" placeholder="Enter your email address" required/>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password:</label>
+                    <input id="login-password" class="form-control" name="password" type="password" placeholder="Enter your password" required/>
                 </div>
                 <div class="form-group">
                     <button id="button-login" class="btn btn-primary">Login</button>
-                    <!-- TODO: Remove when form is implemented -->
-                    <p><small>DEV MODE: This login form currently does nothing. Enter any values you like.</small></p>
                 </div>
                 <div class="form-group">
-                    <div class="alert alert-danger" role="alert" />
+                    <p>Not registered yet? <button id="button-goto-registration" class="btn btn-dark btn-sm">Register</button></p>
+                </div>
+                <div class="form-group">
+                    <div id="alert-login" class="alert alert-danger" role="alert"></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="container-registration-form" class="container-fluid">
+        <div class="row justify-content-center">
+            <form id="registration-form" class="col-sm-10 col-md-8 col-lg-6">
+                <div class="form-group">
+                    <h1>Registration</h1>
+                </div>
+                <div class="form-group">
+                    <label for="registration-email-address">Email address:</label>
+                    <input id="registration-email-address" class="form-control" name="email-address" type="email" placeholder="Enter your email address" required/>
+                    <p><small>When you register the system will send an email to the address you enter here, in order to verify that you are indeed the owner of the address.</small></p>
+                </div>
+                <div class="form-group">
+                    <label for="registration-display-name">Display name:</label>
+                    <input id="registration-display-name" class="form-control" name="display-name" type="text" placeholder="Enter a display name" required/>
+                    <p><small>Other users will see the display name you enter here, never your email address. The system requires you to choose a unique display name so that other users won't mistake you for somebody else.</small></p>
+                </div>
+                <div class="form-group">
+                    <label for="registration-password">Password:</label>
+                    <input id="registration-password" class="form-control" name="password" type="password" placeholder="Enter your password" required/>
+                </div>
+                <div class="form-group">
+                    <button id="button-register" class="btn btn-primary">Register</button>
+                    <button id="button-cancel-registration" class="btn btn-secondary">Cancel</button>
+                    <!-- TODO: Remove when email address verification is implemented -->
+                    <p><small>DEV MODE: Email address verification has not been implemented yet. You can enter any email address you like as long as the address format is correct. If the registration data you entered is acceptable (i.e. email address and display name are both unique), registration will immediately succeed and the system will log you in instantly.</small></p>
+                </div>
+                <div class="form-group">
+                    <div id="alert-registration" class="alert alert-danger" role="alert"></div>
                 </div>
             </form>
         </div>

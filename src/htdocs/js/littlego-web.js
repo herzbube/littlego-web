@@ -23,16 +23,25 @@
         // TODO: This is executed too late, the user sees the containers
         // containers for a very short moment before they are hidden.
         $("#" + ID_CONTAINER_LOGIN_FORM).hide();
+        $("#" + ID_CONTAINER_REGISTRATION_FORM).hide();
         $("#" + ID_CONTAINER_MAIN_APP).hide();
-        $("#" + ID_LOGIN_FORM + " .alert").hide();
+        $("#" + ID_ALERT_LOGIN).hide();
 
         $("#" + ID_LOGIN_FORM).on("submit", onLogin);
+        $("#" + ID_REGISTRATION_FORM).on("submit", onRegister);
+
+        $("#" + ID_BUTTON_GOTO_REGISTRATION).on("click", onGotoRegistration);
+        $("#" + ID_BUTTON_CANCEL_REGISTRATION).on("click", onCancelRegistration);
 
         $("#" + ID_BUTTON_GAME_REQUESTS).on("click", onGameRequests);
         $("#" + ID_BUTTON_GAMES_IN_PROGRESS).on("click", onGamesInProgress);
         $("#" + ID_BUTTON_FINISHED_GAMES).on("click", onFinishedGames);
         $("#" + ID_BUTTON_HGIH_SCORES).on("click", onHighScores);
         $("#" + ID_BUTTON_LOGOUT).on("click", onLogout);
+
+        theWebSocket.addEventListener("message", function(event) {
+            handleWebSocketMessage(event);
+        });
 
         theWebSocket.addEventListener("open", function(event) {
             // We can create the Session object only after the document is
@@ -42,7 +51,7 @@
         });
 
         theWebSocket.addEventListener("error", function(event) {
-            // TODO: Add better error message. The following error message
+            // TODO: Add better error message. The current error message
             // only makes sense to a developer.
             alert("WebSocket error! Please check if the server is running. Reload the page after restarting the server.");
         });
@@ -54,10 +63,8 @@
         // We want to handle the login process ourselves.
         event.preventDefault();
 
-        // TODO Form validation
-
-        var emailAddress = $("#" + ID_INPUT_EMAIL_ADDRESS).val();
-        var password = $("#" + ID_INPUT_PASSWORD).val();
+        var emailAddress = $("#" + ID_INPUT_LOGIN_EMAIL_ADDRESS).val();
+        var password = $("#" + ID_INPUT_LOGIN_PASSWORD).val();
         // TODO: Add a checkbox to the login form and query its value
         var persistSession = true;
 
@@ -65,6 +72,9 @@
         theSession.login(emailAddress, password, persistSession);
     }
 
+    // This callback is invoked after a login (both successful and
+    // unsuccessful) and after a logout (in which case the session
+    // is invalidated).
     function onSessionValidationComplete(session, errorMessage)
     {
         // TODO: This is executed too late, the user sees the
@@ -74,11 +84,6 @@
             // Main containers
             $("#" + ID_CONTAINER_LOGIN_FORM).hide();
             $("#" + ID_CONTAINER_MAIN_APP).show();
-
-            // Make sure that form is back in its initial state in case the
-            // user logs out
-            $("#" + ID_LOGIN_FORM)[0].reset();
-            $("#" + ID_LOGIN_FORM + " .alert").hide();
 
             // App containers
             // TODO Make the initial selection dynamic: If the user has games
@@ -93,15 +98,91 @@
         }
         else
         {
-            // Main containers
-            $("#" + ID_CONTAINER_LOGIN_FORM).show();
-            $("#" + ID_CONTAINER_MAIN_APP).hide();
+            $("#" + ID_INPUT_LOGIN_EMAIL_ADDRESS).focus();
 
-            // This is necessary after a logout, or when the login failed
-            $("#" + ID_INPUT_EMAIL_ADDRESS).focus();
+            // This exists to show the login form after a page reload,
+            // when the Session object completes its initial session
+            // validation with failure (either there was no stored
+            // session key, or the session key was no longer valid)
+            $("#" + ID_CONTAINER_LOGIN_FORM).show();
 
             if (errorMessage !== undefined)
-                $("#" + ID_LOGIN_FORM + " .alert").text(errorMessage).show();
+                $("#" + ID_ALERT_LOGIN).text(errorMessage).show();
+        }
+    }
+
+    function onGotoRegistration(event)
+    {
+        // TODO In Firefox, when we repeatedly switch between login and
+        // registration form and we reset the registration form for the
+        // second time, all required fields are shown as invalid. This
+        // does not happen in Safari!
+        $("#" + ID_REGISTRATION_FORM)[0].reset();
+        $("#" + ID_ALERT_REGISTRATION).hide();
+
+        $("#" + ID_INPUT_REGISTRATION_EMAIL_ADDRESS).focus();
+
+        $("#" + ID_CONTAINER_LOGIN_FORM).hide();
+        $("#" + ID_CONTAINER_REGISTRATION_FORM).show();
+    }
+
+    function onCancelRegistration(event)
+    {
+        $("#" + ID_LOGIN_FORM)[0].reset();
+        $("#" + ID_ALERT_LOGIN).hide();
+
+        $("#" + ID_INPUT_LOGIN_EMAIL_ADDRESS).focus();
+
+        $("#" + ID_CONTAINER_REGISTRATION_FORM).hide();
+        $("#" + ID_CONTAINER_LOGIN_FORM).show();
+    }
+
+    function onRegister(event)
+    {
+        // We don't want form submission to take place.
+        // We want to handle the registration process ourselves.
+        event.preventDefault();
+
+        var emailAddress = $("#" + ID_INPUT_REGISTRATION_EMAIL_ADDRESS).val();
+        var displayName = $("#" + ID_INPUT_REGISTRATION_DISPLAY_NAME).val();
+        var password = $("#" + ID_INPUT_REGISTRATION_PASSWORD).val();
+
+        var messageData =
+            {
+                emailAddress: emailAddress,
+                displayName: displayName,
+                password: password
+            };
+        // Triggers onRegistrationComplete
+        sendWebSocketMessage(theWebSocket, WEBSOCKET_REQUEST_TYPE_REGISTERACCOUNT, messageData);
+    }
+
+    // This callback is invoked after registration (both successful and
+    // unsuccessful).
+    function onRegistrationComplete(success, errorMessage)
+    {
+        if (success)
+        {
+            $("#" + ID_CONTAINER_REGISTRATION_FORM).hide();
+
+            // Triggers onSessionValidationComplete
+            // TODO: Remove/change this code when email address verification
+            // is implemented. Also note: If the login attempt fails,
+            // onSessionValidationComplete will route the user back to the
+            // login form - this will feel very weird to the user!
+            var persistSession = false;
+            theSession.login(emailAddress, password, persistSession);
+        }
+        else
+        {
+            // TODO: The focus should be set on the input control
+            // that contains the erroneous data
+            $("#" + ID_INPUT_REGISTRATION_EMAIL_ADDRESS).focus();
+
+            // TODO: The error message should appear below the input control
+            // that contains the erroneous data
+            if (errorMessage !== undefined)
+                $("#" + ID_ALERT_REGISTRATION).text(errorMessage).show();
         }
     }
 
@@ -150,8 +231,13 @@
         // We want to handle the logout process ourselves.
         event.preventDefault();
 
-        // Triggers onSessionValidationComplete which in turn hides the
-        // app container and instead shows the login form
+        $("#" + ID_LOGIN_FORM)[0].reset();
+        $("#" + ID_ALERT_LOGIN).hide();
+
+        $("#" + ID_CONTAINER_MAIN_APP).hide();
+        $("#" + ID_CONTAINER_LOGIN_FORM).show();
+
+        // Triggers onSessionValidationComplete
         theSession.invalidate();
     }
 
@@ -423,6 +509,24 @@
                 return undefined;
             default:
                 throw new Error("Unsupported operation type: " + operationType);
+        }
+    }
+
+    function handleWebSocketMessage(event)
+    {
+        var webSocketMessage = JSON.parse(event.data);
+
+        switch (webSocketMessage.messageType)
+        {
+            case WEBSOCKET_RESPONSE_TYPE_REGISTERACCOUNT:
+                onRegistrationComplete(
+                    webSocketMessage.data.success,
+                    webSocketMessage.data.errorMessage);
+                break;
+
+            default:
+                // Ignore all messages that we don't handle here
+                break;
         }
     }
 })();
