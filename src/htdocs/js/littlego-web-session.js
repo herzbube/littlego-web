@@ -61,6 +61,11 @@ var Session = (function ()
     {
         this.webSocket = webSocket;
 
+        var self = this;
+        this.webSocket.addEventListener("message", function(event) {
+            self.handleWebSocketMessage(event);
+        });
+
         this.sessionKey = undefined;
         this.userInfo = new UserInfo();
         this.isPersistentSession = false;
@@ -224,6 +229,20 @@ var Session = (function ()
         if (this.onValidationComplete !== undefined)
             this.onValidationComplete(this);
     }
+
+    // Internal function. Handles incoming WebSocket messages that are
+    // responses to messages sent by the Session object.
+    Session.prototype.handleWebSocketMessage = function(event)
+    {
+        var webSocketMessage = JSON.parse(event.data);
+
+        switch (webSocketMessage.messageType)
+        {
+            default:
+                // Ignore all messages that are not session related
+                break;
+        }
+    };
 
     return Session;
 })();
