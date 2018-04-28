@@ -136,29 +136,18 @@ var Session = (function ()
             this.invalidate();
         }
 
-        // TODO: Validate credentials with the server. For
-        // the moment we just accept everything. The state changes below
-        // must be performed only after successful validation.
         this.validationBegins();
 
-        // TODO: If the credentials are valid the server must provide us with
-        // the session key for a new session. For the moment we fake the
-        // information.
-        this.sessionKey = emailAddress;
+        // TODO: Find a better way how to communicate the persistSession
+        // parameter value to the web socket message handler
+        this.isPersistentSessionRequested = persistSession;
 
-        // TODO: If the credentials are valid the server must provide us with
-        // additional information about the user. For the moment we fake the
-        // information.
-        var userID = 42;
-        var displayName = emailAddress;
-        this.userInfo = new UserInfo(userID, emailAddress, displayName);
-
-        this.isPersistentSession = persistSession;
-
-        if (persistSession === true)
-            localStorage[STORAGEKEY_SESSIONKEY] = this.sessionKey;
-
-        this.validationEnds();
+        var messageData =
+            {
+                emailAddress: emailAddress,
+                password: password,
+            };
+        sendWebSocketMessage(this.webSocket, WEBSOCKET_REQUEST_TYPE_LOGIN, messageData);
     };
 
     // Contacts the server to invalidate the session that the Session object
@@ -253,6 +242,26 @@ var Session = (function ()
                 {
                     localStorage.removeItem(STORAGEKEY_SESSIONKEY);
                 }
+
+                this.validationEnds(webSocketMessage.data.errorMessage);
+
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_LOGIN:
+                if (webSocketMessage.data.success)
+                {
+                    this.sessionKey = webSocketMessage.data.sessionKey;
+                    this.userInfo = new UserInfo(webSocketMessage.data.userInfo);
+                    // The isPersistentSessionRequested property was set when
+                    // the Session object received the login request
+                    this.isPersistentSession = this.isPersistentSessionRequested;
+
+                    if (this.isPersistentSession === true)
+                        localStorage[STORAGEKEY_SESSIONKEY] = this.sessionKey;
+                }
+
+                // Remove temporary property
+                delete this.isPersistentSessionRequested;
 
                 this.validationEnds(webSocketMessage.data.errorMessage);
 

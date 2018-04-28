@@ -15,21 +15,27 @@ namespace LittleGoWeb
     const WEBSOCKET_PORT_DEFAULT = 8001;
 
     // WebSocket events (client outgoing/server incoming messages)
+    const WEBSOCKET_REQUEST_TYPE_LOGIN = "c2sLogin";
     const WEBSOCKET_REQUEST_TYPE_VALIDATESESSION = "c2sValidateSession";
 
     // WebSocket responses (server outgoing/client incoming messages)
+    const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
     const WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION = "s2cValidateSessionResponse";
 
     // WebSocket messages
     const WEBSOCKET_JSON_KEY_MESSAGE_TYPE = "messageType";
     const WEBSOCKET_JSON_KEY_MESSAGE_DATA = "data";
     const WEBSOCKET_MESSAGEDATA_KEY_EMAILADDRESS = "emailAddress";
+    const WEBSOCKET_MESSAGEDATA_KEY_PASSWORD = "password";
     const WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY = "sessionKey";
     const WEBSOCKET_MESSAGEDATA_KEY_USERID = "userID";
     const WEBSOCKET_MESSAGEDATA_KEY_DISPLAYNAME = "displayName";
     const WEBSOCKET_MESSAGEDATA_KEY_USERINFO = "userInfo";
     const WEBSOCKET_MESSAGEDATA_KEY_SUCCESS = "success";
     const WEBSOCKET_MESSAGEDATA_KEY_ERRORMESSAGE = "errorMessage";
+
+    // Session configuration
+    const SESSION_VALIDITIY_DURATION_DEFAULT = 86400 * 30;
 
     // SQL query generation
     const PREPARED_STATEMENT_PARAMETER_PREFIX = ":";

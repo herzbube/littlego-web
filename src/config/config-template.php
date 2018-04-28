@@ -40,4 +40,11 @@ declare(strict_types=1);
 // $config->webSocketHost = "localhost";
 // $config->webSocketPort = "8001";
 
+// ----------------------------------------------------------------------
+// Session configuration
+// ----------------------------------------------------------------------
+// Specify the number of seconds that a persistent session should be valid.
+// Validity is checked on every request, and renewed on success.
+// $config->sessionValidityDuration = 86400 * 30;
+
 ?>

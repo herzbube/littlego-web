@@ -17,6 +17,9 @@ namespace LittleGoWeb
         // WebSocket server configuration
         public $webSocketHost = WEBSOCKET_HOST_DEFAULT;
         public $webSocketPort = WEBSOCKET_PORT_DEFAULT;
+
+        // Session configuration
+        public $sessionValidityDuration = SESSION_VALIDITIY_DURATION_DEFAULT;
     }
 }
 
