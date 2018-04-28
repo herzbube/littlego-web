@@ -36,6 +36,20 @@ namespace LittleGoWeb
     const USER_EMAILADDRESS_DEFAULT = "";
     const USER_DISPLAYNAME_DEFAULT = "";
     const USER_PASSWORDHASH_DEFAULT = "";
+
+    // Database table session
+    const DB_TABLE_NAME_SESSION = "session";
+    const DB_COLUMN_NAME_SESSION_SESSIONID = "sessionID";
+    const DB_COLUMN_NAME_SESSION_SESSIONKEY = "sessionKey";
+    const DB_COLUMN_NAME_SESSION_USERID = "userID";
+    const DB_COLUMN_NAME_SESSION_VALIDUNTIL = "validUntil";
+
+    // Database table user
+    const DB_TABLE_NAME_USER = "user";
+    const DB_COLUMN_NAME_USER_USERID = "userID";
+    const DB_COLUMN_NAME_USER_EMAILADDRESS = "emailAddress";
+    const DB_COLUMN_NAME_USER_DISPLAYNAME = "displayName";
+    const DB_COLUMN_NAME_USER_PASSWORDHASH = "passwordHash";
 }
 
 ?>
