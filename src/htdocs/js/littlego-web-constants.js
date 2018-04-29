@@ -126,6 +126,9 @@ const ID_BUTTON_LOGOUT = PREFIX_ID_BUTTON + "logout";
 // Modals
 const ID_MODAL_NOT_YET_IMPLEMENTED = "notYetImplemented";
 
+// Data elements
+const ID_SESSION_DISPLAY_NAME = "session-display-name";
+
 // ----------------------------------------------------------------------
 // Application classes
 // ----------------------------------------------------------------------

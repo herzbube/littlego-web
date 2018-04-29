@@ -85,6 +85,8 @@
             $("#" + ID_CONTAINER_LOGIN_FORM).hide();
             $("#" + ID_CONTAINER_MAIN_APP).show();
 
+            $("#" + ID_SESSION_DISPLAY_NAME).html(theSession.userInfo.displayName);
+
             // App containers
             // TODO Make the initial selection dynamic: If the user has games
             // in progress then show this section. In addition, if the user
