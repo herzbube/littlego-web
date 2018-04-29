@@ -136,10 +136,14 @@ namespace LittleGoWeb
             // TODO: Generate a v4 UUID. Alas, PHP does not have built-in
             // support for generating UUIDs.
 
-            // The uniqid() function is frequently recommended, but it looks
-            // as if this has even less unique'ness than session_id().
-            session_start();
-            $sessionID = session_id();
+            // We would have preferred to use session_start() + session_id()
+            // to generate the session key, but we encountered the following
+            // error  message:
+            //   Warning: session_start(): Cannot start session when headers already sent
+            // Due to lack of time to investigate the problem, we now use
+            // uniqid() although it looks as if this has less unique'ness
+            // than session_id().
+            $sessionID = uniqid();
 
             return $sessionID;
         }
