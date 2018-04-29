@@ -151,6 +151,11 @@
             };
         // Triggers onRegistrationComplete
         sendWebSocketMessage(theWebSocket, WEBSOCKET_REQUEST_TYPE_REGISTERACCOUNT, messageData);
+
+        // TODO: Display some sort of progress overlay in case registration
+        // takes longer than expected. This also prevents the user from
+        // fiddling with the form data that onRegistrationComplete() needs
+        // to perform the auto-login.
     }
 
     // This callback is invoked after registration (both successful and
@@ -160,6 +165,13 @@
         if (success)
         {
             $("#" + ID_CONTAINER_REGISTRATION_FORM).hide();
+
+            // TODO: Don't abuse the form to hold our data - the
+            // onRegister() function should store the values it retrieves
+            // in some variables. If the registration process takes a long
+            // time, the user could in theory fiddle with the form data.
+            var emailAddress = $("#" + ID_INPUT_REGISTRATION_EMAIL_ADDRESS).val();
+            var password = $("#" + ID_INPUT_REGISTRATION_PASSWORD).val();
 
             // Triggers onSessionValidationComplete
             // TODO: Remove/change this code when email address verification
