@@ -52,12 +52,6 @@ namespace LittleGoWeb
 
             $jsonString = json_encode($jsonObject);
 
-            // TODO Remove
-            echo "json object = ";
-            print_r($jsonObject);
-            echo "\n";
-            echo "json string = $jsonString";
-
             return $jsonString;
         }
 
