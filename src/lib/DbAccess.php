@@ -225,8 +225,8 @@ namespace LittleGoWeb
             if ($row)
             {
                 $userID = intval($row[DB_COLUMN_NAME_USER_USERID]);
-                $emailAddress = $row[DB_COLUMN_NAME_USER_EMAILADDRESS];
-                $displayName = $row[DB_COLUMN_NAME_USER_DISPLAYNAME];
+                $emailAddress = htmlspecialchars($row[DB_COLUMN_NAME_USER_EMAILADDRESS]);
+                $displayName = htmlspecialchars($row[DB_COLUMN_NAME_USER_DISPLAYNAME]);
                 $passwordHash = $row[DB_COLUMN_NAME_USER_PASSWORDHASH];
 
                 return new User($userID, $emailAddress, $displayName, $passwordHash);
