@@ -21,6 +21,24 @@ USE `littlego-web`;
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `gamerequest`
+--
+
+CREATE TABLE `gamerequest` (
+  `gameRequestID` bigint(20) UNSIGNED NOT NULL,
+  `createTime` bigint(20) NOT NULL,
+  `requestedBoardSize` tinyint(4) NOT NULL,
+  `requestedStoneColor` tinyint(4) NOT NULL,
+  `requestedHandicap` tinyint(4) NOT NULL,
+  `requestedKomi` float NOT NULL,
+  `requestedKoRule` tinyint(4) NOT NULL,
+  `requestedScoringSystem` tinyint(4) NOT NULL,
+  `userID` bigint(20) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `session`
 --
 
@@ -49,6 +67,13 @@ CREATE TABLE `user` (
 --
 
 --
+-- Indexes for table `gamerequest`
+--
+ALTER TABLE `gamerequest`
+  ADD PRIMARY KEY (`gameRequestID`),
+  ADD KEY `userID` (`userID`);
+
+--
 -- Indexes for table `session`
 --
 ALTER TABLE `session`
@@ -69,6 +94,12 @@ ALTER TABLE `user`
 --
 
 --
+-- AUTO_INCREMENT for table `gamerequest`
+--
+ALTER TABLE `gamerequest`
+  MODIFY `gameRequestID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `session`
 --
 ALTER TABLE `session`
@@ -83,6 +114,12 @@ ALTER TABLE `user`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `gamerequest`
+--
+ALTER TABLE `gamerequest`
+  ADD CONSTRAINT `gamerequest_userID` FOREIGN KEY (`userID`) REFERENCES `user` (`userID`);
 
 --
 -- Constraints for table `session`
