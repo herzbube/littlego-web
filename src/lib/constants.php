@@ -94,6 +94,18 @@ namespace LittleGoWeb
     const DB_COLUMN_NAME_USER_EMAILADDRESS = "emailAddress";
     const DB_COLUMN_NAME_USER_DISPLAYNAME = "displayName";
     const DB_COLUMN_NAME_USER_PASSWORDHASH = "passwordHash";
+
+    // Database table gamerequest
+    const DB_TABLE_NAME_GAMEREQUEST = "gamerequest";
+    const DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID = "gameRequestID";
+    const DB_COLUMN_NAME_GAMEREQUEST_CREATETIME = "createTime";
+    const DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDBOARDSIZE = "requestedBoardSize";
+    const DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSTONECOLOR = "requestedStoneColor";
+    const DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDHANDICAP = "requestedHandicap";
+    const DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKOMI = "requestedKomi";
+    const DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE = "requestedKoRule";
+    const DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM = "requestedScoringSystem";
+    const DB_COLUMN_NAME_GAMEREQUEST_USERID = "userID";
 }
 
 ?>
