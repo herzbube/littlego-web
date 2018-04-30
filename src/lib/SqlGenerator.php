@@ -39,6 +39,35 @@ namespace LittleGoWeb {
         }
 
         // Generates a full query string (including the terminating ";") that
+        // contains a SELECT statement including a WHERE and an ORDER BY
+        // clause.
+        //
+        // The first specified array lists the column names that should appear
+        // in the SELECT part of the query.
+        //
+        // The second specified array lists the column names that should appear
+        // in the WHERE part of the query.
+        //
+        // The third specified array lists the column names that should appear
+        // in the ORDER BY part of the query.
+        //
+        // The fourth specified array lists how each ORDER BY column should be
+        // ordered. The array must have the same number of elements as the
+        // second array. A true value orders the column ascending, a false
+        // value orders the column descending.
+        public function getSelectStatementWithOrderByAndWhereClause(string $tableName, array $columnNames, array $whereColumnNames, array $orderByColumnNames, array $orderings): string
+        {
+            $queryString = $this->getSelectStatement($tableName, $columnNames);
+            $queryString .= " where ";
+            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames);
+            $queryString .= " order by ";
+            $queryString .= $this->getColumnsWithOrderings($orderByColumnNames, $orderings);
+            $queryString .= ";";
+
+            return $queryString;
+        }
+
+        // Generates a full query string (including the terminating ";") that
         // contains a SELECT statement including an ORDER BY and a LIMIT
         // clause.
         //
