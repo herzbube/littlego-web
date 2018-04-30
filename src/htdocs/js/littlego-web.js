@@ -39,6 +39,8 @@
         $("#" + ID_BUTTON_HGIH_SCORES).on("click", onHighScores);
         $("#" + ID_BUTTON_LOGOUT).on("click", onLogout);
 
+        $("#" + ID_BUTTON_NEW_GAME_REQUEST_MODAL_SUBMIT).on("click", onSubmitNewGameRequest);
+
         theWebSocket.addEventListener("message", function(event) {
             handleWebSocketMessage(event);
         });
@@ -313,8 +315,35 @@
     {
         var appContainerID = ID_CONTAINER_GAME_REQUESTS;
         var numberOfColumns = NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE;
-        var dataRetrievalFunction = createGameRequests;
-        updateDataTable(appContainerID, numberOfColumns, dataRetrievalFunction);
+        clearDataTableAndAddDataRetrievalPlaceholderMessage(appContainerID, numberOfColumns);
+
+        var messageData =
+            {
+                sessionKey: theSession.sessionKey
+            };
+        // Triggers onGetGameRequestsComplete
+        sendWebSocketMessage(theWebSocket, WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTS, messageData);
+    }
+
+    function onGetGameRequestsComplete(success, gameRequestsJsonObjects, errorMessage)
+    {
+        if (success)
+        {
+            var gameRequests = [];
+            gameRequestsJsonObjects.forEach(function(gameRequestJsonObject) {
+                var gameRequest = new GameRequest(gameRequestJsonObject);
+                gameRequests.push(gameRequest);
+            });
+
+            var appContainerID = ID_CONTAINER_GAME_REQUESTS;
+            var numberOfColumns = NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE;
+            var noDataPlaceholderMessage = "You have no game requests.";
+            updateDataTable(appContainerID, gameRequests, numberOfColumns, noDataPlaceholderMessage);
+        }
+        else
+        {
+            // TODO: Add error handling
+        }
     }
 
     function updateGamesInProgressData()
@@ -322,7 +351,7 @@
         var appContainerID = ID_CONTAINER_GAMES_IN_PROGRESS;
         var numberOfColumns = NUMBER_OF_COLUMNS_GAMES_IN_PROGRESS_TABLE;
         var dataRetrievalFunction = createGamesInProgress;
-        updateDataTable(appContainerID, numberOfColumns, dataRetrievalFunction);
+        updateDataTableWithFakeData(appContainerID, numberOfColumns, dataRetrievalFunction);
     }
 
     function updateFinishedGamesData()
@@ -330,49 +359,64 @@
         var appContainerID = ID_CONTAINER_FINISHED_GAMES;
         var numberOfColumns = NUMBER_OF_COLUMNS_FINISHED_GAMES_TABLE;
         var dataRetrievalFunction = createFinishedGames;
-        updateDataTable(appContainerID, numberOfColumns, dataRetrievalFunction);
+        updateDataTableWithFakeData(appContainerID, numberOfColumns, dataRetrievalFunction);
     }
 
-    function updateDataTable(appContainerID, numberOfColumns, dataRetrievalFunction)
+    // TODO Remove if no longer needed
+    function updateDataTableWithFakeData(appContainerID, numberOfColumns, dataRetrievalFunction)
     {
-        clearDataTable(appContainerID);
-        addPlaceholderMessageToDataTable(appContainerID, numberOfColumns);
+        clearDataTableAndAddDataRetrievalPlaceholderMessage(appContainerID, numberOfColumns);
 
-        // TODO Retrieve current game requests from the server. At the
-        // moment we fake the asynchronous data retrieval process, then
-        // generate static fake data.
+        // We fake the asynchronous data retrieval process by generating an
+        // artificial delay. Then we generate static fake data.
         var timeoutInMilliseconds = 1000;
         setTimeout(function() {
             var dataItems = dataRetrievalFunction();
+            updateDataTable(appContainerID, dataItems, numberOfColumns);
+        }, timeoutInMilliseconds);
+    }
 
-            removePlaceholderMessageFromDataTable(appContainerID);
+    function updateDataTable(appContainerID, dataItems, numberOfColumns, noDataPlaceholderMessage)
+    {
+        removePlaceholderMessageFromDataTable(appContainerID);
 
-            // Rebuild the table with the new data
-            var tableBody = $("#" + appContainerID + " tbody");
-            dataItems.forEach(function(dataItem) {
-                var dataRow = createNewRow(tableBody);
+        if (dataItems.length === 0)
+        {
+            addPlaceholderMessageToDataTable(appContainerID, numberOfColumns, noDataPlaceholderMessage);
+            return;
+        }
 
-                dataItem.getDataTableValues().forEach(function(dataValue) {
-                    var dataCell = createNewCell(dataRow);
-                    fillCell(dataCell, dataValue);
-                });
+        // Rebuild the table with the supplied data
+        var tableBody = $("#" + appContainerID + " tbody");
+        dataItems.forEach(function(dataItem) {
+            var dataRow = createNewRow(tableBody);
 
-                var actionsCell = createNewCell(dataRow);
-                dataItem.getDataItemActions ().forEach(function(dataItemAction) {
-                    var dataItemActionEventHandler = eventHandlerForOperationType(dataItemAction.operationType);
-                    if (undefined === dataItemActionEventHandler)
-                    {
-                        addActionToCell(actionsCell, dataItemAction.actionTitle, dataItemAction.actionType);
-                    }
-                    else
-                    {
-                        addActionToCell(actionsCell, dataItemAction.actionTitle, dataItemAction.actionType, function() {
-                            dataItemActionEventHandler(dataItemAction);
-                        });
-                    }
-                });
-            })
-        }, timeoutInMilliseconds)
+            dataItem.getDataTableValues().forEach(function(dataValue) {
+                var dataCell = createNewCell(dataRow);
+                fillCell(dataCell, dataValue);
+            });
+
+            var actionsCell = createNewCell(dataRow);
+            dataItem.getDataItemActions ().forEach(function(dataItemAction) {
+                var dataItemActionEventHandler = eventHandlerForOperationType(dataItemAction.operationType);
+                if (undefined === dataItemActionEventHandler)
+                {
+                    addActionToCell(actionsCell, dataItemAction.actionTitle, dataItemAction.actionType);
+                }
+                else
+                {
+                    addActionToCell(actionsCell, dataItemAction.actionTitle, dataItemAction.actionType, function() {
+                        dataItemActionEventHandler(dataItemAction);
+                    });
+                }
+            });
+        })
+    }
+
+    function clearDataTableAndAddDataRetrievalPlaceholderMessage(appContainerID, numberOfColumns)
+    {
+        clearDataTable(appContainerID);
+        addPlaceholderMessageToDataTable(appContainerID, numberOfColumns, "Retrieving data ...");
     }
 
     // Removes all rows from the data table that is located inside the
@@ -383,22 +427,20 @@
         tableBody.empty();
     }
 
-    // Adds a placeholder message to the data table that is located
-    // inside the app container with the specified ID. The placeholder
-    // message is suitable to be displayed while data is retrieved
-    // from the server.
+    // Adds the specified placeholder message to the data table that is
+    // located inside the app container with the specified ID.
     //
     // This function expects that the data table contains no other data.
-    function addPlaceholderMessageToDataTable(appContainerID, numberOfColumns)
+    function addPlaceholderMessageToDataTable(appContainerID, numberOfColumns, placeholderMessage)
     {
         var tableBody = $("#" + appContainerID + " tbody");
 
         var placerHolderRow = createNewRow(tableBody);
         var placeHolderCell = createNewCell(placerHolderRow);
 
-        placeHolderCell.addClass(CLASS_DATA_RETRIEVAL_PLACEHOLDER);
+        placeHolderCell.addClass(CLASS_DATA_PLACEHOLDER);
         placeHolderCell.attr("colspan", numberOfColumns);
-        fillCell(placeHolderCell, "Retrieving data ...");
+        fillCell(placeHolderCell, placeholderMessage);
     }
 
     // Removes a placeholder message previously added by
@@ -522,6 +564,46 @@
         }
     }
 
+    function onSubmitNewGameRequest(event)
+    {
+        var requestedBoardSize = $("#" + ID_INPUT_NEW_GAME_REQUEST_MODAL_BOARD_SIZE).val();
+        var requestedStoneColor = $("#" + ID_INPUT_NEW_GAME_REQUEST_MODAL_STONE_COLOR).val();
+        var requestedHandicap = $("#" + ID_INPUT_NEW_GAME_REQUEST_MODAL_HANDICAP).val();
+        var requestedKomi = $("#" + ID_INPUT_NEW_GAME_REQUEST_MODAL_KOMI).val();
+        var requestedKoRule = $("#" + ID_INPUT_NEW_GAME_REQUEST_MODAL_KO_RULE).val();
+        var requestedScoringSystem = $("#" + ID_INPUT_NEW_GAME_REQUEST_MODAL_SCORING_SYSTEM).val();
+
+        $("#" + ID_NEW_GAME_REQUEST_MODAL_FORM)[0].reset();
+        $("#" + ID_NEW_GAME_REQUEST_MODAL).modal('hide');
+
+        var appContainerID = ID_CONTAINER_GAME_REQUESTS;
+        var numberOfColumns = NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE;
+        clearDataTableAndAddDataRetrievalPlaceholderMessage(appContainerID, numberOfColumns);
+
+        var messageData =
+            {
+                sessionKey: theSession.sessionKey,
+                requestedBoardSize: requestedBoardSize,
+                requestedStoneColor: requestedStoneColor,
+                requestedHandicap: requestedHandicap,
+                requestedKomi: requestedKomi,
+                requestedKoRule: requestedKoRule,
+                requestedScoringSystem: requestedScoringSystem
+            };
+        // Triggers onSubmitNewGameRequestComplete
+        sendWebSocketMessage(theWebSocket, WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEREQUEST, messageData);
+    }
+
+    function onSubmitNewGameRequestComplete(success, errorMessage)
+    {
+        updateGameRequestsData();
+
+        if (! success)
+        {
+            // TODO: Show error message while data is updated in the background
+        }
+    }
+
     function handleWebSocketMessage(event)
     {
         var webSocketMessage = JSON.parse(event.data);
@@ -531,6 +613,19 @@
             case WEBSOCKET_RESPONSE_TYPE_REGISTERACCOUNT:
                 onRegistrationComplete(
                     webSocketMessage.data.success,
+                    webSocketMessage.data.errorMessage);
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEREQUEST:
+                onSubmitNewGameRequestComplete(
+                    webSocketMessage.data.success,
+                    webSocketMessage.data.errorMessage);
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS:
+                onGetGameRequestsComplete(
+                    webSocketMessage.data.success,
+                    webSocketMessage.data.gameRequests,
                     webSocketMessage.data.errorMessage);
                 break;
 

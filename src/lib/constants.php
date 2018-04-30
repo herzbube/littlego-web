@@ -14,17 +14,21 @@ namespace LittleGoWeb
     const WEBSOCKET_HOST_DEFAULT = "localhost";
     const WEBSOCKET_PORT_DEFAULT = 8001;
 
-    // WebSocket events (client outgoing/server incoming messages)
+    // WebSocket requests (client outgoing/server incoming messages)
     const WEBSOCKET_REQUEST_TYPE_LOGIN = "c2sLogin";
     const WEBSOCKET_REQUEST_TYPE_LOGOUT = "c2sLogout";
     const WEBSOCKET_REQUEST_TYPE_REGISTERACCOUNT = "c2sRegisterAccount";
     const WEBSOCKET_REQUEST_TYPE_VALIDATESESSION = "c2sValidateSession";
+    const WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEREQUEST = "c2sSubmitNewGameRequest";
+    const WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTS = "c2sGetGameRequestsRequest";
 
     // WebSocket responses (server outgoing/client incoming messages)
     const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
     const WEBSOCKET_RESPONSE_TYPE_LOGOUT = "s2cLogoutResponse";
     const WEBSOCKET_RESPONSE_TYPE_REGISTERACCOUNT = "s2cRegisterAccountResponse";
     const WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION = "s2cValidateSessionResponse";
+    const WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEREQUEST = "s2cSubmitNewGameResponse";
+    const WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS = "s2cGetGameRequestsResponse";
 
     // WebSocket messages
     const WEBSOCKET_JSON_KEY_MESSAGE_TYPE = "messageType";
@@ -43,6 +47,7 @@ namespace LittleGoWeb
     const WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDKOMI = "requestedKomi";
     const WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDKORULE = "requestedKoRule";
     const WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDSCORINGSYSTEM = "requestedScoringSystem";
+    const WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTS = "gameRequests";
     const WEBSOCKET_MESSAGEDATA_KEY_SUCCESS = "success";
     const WEBSOCKET_MESSAGEDATA_KEY_ERRORMESSAGE = "errorMessage";
 

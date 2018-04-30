@@ -13,8 +13,8 @@
 //
 // var jsonObject =
 // {
-//   "id" : 12345,                   // a unique ID
-//   "createTime" : 123457890,       // milliseconds since the epoch
+//   "gameRequestID" : 12345,        // a unique ID
+//   "createTime" : 123457890,       // seconds since the epoch
 //   "requestedBoardSize" : 19,      // valid values: see GameInProgress
 //   "requestedStoneColor" : 0,      // valid values: see GameInProgress
 //   "requestedHandicap" : 0,        // valid values: see GameInProgress
@@ -24,49 +24,49 @@
 // };
 //
 // All "requested..." properties can also have the value -1, which
-// signifies "don't care".
+// signifies "no preference".
 // ----------------------------------------------------------------------
 var GameRequest = (function ()
 {
     "use strict";
 
-    const STRING_DONTCARE = "*";
+    const STRING_NOPREFERENCE = "*";
 
     // Creates a new GameRequest object from the data in the specified
     // JSON object.
     function GameRequest(jsonObject)
     {
-        this.id = jsonObject.id;
+        this.gameRequestID = jsonObject.gameRequestID;
 
-        this.createTime = startTimeToString(jsonObject.createTime);
+        this.createTime = startTimeToString(jsonObject.createTime * 1000);
 
         if (-1 === jsonObject.requestedBoardSize)
-            this.requestedBoardSize = STRING_DONTCARE;
+            this.requestedBoardSize = STRING_NOPREFERENCE;
         else
             this.requestedBoardSize = boardSizeToString(jsonObject.requestedBoardSize);
 
         if (-1 === jsonObject.requestedStoneColor)
-            this.requestedStoneColor = STRING_DONTCARE;
+            this.requestedStoneColor = STRING_NOPREFERENCE;
         else
             this.requestedStoneColor = colorToString(jsonObject.requestedStoneColor);
 
         if (-1 === jsonObject.requestedHandicap)
-            this.requestedHandicap = STRING_DONTCARE;
+            this.requestedHandicap = STRING_NOPREFERENCE;
         else
             this.requestedHandicap = handicapToString(jsonObject.requestedHandicap);
 
         if (-1 === jsonObject.requestedKomi)
-            this.requestedKomi = STRING_DONTCARE;
+            this.requestedKomi = STRING_NOPREFERENCE;
         else
             this.requestedKomi = komiToString(jsonObject.requestedKomi);
 
         if (-1 === jsonObject.requestedKoRule)
-            this.requestedKoRule = STRING_DONTCARE;
+            this.requestedKoRule = STRING_NOPREFERENCE;
         else
             this.requestedKoRule = koRuleToString(jsonObject.requestedKoRule);
 
         if (-1 === jsonObject.requestedScoringSystem)
-            this.requestedScoringSystem = STRING_DONTCARE;
+            this.requestedScoringSystem = STRING_NOPREFERENCE;
         else
             this.requestedScoringSystem = scoringSystemToString(jsonObject.requestedScoringSystem);
     }
@@ -79,7 +79,7 @@ var GameRequest = (function ()
     {
         return [
             this.createTime,
-            this.id,
+            this.gameRequestID,
             this.requestedBoardSize,
             this.requestedStoneColor,
             this.requestedHandicap,

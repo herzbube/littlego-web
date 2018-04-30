@@ -44,7 +44,7 @@ const DEFAULT_KOMI = 7.5;  // default for area scoring and no handicap
 const DEFAULT_KORULE = KORULE_SIMPLE_KO;
 const DEFAULT_SCORINGSYSTEM = SCORINGSYSTEM_AREA_SCORING;
 
-const GAMEREQUEST_DONTCARE = -1;
+const GAMEREQUEST_NOPREFERENCE = -1;
 
 const SCORE_NONE = -1;
 
@@ -123,6 +123,18 @@ const ID_BUTTON_FINISHED_GAMES = PREFIX_ID_BUTTON + TAB_NAME_FINISHED_GAMES;
 const ID_BUTTON_HGIH_SCORES = PREFIX_ID_BUTTON + TAB_NAME_HIGH_SCORES ;
 const ID_BUTTON_LOGOUT = PREFIX_ID_BUTTON + "logout";
 
+// New game request modal
+const ID_NEW_GAME_REQUEST_MODAL = "new-game-request-modal";
+const PREFIX_NEW_GAME_REQUEST_MODAL = ID_NEW_GAME_REQUEST_MODAL + "-";
+const ID_NEW_GAME_REQUEST_MODAL_FORM = PREFIX_NEW_GAME_REQUEST_MODAL + "form";
+const ID_BUTTON_NEW_GAME_REQUEST_MODAL_SUBMIT = PREFIX_ID_BUTTON + PREFIX_NEW_GAME_REQUEST_MODAL + "submit";
+const ID_INPUT_NEW_GAME_REQUEST_MODAL_BOARD_SIZE = PREFIX_NEW_GAME_REQUEST_MODAL + "board-size";
+const ID_INPUT_NEW_GAME_REQUEST_MODAL_STONE_COLOR = PREFIX_NEW_GAME_REQUEST_MODAL + "stone-color";
+const ID_INPUT_NEW_GAME_REQUEST_MODAL_HANDICAP = PREFIX_NEW_GAME_REQUEST_MODAL + "handicap";
+const ID_INPUT_NEW_GAME_REQUEST_MODAL_KOMI = PREFIX_NEW_GAME_REQUEST_MODAL + "komi";
+const ID_INPUT_NEW_GAME_REQUEST_MODAL_KO_RULE = PREFIX_NEW_GAME_REQUEST_MODAL + "ko-rule";
+const ID_INPUT_NEW_GAME_REQUEST_MODAL_SCORING_SYSTEM = PREFIX_NEW_GAME_REQUEST_MODAL + "scoring-system";
+
 // Modals
 const ID_MODAL_NOT_YET_IMPLEMENTED = "notYetImplemented";
 
@@ -132,7 +144,7 @@ const ID_SESSION_DISPLAY_NAME = "session-display-name";
 // ----------------------------------------------------------------------
 // Application classes
 // ----------------------------------------------------------------------
-const CLASS_DATA_RETRIEVAL_PLACEHOLDER = "data-retrieval-placeholder";
+const CLASS_DATA_PLACEHOLDER = "data-placeholder";
 
 // ----------------------------------------------------------------------
 // Bootstrap classes, attributes and values
@@ -161,9 +173,13 @@ const WEBSOCKET_REQUEST_TYPE_LOGIN = "c2sLogin";
 const WEBSOCKET_REQUEST_TYPE_LOGOUT = "c2sLogout";
 const WEBSOCKET_REQUEST_TYPE_REGISTERACCOUNT = "c2sRegisterAccount";
 const WEBSOCKET_REQUEST_TYPE_VALIDATESESSION = "c2sValidateSession";
+const WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEREQUEST = "c2sSubmitNewGameRequest";
+const WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTS = "c2sGetGameRequestsRequest";
 
 // WebSocket responses (server outgoing/client incoming messages)
 const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
 const WEBSOCKET_RESPONSE_TYPE_LOGOUT = "s2cLogoutResponse";
 const WEBSOCKET_RESPONSE_TYPE_REGISTERACCOUNT = "s2cRegisterAccountResponse";
 const WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION = "s2cValidateSessionResponse";
+const WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEREQUEST = "s2cSubmitNewGameResponse";
+const WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS = "s2cGetGameRequestsResponse";

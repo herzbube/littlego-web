@@ -35,7 +35,7 @@
         margin-bottom: 1em;
     }
 
-    .data-retrieval-placeholder {
+    .data-placeholder {
         /*
             The placeholder is a table cell with colspan="n". We want the
             text to be displayed across all columns.

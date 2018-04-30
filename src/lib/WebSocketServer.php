@@ -55,6 +55,12 @@ namespace LittleGoWeb
                 case WEBSOCKET_REQUEST_TYPE_VALIDATESESSION:
                     $this->handleValidateSession($from, $webSocketMessage->getData());
                     break;
+                case WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEREQUEST:
+                    $this->handleSubmitNewGameRequest($from, $webSocketMessage->getData());
+                    break;
+                case WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTS:
+                    $this->handleGetGameRequests($from, $webSocketMessage->getData());
+                    break;
                 default:
                     echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
             }
@@ -265,9 +271,102 @@ namespace LittleGoWeb
             }
             else
             {
-                $errorMessage = "Invalid session key";
-                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                $this->sendInvalidSession($from, $webSocketResponseType);
             }
+        }
+
+        private function handleSubmitNewGameRequest(ConnectionInterface $from, array $messageData): void
+        {
+            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEREQUEST;
+
+            $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
+            $requestedBoardSize = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDBOARDSIZE]);
+            $requestedStoneColor = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDSTONECOLOR]);
+            $requestedHandicap = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDHANDICAP]);
+            $requestedKomi = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDKOMI]);
+            $requestedKoRule = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDKORULE]);
+            $requestedScoringSystem = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDSCORINGSYSTEM]);
+
+            $dbAccess = new DbAccess($this->config);
+
+            $session = $dbAccess->findSessionByKey($sessionKey);
+            if ($session === null)
+            {
+                $this->sendInvalidSession($from, $webSocketResponseType);
+                return;
+            }
+
+            $gameRequestID = GAMEREQUEST_GAMEREQUESTID_DEFAULT;
+            $createTime = time();
+            $userID = $session->getUserID();
+            $gameRequest = new GameRequest(
+                $gameRequestID,
+                $createTime,
+                $requestedBoardSize,
+                $requestedStoneColor,
+                $requestedHandicap,
+                $requestedKomi,
+                $requestedKoRule,
+                $requestedScoringSystem,
+                $userID);
+
+            $gameRequestID = $dbAccess->insertGameRequest($gameRequest);
+            if ($gameRequestID === -1)
+            {
+                $errorMessage = "Failed to store game request in database";
+                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $webSocketResponseData =
+                [
+                    WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
+                ];
+            $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+            $from->send($webSocketMessage->toJsonString());
+        }
+
+        private function handleGetGameRequests(ConnectionInterface $from, array $messageData): void
+        {
+            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS;
+
+            $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
+
+            $dbAccess = new DbAccess($this->config);
+
+            $session = $dbAccess->findSessionByKey($sessionKey);
+            if ($session === null)
+            {
+                $this->sendInvalidSession($from, $webSocketResponseType);
+                return;
+            }
+
+            $userID = $session->getUserID();
+            $gameRequests = $dbAccess->findGameRequestsByUserID($userID);
+            if ($gameRequests === null)
+            {
+                $errorMessage = "Failed to retrieve game requests data from database";
+                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $gameRequestsJSON = array();
+            foreach ($gameRequests as $gameRequest)
+                array_push($gameRequestsJSON, $gameRequest->toJsonObject());
+
+            $webSocketResponseData =
+                [
+                    WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
+                    WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTS => $gameRequestsJSON
+                ];
+            $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+            $from->send($webSocketMessage->toJsonString());
+        }
+
+        private function sendInvalidSession(ConnectionInterface $from, string $webSocketResponseType): void
+        {
+            $errorMessage = "Invalid session key";
+            $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
         }
 
         private function sendErrorResponse(ConnectionInterface $from, string $webSocketResponseType, string $errorMessage): void

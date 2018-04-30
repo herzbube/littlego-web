@@ -188,7 +188,7 @@ namespace LittleGoWeb
             </table>
             <div class="row">
                 <div class="col-6"><small>(*) = Don't care</small></div>
-                <div class="col-6 text-right"><button id="button-new-game-request" class="btn btn-success" data-toggle="modal" data-target="#notYetImplemented">New game</button></div>
+                <div class="col-6 text-right"><button id="button-new-game-request" class="btn btn-success" data-toggle="modal" data-target="#new-game-request-modal">New game</button></div>
             </div>
         </div>
         <div id="container-games-in-progress" class="container-fluid">
@@ -293,7 +293,7 @@ namespace LittleGoWeb
     </div>
     
     <!-- Modals -->
-    <div id="notYetImplemented" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div id="notYetImplemented" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="notYetImplementedLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -307,6 +307,95 @@ namespace LittleGoWeb
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="new-game-request-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="new-game-request-modal-label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="new-game-request-modal-label">New Game Request</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="new-game-request-modal-form">
+                        <div class="form-group">
+                            <label for="new-game-request-modal-board-size" class="col-form-label">Board size:</label>
+                            <select size="1" class="form-control" id="new-game-request-modal-board-size">
+                                <option value="-1">No preference</option>
+                                <option value="7">7x7</option>
+                                <option value="9">9x9</option>
+                                <option value="11">11x11</option>
+                                <option value="13">13x13</option>
+                                <option value="15">15x15</option>
+                                <option value="17">17x17</option>
+                                <option value="19">19x19</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-game-request-modal-stone-color" class="col-form-label">Stone color:</label>
+                            <select size="1" class="form-control" id="new-game-request-modal-stone-color">
+                                <option value="-1">No preference</option>
+                                <option value="0">Black</option>
+                                <option value="1">White</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-game-request-modal-handicap" class="col-form-label">Handicap:</label>
+                            <select size="1" class="form-control" id="new-game-request-modal-handicap">
+                                <option value="-1">No preference</option>
+                                <option value="0">No handicap</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-game-request-modal-komi" class="col-form-label">Komi:</label>
+                            <select size="1" class="form-control" id="new-game-request-modal-komi">
+                                <option value="-1">No preference</option>
+                                <option value="0">None</option>
+                                <option value="0.5">½</option>
+                                <option value="5">5</option>
+                                <option value="5.5">5½</option>
+                                <option value="6">6</option>
+                                <option value="6.5">6½</option>
+                                <option value="7">7</option>
+                                <option value="7.5">7½</option>
+                                <option value="8">8</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-game-request-modal-ko-rule" class="col-form-label">Ko rule:</label>
+                            <select size="1" class="form-control" id="new-game-request-modal-ko-rule">
+                                <option value="-1">No preference</option>
+                                <option value="0">Simple ko</option>
+                                <option value="1">Positional superko</option>
+                                <option value="2">Situational superko</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-game-request-modal-scoring-system" class="col-form-label">Scoring system:</label>
+                            <select size="1" class="form-control" id="new-game-request-modal-scoring-system">
+                                <option value="-1">No preference</option>
+                                <option value="0">Area scoring</option>
+                                <option value="1">Territory scoring</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="button-new-game-request-modal-submit">Submit</button>
                 </div>
             </div>
         </div>
