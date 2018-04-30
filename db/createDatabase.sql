@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Apr 28, 2018 at 07:01 AM
+-- Generation Time: Apr 29, 2018 at 04:45 PM
 -- Server version: 5.7.20
 -- PHP Version: 7.1.13
 
@@ -27,7 +27,7 @@ USE `littlego-web`;
 CREATE TABLE `session` (
   `sessionID` bigint(20) UNSIGNED NOT NULL,
   `sessionKey` varchar(128) NOT NULL,
-  `userID` bigint(20) NOT NULL,
+  `userID` bigint(20) UNSIGNED NOT NULL,
   `validUntil` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -79,4 +79,14 @@ ALTER TABLE `session`
 --
 ALTER TABLE `user`
   MODIFY `userID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `session`
+--
+ALTER TABLE `session`
+  ADD CONSTRAINT `session_userID` FOREIGN KEY (`userID`) REFERENCES `user` (`userID`);
 COMMIT;
