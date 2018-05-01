@@ -253,6 +253,31 @@
         theSession.invalidate();
     }
 
+    function onCancelGameRequest(dataItemAction)
+    {
+        var gameRequest = dataItemAction.dataItem;
+
+        var messageData =
+            {
+                sessionKey: theSession.sessionKey,
+                gameRequestID: gameRequest.gameRequestID
+            };
+        // Triggers onCancelGameRequestComplete
+        sendWebSocketMessage(theWebSocket, WEBSOCKET_REQUEST_TYPE_CANCELGAMEREQUEST, messageData);
+    }
+
+    function onCancelGameRequestComplete(success, gameRequestsJsonObjects, errorMessage)
+    {
+        if (success)
+        {
+            updateGameRequestsDataTableWithJsonData(gameRequestsJsonObjects);
+        }
+        else
+        {
+            // TODO: Add error handling
+        }
+    }
+
     function onResumeGameInProgress(dataItemAction)
     {
         var gameInProgress = dataItemAction.dataItem;
@@ -329,21 +354,26 @@
     {
         if (success)
         {
-            var gameRequests = [];
-            gameRequestsJsonObjects.forEach(function(gameRequestJsonObject) {
-                var gameRequest = new GameRequest(gameRequestJsonObject);
-                gameRequests.push(gameRequest);
-            });
-
-            var appContainerID = ID_CONTAINER_GAME_REQUESTS;
-            var numberOfColumns = NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE;
-            var noDataPlaceholderMessage = "You have no game requests.";
-            updateDataTable(appContainerID, gameRequests, numberOfColumns, noDataPlaceholderMessage);
+            updateGameRequestsDataTableWithJsonData(gameRequestsJsonObjects);
         }
         else
         {
             // TODO: Add error handling
         }
+    }
+
+    function updateGameRequestsDataTableWithJsonData(gameRequestsJsonObjects)
+    {
+        var gameRequests = [];
+        gameRequestsJsonObjects.forEach(function(gameRequestJsonObject) {
+            var gameRequest = new GameRequest(gameRequestJsonObject);
+            gameRequests.push(gameRequest);
+        });
+
+        var appContainerID = ID_CONTAINER_GAME_REQUESTS;
+        var numberOfColumns = NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE;
+        var noDataPlaceholderMessage = "You have no game requests.";
+        updateDataTable(appContainerID, gameRequests, numberOfColumns, noDataPlaceholderMessage);
     }
 
     function updateGamesInProgressData()
@@ -538,8 +568,6 @@
             newAction.on("click", eventHandler);
         }
 
-        // TODO: Add ID of the data item to the action element
-
         return newAction;
     }
 
@@ -547,12 +575,13 @@
     {
         switch (operationType)
         {
+            case OPERATION_TYPE_GAME_REQUEST_CANCEL:
+                return onCancelGameRequest;
             case OPERATION_TYPE_GAME_IN_PROGRESS_RESUME:
                 return onResumeGameInProgress;
             case OPERATION_TYPE_FINISHED_GAME_VIEW:
                 return onViewFinishedGame;
             case OPERATION_TYPE_GAME_REQUEST_RESUME:
-            case OPERATION_TYPE_GAME_REQUEST_CANCEL:
             case OPERATION_TYPE_GAME_IN_PROGRESS_RESIGN:
             case OPERATION_TYPE_FINISHED_GAME_EMAIL_RESULT:
             case OPERATION_TYPE_FINISHED_GAME_DELETE:
@@ -624,6 +653,13 @@
 
             case WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS:
                 onGetGameRequestsComplete(
+                    webSocketMessage.data.success,
+                    webSocketMessage.data.gameRequests,
+                    webSocketMessage.data.errorMessage);
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST:
+                onCancelGameRequestComplete(
                     webSocketMessage.data.success,
                     webSocketMessage.data.gameRequests,
                     webSocketMessage.data.errorMessage);

@@ -348,6 +348,34 @@ namespace LittleGoWeb
             }
         }
 
+        // Deletes data for the game request with the specified game request
+        // ID from the database. Returns true on success, false on failure
+        // (i.e. no game request with the specified ID exists).
+        public function deleteGameRequestByGameRequestID(int $gameRequestID): bool
+        {
+            $tableName = DB_TABLE_NAME_GAMEREQUEST;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID);
+
+            $deleteQueryString = $this->sqlGenerator->getDeleteStatementWithWhereClause(
+                $tableName,
+                $columnNames);
+
+            $deleteStatement = $this->pdo->prepare($deleteQueryString);
+            $deleteStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID),
+                $gameRequestID,
+                PDO::PARAM_INT);
+
+            $deleteStatement->execute();
+
+            $numberOfDeletedRows = $deleteStatement->rowCount();
+            if ($numberOfDeletedRows === 1)
+                return true;
+            else
+                return false;
+        }
+
         // Obtains the game requests data for the specified user ID from the
         // database and returns the data as an array object. Returns an empty
         // array if the database has no game requests data for the specified

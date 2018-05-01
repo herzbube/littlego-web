@@ -61,6 +61,9 @@ namespace LittleGoWeb
                 case WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTS:
                     $this->handleGetGameRequests($from, $webSocketMessage->getData());
                     break;
+                case WEBSOCKET_REQUEST_TYPE_CANCELGAMEREQUEST:
+                    $this->handleCancelGameRequest($from, $webSocketMessage->getData());
+                    break;
                 default:
                     echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
             }
@@ -341,6 +344,39 @@ namespace LittleGoWeb
                 return;
             }
 
+            $this->findAndSendGameRequests($from, $webSocketResponseType, $dbAccess, $session);
+        }
+
+        private function handleCancelGameRequest(ConnectionInterface $from, array $messageData): void
+        {
+            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST;
+
+            $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
+            $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
+
+            $dbAccess = new DbAccess($this->config);
+
+            $session = $dbAccess->findSessionByKey($sessionKey);
+            if ($session === null)
+            {
+                $this->sendInvalidSession($from, $webSocketResponseType);
+                return;
+            }
+
+            $success = $dbAccess->deleteGameRequestByGameRequestID($gameRequestID);
+            if ($success)
+            {
+                $this->findAndSendGameRequests($from, $webSocketResponseType, $dbAccess, $session);
+            }
+            else
+            {
+                $errorMessage = "Invalid game request ID";
+                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+            }
+        }
+
+        private function findAndSendGameRequests(ConnectionInterface $from, string $webSocketResponseType, DbAccess $dbAccess, Session $session): void
+        {
             $userID = $session->getUserID();
             $gameRequests = $dbAccess->findGameRequestsByUserID($userID);
             if ($gameRequests === null)
