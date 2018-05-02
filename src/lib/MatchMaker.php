@@ -179,12 +179,22 @@ namespace LittleGoWeb
                     $scoringSystem,
                     $rejected);
 
+                $gameRequestPairing->setBlackPlayer($blackPlayerUser);
+                $gameRequestPairing->setWhitePlayer($whitePlayerUser);
+
+                // TODO: Add transaction that spans all database operations
                 $gameRequestPairingID = $this->dbAccess->insertGameRequestPairing($gameRequestPairing);
                 if ($gameRequestPairingID === -1)
                     throw new \Exception("Failed to insert game request pairing");
 
-                $gameRequestPairing->setBlackPlayer($blackPlayerUser);
-                $gameRequestPairing->setWhitePlayer($whitePlayerUser);
+                $gameRequestsToUpdate = [$gameRequestToMatch, $gameRequestCandidate];
+                foreach ($gameRequestsToUpdate as $gameRequestToUpdate)
+                {
+                    $gameRequestToUpdate->setState(GAMEREQUEST_STATE_UNCONFIRMEDPAIRING);
+                    $success = $this->dbAccess->updateGameRequest($gameRequestToUpdate);
+                    if (! $success)
+                        throw new \Exception("Failed to update game request " . $gameRequestToUpdate->getGameRequestID());
+                }
 
                 return $gameRequestPairing;
             }

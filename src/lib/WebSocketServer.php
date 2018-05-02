@@ -461,6 +461,7 @@ namespace LittleGoWeb
             $gameRequestID = GAMEREQUEST_GAMEREQUESTID_DEFAULT;
             $createTime = time();
             $userID = $webSocketClient->getSession()->getUserID();
+            $state = GAMEREQUEST_STATE_UNPAIRED;
             $gameRequest = new GameRequest(
                 $gameRequestID,
                 $createTime,
@@ -470,7 +471,8 @@ namespace LittleGoWeb
                 $requestedKomi,
                 $requestedKoRule,
                 $requestedScoringSystem,
-                $userID);
+                $userID,
+                $state);
 
             $gameRequestID = $dbAccess->insertGameRequest($gameRequest);
             if ($gameRequestID === -1)
@@ -529,6 +531,13 @@ namespace LittleGoWeb
 
             $dbAccess = new DbAccess($this->config);
 
+            $gameRequest = $dbAccess->findGameRequestByGameRequestID($gameRequestID);
+            if ($gameRequest === null)
+            {
+                $errorMessage = "Invalid game request ID";
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+            }
+
             // Must delete pairings (active and rejected) first before we can
             // delete the game request itself
             // TODO: Add transaction that spans all database operations
@@ -540,7 +549,7 @@ namespace LittleGoWeb
             }
             else
             {
-                $errorMessage = "Invalid game request ID";
+                $errorMessage = "Failed to delete game request";
                 $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
             }
         }
@@ -558,7 +567,14 @@ namespace LittleGoWeb
 
             $gameRequestsJSON = array();
             foreach ($gameRequests as $gameRequest)
+            {
+                // A user who has already confirmed a pairing no longer wants
+                // to see that game request
+                if ($gameRequest->getState() === GAMEREQUEST_STATE_CONFIRMEDPAIRING)
+                    continue;
+
                 array_push($gameRequestsJSON, $gameRequest->toJsonObject());
+            }
 
             $webSocketResponseData =
                 [

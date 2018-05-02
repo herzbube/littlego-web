@@ -330,7 +330,8 @@ namespace LittleGoWeb
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKOMI,
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE,
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM,
-                DB_COLUMN_NAME_GAMEREQUEST_USERID);
+                DB_COLUMN_NAME_GAMEREQUEST_USERID,
+                DB_COLUMN_NAME_GAMEREQUEST_STATE);
 
             $insertQueryString = $this->sqlGenerator->getInsertStatement(
                 $tableName,
@@ -369,6 +370,10 @@ namespace LittleGoWeb
                 $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_USERID),
                 $gameRequest->getUserID(),
                 PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_STATE),
+                $gameRequest->getState(),
+                PDO::PARAM_INT);
 
             try
             {
@@ -381,6 +386,41 @@ namespace LittleGoWeb
             {
                 return -1;
             }
+        }
+
+        // Updates an existing row in the database with the data in the
+        // specified GameRequest object, with the exception of the
+        // game request ID. Returns true on success, false on failure
+        // (e.g. game request does not exist).
+        public function updateGameRequest(GameRequest $gameRequest): bool
+        {
+            $tableName = DB_TABLE_NAME_GAMEREQUEST;
+            // The game request's state is the only column that can change
+            $columnNames = array(DB_COLUMN_NAME_GAMEREQUEST_STATE);
+            $whereColumnNames = array(DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID);
+
+            $updateQueryString = $this->sqlGenerator->getUpdateStatementWithWhereClause(
+                $tableName,
+                $columnNames,
+                $whereColumnNames);
+
+            $updateStatement = $this->pdo->prepare($updateQueryString);
+            $updateStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_STATE),
+                $gameRequest->getState(),
+                PDO::PARAM_INT);
+            $updateStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID),
+                $gameRequest->getGameRequestID(),
+                PDO::PARAM_INT);
+
+            $updateStatement->execute();
+
+            $numberOfUpdatedRows = $updateStatement->rowCount();
+            if ($numberOfUpdatedRows === 1)
+                return true;
+            else
+                return false;
         }
 
         // Deletes data for the game request with the specified game request
@@ -411,6 +451,47 @@ namespace LittleGoWeb
                 return false;
         }
 
+        // Obtains the game request data for the specified game request ID
+        // from the database and returns the data as a GameRequest object.
+        // Returns null if the database has no game request data for the
+        // specified game request ID.
+        public function findGameRequestByGameRequestID(int $gameRequestID): ?GameRequest
+        {
+            $tableName = DB_TABLE_NAME_GAMEREQUEST;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID,
+                DB_COLUMN_NAME_GAMEREQUEST_CREATETIME,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDBOARDSIZE,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSTONECOLOR,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDHANDICAP,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKOMI,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM,
+                DB_COLUMN_NAME_GAMEREQUEST_USERID,
+                DB_COLUMN_NAME_GAMEREQUEST_STATE);
+            $whereColumnNames = array(DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID);
+
+            $selectQueryString = $this->sqlGenerator->getSelectStatementWithWhereClause(
+                $tableName,
+                $columnNames,
+                $whereColumnNames);
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_USERID),
+                $gameRequestID,
+                PDO::PARAM_INT);
+
+            $gameRequests = $this->executePdoStatementFindGameRequests($selectStatement);
+            if ($gameRequests === null)
+                return null;
+            else if (count($gameRequests) === 0)
+                return null;
+            else
+                return $gameRequests[0];
+        }
+
         // Obtains the game request data for the specified user ID from the
         // database and returns the data as an array object. Returns an empty
         // array if the database has no game requests data for the specified
@@ -432,7 +513,8 @@ namespace LittleGoWeb
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKOMI,
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE,
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM,
-                DB_COLUMN_NAME_GAMEREQUEST_USERID);
+                DB_COLUMN_NAME_GAMEREQUEST_USERID,
+                DB_COLUMN_NAME_GAMEREQUEST_STATE);
             $whereColumnNames = array(DB_COLUMN_NAME_GAMEREQUEST_USERID);
             $orderByColumnNames = array(
                 DB_COLUMN_NAME_GAMEREQUEST_CREATETIME,
@@ -478,7 +560,8 @@ namespace LittleGoWeb
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKOMI,
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE,
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM,
-                DB_COLUMN_NAME_GAMEREQUEST_USERID);
+                DB_COLUMN_NAME_GAMEREQUEST_USERID,
+                DB_COLUMN_NAME_GAMEREQUEST_STATE);
             $orderByColumnNames = array(
                 DB_COLUMN_NAME_GAMEREQUEST_CREATETIME,
                 DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID);
@@ -520,6 +603,7 @@ namespace LittleGoWeb
                     $requestedKoRule = intval($row[DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE]);
                     $requestedScoringSystem = intval($row[DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM]);
                     $userID = intval($row[DB_COLUMN_NAME_GAMEREQUEST_USERID]);
+                    $state = intval($row[DB_COLUMN_NAME_GAMEREQUEST_STATE]);
 
                     $gameRequest = new GameRequest(
                         $gameRequestID,
@@ -530,7 +614,8 @@ namespace LittleGoWeb
                         $requestedKomi,
                         $requestedKoRule,
                         $requestedScoringSystem,
-                        $userID);
+                        $userID,
+                        $state);
 
                     array_push($gameRequests, $gameRequest);
                 }
