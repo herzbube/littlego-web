@@ -26,13 +26,23 @@ namespace LittleGoWeb
             echo "WebSocket server is now running\n";
         }
 
-        private function getWebSocketClient(ConnectionInterface $conn) : WebSocketClient
+        private function getWebSocketClient(ConnectionInterface $conn) : ?WebSocketClient
         {
             $resourceID = $conn->resourceId;
             if (array_key_exists($resourceID, $this->clients))
                 return $this->clients[$resourceID];
             else
                 return null;
+        }
+
+        private function getWebSocketClientByUserID(int $userID) : ?WebSocketClient
+        {
+            foreach ($this->clients as $webSocketClient)
+            {
+                if ($webSocketClient->getSession()->getUserID() === $userID)
+                    return $webSocketClient;
+            }
+            return null;
         }
 
         public function onOpen(ConnectionInterface $conn): void
@@ -472,8 +482,34 @@ namespace LittleGoWeb
                 [
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
                 ];
+
+            $matchMaker = new MatchMaker($dbAccess);
+            $gameRequestPairing = $matchMaker->tryFindMatchingGameRequest($gameRequest);
+            if ($gameRequestPairing !== null)
+            {
+                $webSocketResponseData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTPAIRING] = $gameRequestPairing->toJsonObject();
+            }
+
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
             $webSocketClient->send($webSocketMessage);
+
+            if ($gameRequestPairing !== null)
+            {
+                if ($gameRequestPairing->getBlackPlayer()->getUserID() === $webSocketClient->getSession()->getUserID())
+                    $otherUserID = $gameRequestPairing->getWhitePlayer()->getUserID();
+                else
+                    $otherUserID = $gameRequestPairing->getBlackPlayer()->getUserID();
+
+                $otherUserWebSocketClient = $this->getWebSocketClientByUserID($otherUserID);
+                if ($otherUserWebSocketClient !== null)
+                {
+                    // TODO: Send message
+                }
+                else
+                {
+                    // Do nothing, the other player is not online
+                }
+            }
         }
 
         private function handleGetGameRequests(WebSocketClient $webSocketClient, $webSocketResponseType): void
