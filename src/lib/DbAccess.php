@@ -117,6 +117,41 @@ namespace LittleGoWeb
             }
         }
 
+        // Updates an existing row in the database with the data in the
+        // specified Session object, with the exception of the session ID.
+        // Returns true on success, false on failure (e.g. session does
+        // not exist).
+        public function updateSession(Session $session) : bool
+        {
+            $tableName = DB_TABLE_NAME_SESSION;
+            // The session's validity is the only column that can change
+            $columnNames = array(DB_COLUMN_NAME_SESSION_VALIDUNTIL);
+            $whereColumnNames = array(DB_COLUMN_NAME_SESSION_SESSIONID);
+
+            $updateQueryString = $this->sqlGenerator->getUpdateStatementWithWhereClause(
+                $tableName,
+                $columnNames,
+                $whereColumnNames);
+
+            $updateStatement = $this->pdo->prepare($updateQueryString);
+            $updateStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_SESSION_VALIDUNTIL),
+                $session->getValidUntil(),
+                PDO::PARAM_INT);
+            $updateStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_SESSION_SESSIONID),
+                $session->getSessionID(),
+                PDO::PARAM_INT);
+
+            $updateStatement->execute();
+
+            $numberOfUpdatedRows = $updateStatement->rowCount();
+            if ($numberOfUpdatedRows === 1)
+                return true;
+            else
+                return false;
+        }
+
         // Deletes data for the session with the specified session key from
         // the database. Returns true on success, false on failure (i.e. no
         // session for the specified session key exists).

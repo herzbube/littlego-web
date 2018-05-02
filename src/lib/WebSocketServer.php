@@ -166,17 +166,46 @@ namespace LittleGoWeb
                 }
                 else
                 {
-                    $dbAccess = new DbAccess($this->config);
-
-                    $sessionKey = $webSocketClient->getSession()->getSessionKey();
-                    $session = $dbAccess->findSessionByKey($sessionKey);
-                    if ($session === null)
+                    $session = $webSocketClient->getSession();
+                    $now = time();
+                    if ($session->getValidUntil() < $now)
                     {
-                        $this->sendInvalidSession($webSocketClient, $webSocketResponseType);
+                        $webSocketClient->invalidateAuthentication();
+
+                        $errorMessage = "Session is no longer valid";
+                        $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
                         return false;
                     }
 
-                    return true;
+                    $newValidUntil = $now + $this->config->sessionValidityDuration;
+                    if ($newValidUntil === $session->getValidUntil())
+                    {
+                        // Data will not change, so no need to perform a
+                        // database update. This is not just an optimization,
+                        // it's also necessary because MySQL does not actually
+                        // perform an update if nothing has changed, which
+                        // would cause DbAccess to think that the update failed
+                        // for some reason.
+                        return true;
+                    }
+
+                    $session->setValidUntil($newValidUntil);
+
+                    $dbAccess = new DbAccess($this->config);
+
+                    $success = $dbAccess->updateSession($session);
+                    if ($success)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        $webSocketClient->invalidateAuthentication();
+
+                        $errorMessage = "Failed to extend session validity";
+                        $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+                        return false;
+                    }
                 }
             }
             else
