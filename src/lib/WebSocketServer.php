@@ -98,6 +98,13 @@ namespace LittleGoWeb
         private function handleLogin(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_LOGIN;
+
+            if ($webSocketClient->isAuthenticated())
+            {
+                $errorMessage = "Client is already authenticated";
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+            }
+
             // Use the same message for both failures - we don't want to give
             // an attacker a hint whether he guessed the email address
             // correctly
@@ -178,6 +185,12 @@ namespace LittleGoWeb
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_LOGOUT;
 
+            if (! $webSocketClient->isAuthenticated())
+            {
+                $errorMessage = "Client is not authenticated";
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+            }
+
             $sessionKey = $webSocketClient->getSession()->getSessionKey();
 
             // The client loses its authentication regardless of the
@@ -206,6 +219,12 @@ namespace LittleGoWeb
         private function handleRegisterAccount(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_REGISTERACCOUNT;
+
+            if ($webSocketClient->isAuthenticated())
+            {
+                $errorMessage = "Client is already authenticated";
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+            }
 
             $emailAddress = $messageData[WEBSOCKET_MESSAGEDATA_KEY_EMAILADDRESS];
             $displayName = $messageData[WEBSOCKET_MESSAGEDATA_KEY_DISPLAYNAME];
@@ -266,6 +285,12 @@ namespace LittleGoWeb
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION;
 
+            if ($webSocketClient->isAuthenticated())
+            {
+                $errorMessage = "Client is already authenticated";
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+            }
+
             $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
 
             $dbAccess = new DbAccess($this->config);
@@ -304,6 +329,12 @@ namespace LittleGoWeb
         private function handleSubmitNewGameRequest(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEREQUEST;
+
+            if (! $webSocketClient->isAuthenticated())
+            {
+                $errorMessage = "Client is not authenticated";
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+            }
 
             $requestedBoardSize = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDBOARDSIZE]);
             $requestedStoneColor = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDSTONECOLOR]);
@@ -356,6 +387,11 @@ namespace LittleGoWeb
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS;
 
+            if (! $webSocketClient->isAuthenticated())
+            {
+                $errorMessage = "Client is not authenticated";
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+            }
 
             $dbAccess = new DbAccess($this->config);
 
@@ -373,6 +409,12 @@ namespace LittleGoWeb
         private function handleCancelGameRequest(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST;
+
+            if (! $webSocketClient->isAuthenticated())
+            {
+                $errorMessage = "Client is not authenticated";
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+            }
 
             $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
 
