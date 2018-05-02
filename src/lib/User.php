@@ -66,9 +66,9 @@ namespace LittleGoWeb
         {
             return array(
                 WEBSOCKET_MESSAGEDATA_KEY_USERID => $this->userID,
-                WEBSOCKET_MESSAGEDATA_KEY_EMAILADDRESS => $this->emailAddress,
                 WEBSOCKET_MESSAGEDATA_KEY_DISPLAYNAME => $this->displayName
-                // No password hash - this is sensitive and must never leave the system!
+                // No email address and password hash - these are sensitive and
+                // must never leave the system!
             );
         }
     }

@@ -296,7 +296,6 @@ var UserInfo = (function ()
         if (userInfoJsonObject !== undefined)
         {
             this.userID = userInfoJsonObject.userID;
-            this.emailAddress = userInfoJsonObject.emailAddress;
             this.displayName = userInfoJsonObject.displayName;
         }
     }
