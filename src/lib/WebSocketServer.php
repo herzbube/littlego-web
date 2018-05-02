@@ -48,18 +48,26 @@ namespace LittleGoWeb
             if ($webSocketMessage === null)
                 return;
 
-            $messageType = $webSocketMessage->getMessageType();
-            echo "Received message '$messageType' from connection! ({$from->resourceId})\n";
+            $webSocketRequestType = $webSocketMessage->getMessageType();
+            echo "Received message '$webSocketRequestType' from connection! ({$from->resourceId})\n";
 
             $webSocketClient = $this->getWebSocketClient($from);
+            $webSocketResponseType = $this->webSocketResponseTypeForRequestType($webSocketRequestType);
 
-            switch ($messageType)
+            $authenticationAndSessionHandlingSuccess = $this->handleAuthenticationAndSession(
+                $webSocketClient,
+                $webSocketRequestType,
+                $webSocketResponseType);
+            if (! $authenticationAndSessionHandlingSuccess)
+                return;
+
+            switch ($webSocketRequestType)
             {
                 case WEBSOCKET_REQUEST_TYPE_LOGIN:
                     $this->handleLogin($webSocketClient, $webSocketMessage->getData());
                     break;
                 case WEBSOCKET_REQUEST_TYPE_LOGOUT:
-                    $this->handleLogout($webSocketClient, $webSocketMessage->getData());
+                    $this->handleLogout($webSocketClient);
                     break;
                 case WEBSOCKET_REQUEST_TYPE_REGISTERACCOUNT:
                     $this->handleRegisterAccount($webSocketClient, $webSocketMessage->getData());
@@ -71,7 +79,7 @@ namespace LittleGoWeb
                     $this->handleSubmitNewGameRequest($webSocketClient, $webSocketMessage->getData());
                     break;
                 case WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTS:
-                    $this->handleGetGameRequests($webSocketClient, $webSocketMessage->getData());
+                    $this->handleGetGameRequests($webSocketClient);
                     break;
                 case WEBSOCKET_REQUEST_TYPE_CANCELGAMEREQUEST:
                     $this->handleCancelGameRequest($webSocketClient, $webSocketMessage->getData());
@@ -95,15 +103,113 @@ namespace LittleGoWeb
             $conn->close();
         }
 
+        private function webSocketResponseTypeForRequestType(string $webSocketRequestType) : string
+        {
+            switch ($webSocketRequestType)
+            {
+                case WEBSOCKET_REQUEST_TYPE_LOGIN:
+                    return WEBSOCKET_RESPONSE_TYPE_LOGIN;
+                case WEBSOCKET_REQUEST_TYPE_LOGOUT:
+                    return WEBSOCKET_RESPONSE_TYPE_LOGOUT;
+                case WEBSOCKET_REQUEST_TYPE_REGISTERACCOUNT:
+                    return WEBSOCKET_RESPONSE_TYPE_REGISTERACCOUNT;
+                case WEBSOCKET_REQUEST_TYPE_VALIDATESESSION:
+                    return WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION;
+                case WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEREQUEST:
+                    return WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEREQUEST;
+                case WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTS:
+                    return WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS;
+                case WEBSOCKET_REQUEST_TYPE_CANCELGAMEREQUEST:
+                    return WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST;
+                default:
+                    throw new \Exception("Unsupported request type $webSocketRequestType");
+            }
+        }
+
+        // Performs authentication and session checks for the specified
+        // WebSocket request type, using the specified WebSocketClient object.
+        //
+        // If the specified WebSocket request type does not require
+        // authentication, the WebSocketClient must not be in authenticated
+        // state.
+        //
+        // If the specified WebSocket request type requires authentication,
+        // the WebSocketClient must be in authenticated state. In addition,
+        // the session must still be valid. If these checks are successful,
+        // the session's validity period is extended.
+        //
+        // Returns true if all checks passed and all database operations were
+        // successful. The caller is now allowed to continue to process the
+        // WebSocket request.
+        //
+        // Returns false if any check failed or any error occurred during a
+        // database operation. Before it returns, this method sends a
+        // WebSocket response with an appropriate error message. The caller
+        // must not process the WebSocket request any further. If the
+        // WebSocketClient was in authenticated state, it becomes
+        // unauthenticated.
+        private function handleAuthenticationAndSession(
+            WebSocketClient $webSocketClient,
+            string $webSocketRequestType,
+            string $webSocketResponseType) : bool
+        {
+            $webSocketRequestTypeNeedsAuthentication =
+                $this->webSocketRequestTypeNeedsAuthentication($webSocketRequestType);
+
+            if ($webSocketRequestTypeNeedsAuthentication)
+            {
+                if (! $webSocketClient->isAuthenticated())
+                {
+                    $errorMessage = "Client is not authenticated";
+                    $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+                    return false;
+                }
+                else
+                {
+                    $dbAccess = new DbAccess($this->config);
+
+                    $sessionKey = $webSocketClient->getSession()->getSessionKey();
+                    $session = $dbAccess->findSessionByKey($sessionKey);
+                    if ($session === null)
+                    {
+                        $this->sendInvalidSession($webSocketClient, $webSocketResponseType);
+                        return false;
+                    }
+
+                    return true;
+                }
+            }
+            else
+            {
+                if ($webSocketClient->isAuthenticated())
+                {
+                    $errorMessage = "Client is already authenticated";
+                    $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+        }
+
+        private function webSocketRequestTypeNeedsAuthentication(string $webSocketRequestType) : bool
+        {
+            switch ($webSocketRequestType)
+            {
+                case WEBSOCKET_REQUEST_TYPE_LOGIN:
+                case WEBSOCKET_REQUEST_TYPE_REGISTERACCOUNT:
+                case WEBSOCKET_REQUEST_TYPE_VALIDATESESSION:
+                    return false;
+                default:
+                    return true;
+            }
+        }
+
         private function handleLogin(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_LOGIN;
-
-            if ($webSocketClient->isAuthenticated())
-            {
-                $errorMessage = "Client is already authenticated";
-                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
-            }
 
             // Use the same message for both failures - we don't want to give
             // an attacker a hint whether he guessed the email address
@@ -181,15 +287,9 @@ namespace LittleGoWeb
             return $sessionID;
         }
 
-        private function handleLogout(WebSocketClient $webSocketClient, array $messageData): void
+        private function handleLogout(WebSocketClient $webSocketClient): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_LOGOUT;
-
-            if (! $webSocketClient->isAuthenticated())
-            {
-                $errorMessage = "Client is not authenticated";
-                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
-            }
 
             $sessionKey = $webSocketClient->getSession()->getSessionKey();
 
@@ -219,12 +319,6 @@ namespace LittleGoWeb
         private function handleRegisterAccount(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_REGISTERACCOUNT;
-
-            if ($webSocketClient->isAuthenticated())
-            {
-                $errorMessage = "Client is already authenticated";
-                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
-            }
 
             $emailAddress = $messageData[WEBSOCKET_MESSAGEDATA_KEY_EMAILADDRESS];
             $displayName = $messageData[WEBSOCKET_MESSAGEDATA_KEY_DISPLAYNAME];
@@ -285,12 +379,6 @@ namespace LittleGoWeb
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION;
 
-            if ($webSocketClient->isAuthenticated())
-            {
-                $errorMessage = "Client is already authenticated";
-                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
-            }
-
             $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
 
             $dbAccess = new DbAccess($this->config);
@@ -330,12 +418,6 @@ namespace LittleGoWeb
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEREQUEST;
 
-            if (! $webSocketClient->isAuthenticated())
-            {
-                $errorMessage = "Client is not authenticated";
-                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
-            }
-
             $requestedBoardSize = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDBOARDSIZE]);
             $requestedStoneColor = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDSTONECOLOR]);
             $requestedHandicap = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDHANDICAP]);
@@ -345,17 +427,9 @@ namespace LittleGoWeb
 
             $dbAccess = new DbAccess($this->config);
 
-            $sessionKey = $webSocketClient->getSession()->getSessionKey();
-            $session = $dbAccess->findSessionByKey($sessionKey);
-            if ($session === null)
-            {
-                $this->sendInvalidSession($webSocketClient, $webSocketResponseType);
-                return;
-            }
-
             $gameRequestID = GAMEREQUEST_GAMEREQUESTID_DEFAULT;
             $createTime = time();
-            $userID = $session->getUserID();
+            $userID = $webSocketClient->getSession()->getUserID();
             $gameRequest = new GameRequest(
                 $gameRequestID,
                 $createTime,
@@ -383,55 +457,27 @@ namespace LittleGoWeb
             $webSocketClient->send($webSocketMessage);
         }
 
-        private function handleGetGameRequests(WebSocketClient $webSocketClient, array $messageData): void
+        private function handleGetGameRequests(WebSocketClient $webSocketClient): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS;
 
-            if (! $webSocketClient->isAuthenticated())
-            {
-                $errorMessage = "Client is not authenticated";
-                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
-            }
-
             $dbAccess = new DbAccess($this->config);
 
-            $sessionKey = $webSocketClient->getSession()->getSessionKey();
-            $session = $dbAccess->findSessionByKey($sessionKey);
-            if ($session === null)
-            {
-                $this->sendInvalidSession($webSocketClient, $webSocketResponseType);
-                return;
-            }
-
-            $this->findAndSendGameRequests($webSocketClient, $webSocketResponseType, $dbAccess, $session);
+            $this->findAndSendGameRequests($webSocketClient, $webSocketResponseType, $dbAccess);
         }
 
         private function handleCancelGameRequest(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST;
 
-            if (! $webSocketClient->isAuthenticated())
-            {
-                $errorMessage = "Client is not authenticated";
-                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
-            }
-
             $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
 
             $dbAccess = new DbAccess($this->config);
 
-            $sessionKey = $webSocketClient->getSession()->getSessionKey();
-            $session = $dbAccess->findSessionByKey($sessionKey);
-            if ($session === null)
-            {
-                $this->sendInvalidSession($webSocketClient, $webSocketResponseType);
-                return;
-            }
-
             $success = $dbAccess->deleteGameRequestByGameRequestID($gameRequestID);
             if ($success)
             {
-                $this->findAndSendGameRequests($webSocketClient, $webSocketResponseType, $dbAccess, $session);
+                $this->findAndSendGameRequests($webSocketClient, $webSocketResponseType, $dbAccess);
             }
             else
             {
@@ -440,9 +486,9 @@ namespace LittleGoWeb
             }
         }
 
-        private function findAndSendGameRequests(WebSocketClient $webSocketClient, string $webSocketResponseType, DbAccess $dbAccess, Session $session): void
+        private function findAndSendGameRequests(WebSocketClient $webSocketClient, string $webSocketResponseType, DbAccess $dbAccess): void
         {
-            $userID = $session->getUserID();
+            $userID = $webSocketClient->getSession()->getUserID();
             $gameRequests = $dbAccess->findGameRequestsByUserID($userID);
             if ($gameRequests === null)
             {
