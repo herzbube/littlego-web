@@ -90,7 +90,8 @@ CREATE TABLE `user` (
 --
 ALTER TABLE `gamerequest`
   ADD PRIMARY KEY (`gameRequestID`),
-  ADD KEY `userID` (`userID`);
+  ADD KEY `gamerequest_userID` (`userID`),
+  ADD KEY `createTime` (`createTime`);
 
 --
 -- Indexes for table `gamerequestpairing`
@@ -107,7 +108,7 @@ ALTER TABLE `gamerequestpairing`
 ALTER TABLE `session`
   ADD PRIMARY KEY (`sessionID`),
   ADD UNIQUE KEY `sessionKey` (`sessionKey`),
-  ADD KEY `userID` (`userID`);
+  ADD KEY `session_userID` (`userID`);
 
 --
 -- Indexes for table `user`
