@@ -121,7 +121,7 @@ namespace LittleGoWeb
         // specified Session object, with the exception of the session ID.
         // Returns true on success, false on failure (e.g. session does
         // not exist).
-        public function updateSession(Session $session) : bool
+        public function updateSession(Session $session): bool
         {
             $tableName = DB_TABLE_NAME_SESSION;
             // The session's validity is the only column that can change
@@ -411,12 +411,12 @@ namespace LittleGoWeb
                 return false;
         }
 
-        // Obtains the game requests data for the specified user ID from the
+        // Obtains the game request data for the specified user ID from the
         // database and returns the data as an array object. Returns an empty
         // array if the database has no game requests data for the specified
         // user ID.
         //
-        // Array elements are ordered descending by create time (i.e. newest
+        // The array is ordered descending by create time (i.e. newest
         // first), then descending by game request ID.
         //
         // On failure, returns null.
@@ -516,7 +516,7 @@ namespace LittleGoWeb
                     $requestedBoardSize = intval($row[DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDBOARDSIZE]);
                     $requestedStoneColor = intval($row[DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSTONECOLOR]);
                     $requestedHandicap = intval($row[DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDHANDICAP]);
-                    $requestedKomi = intval($row[DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKOMI]);
+                    $requestedKomi = floatval($row[DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKOMI]);
                     $requestedKoRule = intval($row[DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE]);
                     $requestedScoringSystem = intval($row[DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM]);
                     $userID = intval($row[DB_COLUMN_NAME_GAMEREQUEST_USERID]);

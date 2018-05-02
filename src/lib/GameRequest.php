@@ -25,7 +25,7 @@ namespace LittleGoWeb
             int $requestedBoardSize,
             int $requestedStoneColor,
             int $requestedHandicap,
-            int $requestedKomi,
+            float $requestedKomi,
             int $requestedKoRule,
             int $requestedScoringSystem,
             int $userID)
@@ -91,12 +91,12 @@ namespace LittleGoWeb
             $this->requestedHandicap = $requestedHandicap;
         }
 
-        public function getRequestedKomi(): int
+        public function getRequestedKomi(): float
         {
             return $this->requestedKomi;
         }
 
-        public function setRequestedKomi(int $requestedKomi): void
+        public function setRequestedKomi(float $requestedKomi): void
         {
             $this->requestedKomi = $requestedKomi;
         }
