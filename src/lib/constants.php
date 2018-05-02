@@ -109,6 +109,37 @@ namespace LittleGoWeb
     const GAMEREQUESTPAIRING_SCORINGSYSTEM_DEFAULT = -1;
     const GAMEREQUESTPAIRING_ISREJECTED_DEFAULT = false;
 
+    // Game request constants
+    const GAMEREQUEST_NOPREFERENCE = -1;
+
+    // Game parameter constants
+    const BOARDSIZE_7 = 7;
+    const BOARDSIZE_9 = 9;
+    const BOARDSIZE_11 = 11;
+    const BOARDSIZE_13 = 13;
+    const BOARDSIZE_15 = 15;
+    const BOARDSIZE_17 = 17;
+    const BOARDSIZE_19 = 19;
+    const COLOR_NONE = -1;
+    const COLOR_BLACK = 0;
+    const COLOR_WHITE = 1;
+    const HANDICAP_NONE = 0;
+    const KOMI_NONE = 0.0;
+    const KORULE_SIMPLE_KO = 0;
+    const KORULE_POSITIONAL_SUPERKO = 1;
+    const KORULE_SITUATIONAL_SUPERKO = 2;
+    const SCORINGSYSTEM_AREA_SCORING = 0;
+    const SCORINGSYSTEM_TERRITORY_SCORING = 1;
+
+    // New game constants
+    const NEWGAME_BOARDSIZE_DEFAULT = BOARDSIZE_19;
+    const NEWGAME_HANDICAP_DEFAULT = HANDICAP_NONE;
+    const NEWGAME_KOMI_NOHANDICAP_AREASCORING_DEFAULT = 7.5;
+    const NEWGAME_KOMI_NOHANDICAP_TERRITORYSCORING_DEFAULT = 6.5;
+    const NEWGAME_KOMI_WITHHANDICAP_DEFAULT = 0.5;
+    const NEWGAME_KORULE_DEFAULT = KORULE_SIMPLE_KO;
+    const NEWGAME_SCORINGSYSTEM_DEFAULT = SCORINGSYSTEM_AREA_SCORING;
+
     // Database table session
     const DB_TABLE_NAME_SESSION = "session";
     const DB_COLUMN_NAME_SESSION_SESSIONID = "sessionID";
