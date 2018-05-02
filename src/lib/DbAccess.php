@@ -455,6 +455,54 @@ namespace LittleGoWeb
                 $userID,
                 PDO::PARAM_INT);
 
+            return $this->executePdoStatementFindGameRequests($selectStatement);
+        }
+
+        // Obtains all game request data from the database and returns
+        // the data as an array object. Returns an empty array if the
+        // database has no game requests data.
+        //
+        // Array elements are ordered ascending by create time (i.e. oldest
+        // first), then ascending by game request ID.
+        //
+        // On failure, returns null.
+        public function findGameRequests(): ?array
+        {
+            $tableName = DB_TABLE_NAME_GAMEREQUEST;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID,
+                DB_COLUMN_NAME_GAMEREQUEST_CREATETIME,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDBOARDSIZE,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSTONECOLOR,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDHANDICAP,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKOMI,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM,
+                DB_COLUMN_NAME_GAMEREQUEST_USERID);
+            $orderByColumnNames = array(
+                DB_COLUMN_NAME_GAMEREQUEST_CREATETIME,
+                DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID);
+            $orderings = array(
+                true,
+                true);
+
+            $selectQueryString = $this->sqlGenerator->getSelectStatementWithOrderByClause(
+                $tableName,
+                $columnNames,
+                $orderByColumnNames,
+                $orderings);
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+
+            return $this->executePdoStatementFindGameRequests($selectStatement);
+        }
+
+        // Executes the prepared PDOStatement that represents a query to
+        // find multiple rows of game request data in the database. Returns
+        // an array whose elements are GameRequest objects. Returns null
+        // on failure.
+        private function executePdoStatementFindGameRequests(\PDOStatement $selectStatement): ?array
+        {
             try
             {
                 $selectStatement->execute();
