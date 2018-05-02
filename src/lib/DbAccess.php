@@ -658,7 +658,7 @@ namespace LittleGoWeb
             $insertStatement->bindValue(
                 $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_KOMI),
                 strval($gameRequestPairing->getKomi()),
-                PDO::PARAM_STRING);  // PDO has no PARAM_FLOAT, float values must be bound as string :-(
+                PDO::PARAM_STR);  // PDO has no PARAM_FLOAT, float values must be bound as string :-(
             $insertStatement->bindValue(
                 $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_KORULE),
                 $gameRequestPairing->getKoRule(),
@@ -682,6 +682,35 @@ namespace LittleGoWeb
             catch (\PDOException $exception)
             {
                 return -1;
+            }
+        }
+
+        // Deletes all game request pairings for the game request with the
+        // specified game request ID from the database.
+        public function deleteGameRequestPairingsByGameRequestID(int $gameRequestID) : void
+        {
+            $tableName = DB_TABLE_NAME_GAMEREQUESTPAIRING;
+
+            $whereColumns = array(
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_BLACKPLAYERGAMEREQUESTID,
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_WHITEPLAYERGAMEREQUESTID
+            );
+
+            foreach ($whereColumns as $whereColumn)
+            {
+                $columnNames = array($whereColumn);
+
+                $deleteQueryString = $this->sqlGenerator->getDeleteStatementWithWhereClause(
+                    $tableName,
+                    $columnNames);
+
+                $deleteStatement = $this->pdo->prepare($deleteQueryString);
+                $deleteStatement->bindValue(
+                    $this->sqlGenerator->getParameterNameForColumName($whereColumn),
+                    $gameRequestID,
+                    PDO::PARAM_INT);
+
+                $deleteStatement->execute();
             }
         }
     }

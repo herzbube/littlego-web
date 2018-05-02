@@ -387,6 +387,8 @@ namespace LittleGoWeb
                 return;
             }
 
+            $user->setUserID($userID);
+
             $webSocketResponseData =
                 [
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
@@ -478,6 +480,8 @@ namespace LittleGoWeb
                 return;
             }
 
+            $gameRequest->setGameRequestID($gameRequestID);
+
             $webSocketResponseData =
                 [
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
@@ -525,6 +529,10 @@ namespace LittleGoWeb
 
             $dbAccess = new DbAccess($this->config);
 
+            // Must delete pairings (active and rejected) first before we can
+            // delete the game request itself
+            // TODO: Add transaction that spans all database operations
+            $dbAccess->deleteGameRequestPairingsByGameRequestID($gameRequestID);
             $success = $dbAccess->deleteGameRequestByGameRequestID($gameRequestID);
             if ($success)
             {

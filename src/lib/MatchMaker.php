@@ -93,7 +93,7 @@ namespace LittleGoWeb
 
             foreach ($gameRequests as $gameRequestCandidate)
             {
-                if ($gameRequestCandidate->getGameReuqestID() === $gameRequestIDToMatch)
+                if ($gameRequestCandidate->getGameRequestID() === $gameRequestIDToMatch)
                     continue;  // not eligible, it's the same game request that we are trying to pair
 
                 if ($gameRequestCandidate->getUserID() === $gameRequestToMatch->getUserID())
