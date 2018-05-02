@@ -40,6 +40,8 @@
         $("#" + ID_BUTTON_LOGOUT).on("click", onLogout);
 
         $("#" + ID_BUTTON_NEW_GAME_REQUEST_MODAL_SUBMIT).on("click", onSubmitNewGameRequest);
+        $("#" + ID_BUTTON_CONFIRM_GAME_REQUEST_PAIRING_MODAL_YES).on("click", onConfirmGameRequestPairing);
+        $("#" + ID_BUTTON_CONFIRM_GAME_REQUEST_PAIRING_MODAL_NO).on("click", onRejectGameRequestPairing);
 
         theWebSocket.addEventListener("message", function(event) {
             handleWebSocketMessage(event);
@@ -618,11 +620,44 @@
         sendWebSocketMessage(theWebSocket, WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEREQUEST, messageData);
     }
 
-    function onSubmitNewGameRequestComplete(success, errorMessage)
+    function onSubmitNewGameRequestComplete(success, gameRequestPairing, errorMessage)
     {
         updateGameRequestsData();
 
-        if (! success)
+        if (success)
+        {
+            if (gameRequestPairing !== undefined)
+            {
+                var opponentDisplayName;
+                var stoneColor;
+                if (gameRequestPairing.blackPlayer.userID === theSession.userInfo.userID)
+                {
+                    opponentDisplayName = gameRequestPairing.whitePlayer.displayName;
+                    stoneColor = colorToString(COLOR_BLACK);
+                }
+                else
+                {
+                    opponentDisplayName = gameRequestPairing.blackPlayer.displayName;
+                    stoneColor = colorToString(COLOR_WHITE);
+                }
+                var boardSize = boardSizeToString(gameRequestPairing.boardSize);
+                var handicap = handicapToString(gameRequestPairing.handicap);
+                var komi = komiToString(gameRequestPairing.komi);
+                var koRule = koRuleToString(gameRequestPairing.koRule);
+                var scoringSystem = scoringSystemToString(gameRequestPairing.scoringSystem);
+
+                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_OPPONENT_NAME).html(opponentDisplayName);
+                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_STONE_COLOR).html(stoneColor);
+                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_BOARD_SIZE).html(boardSize);
+                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_HANDICAP).html(handicap);
+                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_KOMI).html(komi);
+                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_KO_RULE).html(koRule);
+                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_SCORING_SYSTEM).html(scoringSystem);
+
+                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL).modal()
+            }
+        }
+        else
         {
             // TODO: Show error message while data is updated in the background
         }
@@ -643,6 +678,7 @@
             case WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEREQUEST:
                 onSubmitNewGameRequestComplete(
                     webSocketMessage.data.success,
+                    webSocketMessage.data.gameRequestPairing,
                     webSocketMessage.data.errorMessage);
                 break;
 

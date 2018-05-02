@@ -337,7 +337,7 @@ namespace LittleGoWeb
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="new-game-request-modal-stone-color" class="col-form-label">Stone color:</label>
+                            <label for="new-game-request-modal-stone-color" class="col-form-label">Preferred color:</label>
                             <select size="1" class="form-control" id="new-game-request-modal-stone-color">
                                 <option value="-1">No preference</option>
                                 <option value="0">Black</option>
@@ -396,6 +396,38 @@ namespace LittleGoWeb
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="button-new-game-request-modal-submit">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirm-game-request-pairing-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="confirm-game-request-pairing-modal-label" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirm-game-request-pairing-modal-label">Confirm New Game</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Hooray, a match for your game request has been found!</p>
+                    <p>Your opponent for this game is <span id="confirm-game-request-pairing-modal-opponent-name"></span>.</p>
+                    <p>The game has the following characteristics:</p>
+                    <ul>
+                        <li>You will play <span id="confirm-game-request-pairing-modal-stone-color"></span></li>
+                        <li>Board size: <span id="confirm-game-request-pairing-modal-board-size"></span></li>
+                        <li>Handicap: <span id="confirm-game-request-pairing-modal-handicap"></span></li>
+                        <li>Komi: <span id="confirm-game-request-pairing-modal-komi"></span></li>
+                        <li>Ko rule: <span id="confirm-game-request-pairing-modal-ko-rule"></span></li>
+                        <li>Scoring system: <span id="confirm-game-request-pairing-modal-scoring-system"></span></li>
+                    </ul>
+                    <p>Would you like to start this game?</p>
+                    <p><small>If you say "No" your game request stays in the queue until another match is found.</small></p> 
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="button-confirm-game-request-pairing-modal-no">No</button>
+                    <button type="button" class="btn btn-primary" id="button-confirm-game-request-pairing-modal-yes">Yes</button>
                 </div>
             </div>
         </div>
