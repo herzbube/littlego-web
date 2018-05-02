@@ -259,7 +259,6 @@
 
         var messageData =
             {
-                sessionKey: theSession.sessionKey,
                 gameRequestID: gameRequest.gameRequestID
             };
         // Triggers onCancelGameRequestComplete
@@ -342,10 +341,7 @@
         var numberOfColumns = NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE;
         clearDataTableAndAddDataRetrievalPlaceholderMessage(appContainerID, numberOfColumns);
 
-        var messageData =
-            {
-                sessionKey: theSession.sessionKey
-            };
+        var messageData { };
         // Triggers onGetGameRequestsComplete
         sendWebSocketMessage(theWebSocket, WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTS, messageData);
     }
@@ -611,7 +607,6 @@
 
         var messageData =
             {
-                sessionKey: theSession.sessionKey,
                 requestedBoardSize: requestedBoardSize,
                 requestedStoneColor: requestedStoneColor,
                 requestedHandicap: requestedHandicap,

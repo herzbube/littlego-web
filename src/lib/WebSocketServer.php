@@ -136,6 +136,9 @@ namespace LittleGoWeb
                 return;
             }
 
+            $session->setSessionID($sessionID);
+            $webSocketClient->authenticate($session);
+
             $webSocketResponseData =
                 [
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
@@ -175,7 +178,11 @@ namespace LittleGoWeb
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_LOGOUT;
 
-            $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
+            $sessionKey = $webSocketClient->getSession()->getSessionKey();
+
+            // The client loses its authentication regardless of the
+            // outcome of the subsequent database operation
+            $webSocketClient->invalidateAuthentication();
 
             $dbAccess = new DbAccess($this->config);
             $success = $dbAccess->deleteSessionBySessionKey($sessionKey);
@@ -269,6 +276,8 @@ namespace LittleGoWeb
                 $user = $dbAccess->findUserByID($session->getUserID());
                 if ($user !== null)
                 {
+                    $webSocketClient->authenticate($session);
+
                     $webSocketResponseData =
                         [
                             WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
@@ -296,7 +305,6 @@ namespace LittleGoWeb
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEREQUEST;
 
-            $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
             $requestedBoardSize = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDBOARDSIZE]);
             $requestedStoneColor = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDSTONECOLOR]);
             $requestedHandicap = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDHANDICAP]);
@@ -306,6 +314,7 @@ namespace LittleGoWeb
 
             $dbAccess = new DbAccess($this->config);
 
+            $sessionKey = $webSocketClient->getSession()->getSessionKey();
             $session = $dbAccess->findSessionByKey($sessionKey);
             if ($session === null)
             {
@@ -347,10 +356,10 @@ namespace LittleGoWeb
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS;
 
-            $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
 
             $dbAccess = new DbAccess($this->config);
 
+            $sessionKey = $webSocketClient->getSession()->getSessionKey();
             $session = $dbAccess->findSessionByKey($sessionKey);
             if ($session === null)
             {
@@ -365,11 +374,11 @@ namespace LittleGoWeb
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST;
 
-            $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
             $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
 
             $dbAccess = new DbAccess($this->config);
 
+            $sessionKey = $webSocketClient->getSession()->getSessionKey();
             $session = $dbAccess->findSessionByKey($sessionKey);
             if ($session === null)
             {

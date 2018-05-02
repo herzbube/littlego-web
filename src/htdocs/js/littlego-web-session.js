@@ -180,15 +180,13 @@ var Session = (function ()
             // invalidated the other data becomes invalid, too).
         }
 
-        var sessionKey = this.sessionKey;
-
         this.sessionKey = undefined;
         this.userInfo = new UserInfo();
         this.isPersistentSession = false;
 
         this.validationBegins();
 
-        var messageData = { sessionKey: sessionKey };
+        var messageData = { };
         sendWebSocketMessage(this.webSocket, WEBSOCKET_REQUEST_TYPE_LOGOUT, messageData);
     };
 
