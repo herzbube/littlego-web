@@ -39,6 +39,29 @@ namespace LittleGoWeb {
         }
 
         // Generates a full query string (including the terminating ";") that
+        // contains a SELECT statement including an ORDER BY clause.
+        //
+        // The first specified array lists the column names that should appear
+        // in the SELECT part of the query.
+        //
+        // The second specified array lists the column names that should appear
+        // in the ORDER BY part of the query.
+        //
+        // The third specified array lists how each ORDER BY column should be
+        // ordered. The array must have the same number of elements as the
+        // second array. A true value orders the column ascending, a false
+        // value orders the column descending.
+        public function getSelectStatementWithOrderByClause(string $tableName, array $columnNames, array $orderByColumnNames, array $orderings): string
+        {
+            $queryString = $this->getSelectStatement($tableName, $columnNames);
+            $queryString .= " order by ";
+            $queryString .= $this->getColumnsWithOrderings($orderByColumnNames, $orderings);
+            $queryString .= ";";
+
+            return $queryString;
+        }
+
+        // Generates a full query string (including the terminating ";") that
         // contains a SELECT statement including a WHERE and an ORDER BY
         // clause.
         //
@@ -53,8 +76,11 @@ namespace LittleGoWeb {
         //
         // The fourth specified array lists how each ORDER BY column should be
         // ordered. The array must have the same number of elements as the
-        // second array. A true value orders the column ascending, a false
+        // third array. A true value orders the column ascending, a false
         // value orders the column descending.
+        //
+        // The resulting query string contains parameters that must be bound
+        // to a prepared statement.
         public function getSelectStatementWithOrderByAndWhereClause(string $tableName, array $columnNames, array $whereColumnNames, array $orderByColumnNames, array $orderings): string
         {
             $queryString = $this->getSelectStatement($tableName, $columnNames);
@@ -278,6 +304,22 @@ namespace LittleGoWeb {
             return $this->getColumnsEqualValues($columnNames, SQL_OPERATOR_AND);
         }
 
+        // Generates a query fragment that can be used in a WHERE clause. The
+        // query fragment does not include the "WHERE" SQL keyword.
+        //
+        // The parameter specifies the column name for which the condition
+        // should be generated.
+        //
+        // The resulting query fragment uses the "<>" operator to compare the
+        // column content with a value.
+        //
+        // The resulting query fragment contains parameters that must be bound
+        // to a prepared statement.
+        public function getWhereColumnNotEqualsValue(string $columnName): string
+        {
+            return $this->getColumnNotEqualsValue($columnName);
+        }
+
         // Generates a query fragment that can be used in an UPDATE statement.
         // The query fragment does not include the "UPDATE" SQL keyword.
         //
@@ -297,7 +339,10 @@ namespace LittleGoWeb {
         // with corresponding parameter values using the "=" operator.
         //
         // The specified operator is used to separate the individual
-        // "columnName = value" pairs.
+        // "columnName = value" pairs. For instance, this could be the logical
+        // operator "and" to combine multiple conditions in a WHERE clause.
+        // But it could also be a comma (",") separator to create a list of
+        // assignments in an UPDATE statement.
         //
         // The resulting query fragment contains parameters that must be bound
         // to a prepared statement.
@@ -322,8 +367,29 @@ namespace LittleGoWeb {
         // This is private helper function.
         private function getColumnEqualsValue(string $columnName): string
         {
+            return $this->getColumnComparisonWithValue($columnName, SQL_OPERATOR_EQUALS);
+        }
+
+        // Generates a query fragment that combines the specified column name
+        // with a parameter value using the "<>" operator.
+        //
+        // This is private helper function.
+        private function getColumnNotEqualsValue(string $columnName): string
+        {
+            return $this->getColumnComparisonWithValue($columnName, SQL_OPERATOR_NOTEQUALS);
+        }
+
+        // Generates a query fragment that combines the specified column name
+        // with a parameter value using the specified comparison operator.
+        //
+        // This only works for operators that have a left-hand-side and a
+        // right-hand-side operator.
+        //
+        // This is private helper function.
+        private function getColumnComparisonWithValue(string $columnName, string $comparisonOperator): string
+        {
             $queryFragment = $columnName;
-            $queryFragment .= SQL_OPERATOR_EQUALS;
+            $queryFragment .= $comparisonOperator;
             $queryFragment .= $this->getParameterNameForColumName($columnName);
 
             return $queryFragment;

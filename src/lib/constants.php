@@ -68,10 +68,12 @@ namespace LittleGoWeb
     // SQL query generation
     const PREPARED_STATEMENT_PARAMETER_PREFIX = ":";
     const SQL_QUOTE_CHARACTER = "`";
+    const SQL_OBJECT_SEPARATOR = ".";
     const SQL_NAME_SEPARATOR = ".";
     const SQL_OPERATOR_AND = " and ";
     const SQL_OPERATOR_OR = " or ";
     const SQL_OPERATOR_EQUALS = " = ";
+    const SQL_OPERATOR_NOTEQUALS = " <> ";
     const SQL_OPERATOR_COMMA = ", ";
     const SQL_OPERATOR_PARANTHESIS_OPEN = " ( ";
     const SQL_OPERATOR_PARANTHESIS_CLOSE = " ) ";
