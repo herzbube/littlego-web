@@ -40,32 +40,32 @@ var GameRequest = (function ()
 
         this.createTime = startTimeToString(jsonObject.createTime * 1000);
 
-        if (-1 === jsonObject.requestedBoardSize)
+        if (GAMEREQUEST_NOPREFERENCE === jsonObject.requestedBoardSize)
             this.requestedBoardSize = STRING_NOPREFERENCE;
         else
             this.requestedBoardSize = boardSizeToString(jsonObject.requestedBoardSize);
 
-        if (-1 === jsonObject.requestedStoneColor)
+        if (GAMEREQUEST_NOPREFERENCE === jsonObject.requestedStoneColor)
             this.requestedStoneColor = STRING_NOPREFERENCE;
         else
             this.requestedStoneColor = colorToString(jsonObject.requestedStoneColor);
 
-        if (-1 === jsonObject.requestedHandicap)
+        if (GAMEREQUEST_NOPREFERENCE === jsonObject.requestedHandicap)
             this.requestedHandicap = STRING_NOPREFERENCE;
         else
             this.requestedHandicap = handicapToString(jsonObject.requestedHandicap);
 
-        if (-1 === jsonObject.requestedKomi)
+        if (GAMEREQUEST_NOPREFERENCE === jsonObject.requestedKomi)
             this.requestedKomi = STRING_NOPREFERENCE;
         else
             this.requestedKomi = komiToString(jsonObject.requestedKomi);
 
-        if (-1 === jsonObject.requestedKoRule)
+        if (GAMEREQUEST_NOPREFERENCE === jsonObject.requestedKoRule)
             this.requestedKoRule = STRING_NOPREFERENCE;
         else
             this.requestedKoRule = koRuleToString(jsonObject.requestedKoRule);
 
-        if (-1 === jsonObject.requestedScoringSystem)
+        if (GAMEREQUEST_NOPREFERENCE === jsonObject.requestedScoringSystem)
             this.requestedScoringSystem = STRING_NOPREFERENCE;
         else
             this.requestedScoringSystem = scoringSystemToString(jsonObject.requestedScoringSystem);
