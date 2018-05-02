@@ -13,7 +13,7 @@ namespace LittleGoWeb
 
         public function __construct(Config $config)
         {
-            $this->clients = new \SplObjectStorage;
+            $this->clients = [];
             $this->config = $config;
 
             // We immediately discard the DbAccess object because we don't
@@ -26,9 +26,19 @@ namespace LittleGoWeb
             echo "WebSocket server is now running\n";
         }
 
+        private function getWebSocketClient(ConnectionInterface $conn) : WebSocketClient
+        {
+            $resourceID = $conn->resourceId;
+            if (array_key_exists($resourceID, $this->clients))
+                return $this->clients[$resourceID];
+            else
+                return null;
+        }
+
         public function onOpen(ConnectionInterface $conn): void
         {
-            $this->clients->attach($conn);
+            $webSocketClient = new WebSocketClient($conn);
+            $this->clients[$conn->resourceId] = $webSocketClient;
             echo "New connection! ({$conn->resourceId})\n";
         }
 
@@ -41,28 +51,30 @@ namespace LittleGoWeb
             $messageType = $webSocketMessage->getMessageType();
             echo "Received message '$messageType' from connection! ({$from->resourceId})\n";
 
+            $webSocketClient = $this->getWebSocketClient($from);
+
             switch ($messageType)
             {
                 case WEBSOCKET_REQUEST_TYPE_LOGIN:
-                    $this->handleLogin($from, $webSocketMessage->getData());
+                    $this->handleLogin($webSocketClient, $webSocketMessage->getData());
                     break;
                 case WEBSOCKET_REQUEST_TYPE_LOGOUT:
-                    $this->handleLogout($from, $webSocketMessage->getData());
+                    $this->handleLogout($webSocketClient, $webSocketMessage->getData());
                     break;
                 case WEBSOCKET_REQUEST_TYPE_REGISTERACCOUNT:
-                    $this->handleRegisterAccount($from, $webSocketMessage->getData());
+                    $this->handleRegisterAccount($webSocketClient, $webSocketMessage->getData());
                     break;
                 case WEBSOCKET_REQUEST_TYPE_VALIDATESESSION:
-                    $this->handleValidateSession($from, $webSocketMessage->getData());
+                    $this->handleValidateSession($webSocketClient, $webSocketMessage->getData());
                     break;
                 case WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEREQUEST:
-                    $this->handleSubmitNewGameRequest($from, $webSocketMessage->getData());
+                    $this->handleSubmitNewGameRequest($webSocketClient, $webSocketMessage->getData());
                     break;
                 case WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTS:
-                    $this->handleGetGameRequests($from, $webSocketMessage->getData());
+                    $this->handleGetGameRequests($webSocketClient, $webSocketMessage->getData());
                     break;
                 case WEBSOCKET_REQUEST_TYPE_CANCELGAMEREQUEST:
-                    $this->handleCancelGameRequest($from, $webSocketMessage->getData());
+                    $this->handleCancelGameRequest($webSocketClient, $webSocketMessage->getData());
                     break;
                 default:
                     echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
@@ -71,17 +83,19 @@ namespace LittleGoWeb
 
         public function onClose(ConnectionInterface $conn): void
         {
-            $this->clients->detach($conn);
+            unset($this->clients[$conn->resourceId]);
             echo "Connection {$conn->resourceId} has disconnected\n";
         }
 
         public function onError(ConnectionInterface $conn, \Exception $e): void
         {
             echo "An error has occurred: {$e->getMessage()}\n";
+            $webSocketClient = $this->getWebSocketClient($conn);
+            $webSocketClient->invalidateAuthentication();
             $conn->close();
         }
 
-        private function handleLogin(ConnectionInterface $from, array $messageData): void
+        private function handleLogin(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_LOGIN;
             // Use the same message for both failures - we don't want to give
@@ -97,14 +111,14 @@ namespace LittleGoWeb
             $user = $dbAccess->findUserByEmailAddress($emailAddress);
             if ($user === null)
             {
-                $this->sendErrorResponse($from, $webSocketResponseType, $webSocketResponseDefaultErrorMessage);
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $webSocketResponseDefaultErrorMessage);
                 return;
             }
 
             $passwordIsValid = $this->verifyPassword($password, $user->getPasswordHash());
             if (! $passwordIsValid)
             {
-                $this->sendErrorResponse($from, $webSocketResponseType, $webSocketResponseDefaultErrorMessage);
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $webSocketResponseDefaultErrorMessage);
                 return;
             }
 
@@ -118,7 +132,7 @@ namespace LittleGoWeb
             if ($sessionID === -1)
             {
                 $errorMessage = "Failed to store session data in database";
-                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
                 return;
             }
 
@@ -129,7 +143,7 @@ namespace LittleGoWeb
                     WEBSOCKET_MESSAGEDATA_KEY_USERINFO => $user->toJsonObject()
                 ];
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
-            $from->send($webSocketMessage->toJsonString());
+            $webSocketClient->send($webSocketMessage);
         }
 
         private function verifyPassword(string $password, $passwordHash): bool
@@ -157,7 +171,7 @@ namespace LittleGoWeb
             return $sessionID;
         }
 
-        private function handleLogout(ConnectionInterface $from, array $messageData): void
+        private function handleLogout(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_LOGOUT;
 
@@ -173,16 +187,16 @@ namespace LittleGoWeb
                         WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
                     ];
                 $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
-                $from->send($webSocketMessage->toJsonString());
+                $webSocketClient->send($webSocketMessage);
             }
             else
             {
                 $errorMessage = "Invalid session key";
-                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
             }
         }
 
-        private function handleRegisterAccount(ConnectionInterface $from, array $messageData): void
+        private function handleRegisterAccount(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_REGISTERACCOUNT;
 
@@ -196,7 +210,7 @@ namespace LittleGoWeb
             if ($user !== null)
             {
                 $errorMessage = "Another account with this email address already exists";
-                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
                 return;
             }
 
@@ -204,7 +218,7 @@ namespace LittleGoWeb
             if ($user !== null)
             {
                 $errorMessage = "Another account with this display name already exists";
-                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
                 return;
             }
 
@@ -216,7 +230,7 @@ namespace LittleGoWeb
             if ($userID === -1)
             {
                 $errorMessage = "Failed to store user data in database";
-                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
                 return;
             }
 
@@ -225,7 +239,7 @@ namespace LittleGoWeb
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
                 ];
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
-            $from->send($webSocketMessage->toJsonString());
+            $webSocketClient->send($webSocketMessage);
         }
 
         private function generatePasswordHash(string $password): string
@@ -241,7 +255,7 @@ namespace LittleGoWeb
             return $passwordHash;
         }
 
-        private function handleValidateSession(ConnectionInterface $from, array $messageData): void
+        private function handleValidateSession(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION;
 
@@ -262,23 +276,23 @@ namespace LittleGoWeb
                             WEBSOCKET_MESSAGEDATA_KEY_USERINFO => $user->toJsonObject()
                         ];
                     $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
-                    $from->send($webSocketMessage->toJsonString());
+                    $webSocketClient->send($webSocketMessage);
                 }
                 else
                 {
                     $dbAccess->deleteSessionBySessionKey($sessionKey);
 
                     $errorMessage = "Session has invalid user ID";
-                    $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                    $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
                 }
             }
             else
             {
-                $this->sendInvalidSession($from, $webSocketResponseType);
+                $this->sendInvalidSession($webSocketClient, $webSocketResponseType);
             }
         }
 
-        private function handleSubmitNewGameRequest(ConnectionInterface $from, array $messageData): void
+        private function handleSubmitNewGameRequest(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEREQUEST;
 
@@ -295,7 +309,7 @@ namespace LittleGoWeb
             $session = $dbAccess->findSessionByKey($sessionKey);
             if ($session === null)
             {
-                $this->sendInvalidSession($from, $webSocketResponseType);
+                $this->sendInvalidSession($webSocketClient, $webSocketResponseType);
                 return;
             }
 
@@ -317,7 +331,7 @@ namespace LittleGoWeb
             if ($gameRequestID === -1)
             {
                 $errorMessage = "Failed to store game request in database";
-                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
                 return;
             }
 
@@ -326,10 +340,10 @@ namespace LittleGoWeb
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
                 ];
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
-            $from->send($webSocketMessage->toJsonString());
+            $webSocketClient->send($webSocketMessage);
         }
 
-        private function handleGetGameRequests(ConnectionInterface $from, array $messageData): void
+        private function handleGetGameRequests(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS;
 
@@ -340,14 +354,14 @@ namespace LittleGoWeb
             $session = $dbAccess->findSessionByKey($sessionKey);
             if ($session === null)
             {
-                $this->sendInvalidSession($from, $webSocketResponseType);
+                $this->sendInvalidSession($webSocketClient, $webSocketResponseType);
                 return;
             }
 
-            $this->findAndSendGameRequests($from, $webSocketResponseType, $dbAccess, $session);
+            $this->findAndSendGameRequests($webSocketClient, $webSocketResponseType, $dbAccess, $session);
         }
 
-        private function handleCancelGameRequest(ConnectionInterface $from, array $messageData): void
+        private function handleCancelGameRequest(WebSocketClient $webSocketClient, array $messageData): void
         {
             $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST;
 
@@ -359,30 +373,30 @@ namespace LittleGoWeb
             $session = $dbAccess->findSessionByKey($sessionKey);
             if ($session === null)
             {
-                $this->sendInvalidSession($from, $webSocketResponseType);
+                $this->sendInvalidSession($webSocketClient, $webSocketResponseType);
                 return;
             }
 
             $success = $dbAccess->deleteGameRequestByGameRequestID($gameRequestID);
             if ($success)
             {
-                $this->findAndSendGameRequests($from, $webSocketResponseType, $dbAccess, $session);
+                $this->findAndSendGameRequests($webSocketClient, $webSocketResponseType, $dbAccess, $session);
             }
             else
             {
                 $errorMessage = "Invalid game request ID";
-                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
             }
         }
 
-        private function findAndSendGameRequests(ConnectionInterface $from, string $webSocketResponseType, DbAccess $dbAccess, Session $session): void
+        private function findAndSendGameRequests(WebSocketClient $webSocketClient, string $webSocketResponseType, DbAccess $dbAccess, Session $session): void
         {
             $userID = $session->getUserID();
             $gameRequests = $dbAccess->findGameRequestsByUserID($userID);
             if ($gameRequests === null)
             {
                 $errorMessage = "Failed to retrieve game requests data from database";
-                $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
                 return;
             }
 
@@ -396,16 +410,16 @@ namespace LittleGoWeb
                     WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTS => $gameRequestsJSON
                 ];
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
-            $from->send($webSocketMessage->toJsonString());
+            $webSocketClient->send($webSocketMessage);
         }
 
-        private function sendInvalidSession(ConnectionInterface $from, string $webSocketResponseType): void
+        private function sendInvalidSession(WebSocketClient $webSocketClient, string $webSocketResponseType): void
         {
             $errorMessage = "Invalid session key";
-            $this->sendErrorResponse($from, $webSocketResponseType, $errorMessage);
+            $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
         }
 
-        private function sendErrorResponse(ConnectionInterface $from, string $webSocketResponseType, string $errorMessage): void
+        private function sendErrorResponse(WebSocketClient $webSocketClient, string $webSocketResponseType, string $errorMessage): void
         {
             $webSocketResponseData =
                 [
@@ -413,7 +427,7 @@ namespace LittleGoWeb
                     WEBSOCKET_MESSAGEDATA_KEY_ERRORMESSAGE => $errorMessage
                 ];
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
-            $from->send($webSocketMessage->toJsonString());
+            $webSocketClient->send($webSocketMessage);
         }
     }
 }
