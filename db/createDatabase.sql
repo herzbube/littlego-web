@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 02, 2018 at 06:54 AM
+-- Generation Time: May 02, 2018 at 03:44 PM
 -- Server version: 5.7.20
 -- PHP Version: 7.1.13
 
@@ -33,7 +33,8 @@ CREATE TABLE `gamerequest` (
   `requestedKomi` float NOT NULL,
   `requestedKoRule` tinyint(4) NOT NULL,
   `requestedScoringSystem` tinyint(4) NOT NULL,
-  `userID` bigint(20) UNSIGNED NOT NULL
+  `userID` bigint(20) UNSIGNED NOT NULL,
+  `state` tinyint(4) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
