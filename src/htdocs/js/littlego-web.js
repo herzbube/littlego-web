@@ -579,7 +579,7 @@
                 return onResumeGameInProgress;
             case OPERATION_TYPE_FINISHED_GAME_VIEW:
                 return onViewFinishedGame;
-            case OPERATION_TYPE_GAME_REQUEST_RESUME:
+            case OPERATION_TYPE_GAME_REQUEST_CONFIRM:
             case OPERATION_TYPE_GAME_IN_PROGRESS_RESIGN:
             case OPERATION_TYPE_FINISHED_GAME_EMAIL_RESULT:
             case OPERATION_TYPE_FINISHED_GAME_DELETE:

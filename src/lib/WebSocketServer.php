@@ -537,6 +537,11 @@ namespace LittleGoWeb
                 $errorMessage = "Invalid game request ID";
                 $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
             }
+            else if ($gameRequest->getState() !== GAMEREQUEST_STATE_UNPAIRED)
+            {
+                $errorMessage = "Game request is already paired";
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+            }
 
             // Must delete pairings (active and rejected) first before we can
             // delete the game request itself

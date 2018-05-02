@@ -69,6 +69,8 @@ var GameRequest = (function ()
             this.requestedScoringSystem = STRING_NOPREFERENCE;
         else
             this.requestedScoringSystem = scoringSystemToString(jsonObject.requestedScoringSystem);
+
+        this.state = jsonObject.state;
     }
 
     // Returns an array that contains the values that make up the GameRequest
@@ -92,10 +94,19 @@ var GameRequest = (function ()
     // Returns an array of DataItemAction objects.
     GameRequest.prototype.getDataItemActions = function()
     {
-        return [
-            new DataItemAction(OPERATION_TYPE_GAME_REQUEST_RESUME, this, "Resume", ACTION_TYPE_PRIMARY),
-            new DataItemAction(OPERATION_TYPE_GAME_REQUEST_CANCEL, this, "Cancel", ACTION_TYPE_DANGER)
-        ];
+        switch (this.state)
+        {
+            case GAMEREQUEST_STATE_UNPAIRED:
+                return [
+                    new DataItemAction(OPERATION_TYPE_GAME_REQUEST_CANCEL, this, "Cancel", ACTION_TYPE_DANGER)
+                ];
+            case GAMEREQUEST_STATE_UNCONFIRMEDPAIRING:
+                return [
+                    new DataItemAction(OPERATION_TYPE_GAME_REQUEST_CONFIRM, this, "Confirm", ACTION_TYPE_PRIMARY),
+                ];
+            default:
+                return [];
+        }
     };
 
     return GameRequest;
