@@ -64,25 +64,25 @@ namespace LittleGoWeb
             switch ($webSocketRequestType)
             {
                 case WEBSOCKET_REQUEST_TYPE_LOGIN:
-                    $this->handleLogin($webSocketClient, $webSocketMessage->getData());
+                    $this->handleLogin($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
                     break;
                 case WEBSOCKET_REQUEST_TYPE_LOGOUT:
-                    $this->handleLogout($webSocketClient);
+                    $this->handleLogout($webSocketClient, $webSocketResponseType);
                     break;
                 case WEBSOCKET_REQUEST_TYPE_REGISTERACCOUNT:
-                    $this->handleRegisterAccount($webSocketClient, $webSocketMessage->getData());
+                    $this->handleRegisterAccount($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
                     break;
                 case WEBSOCKET_REQUEST_TYPE_VALIDATESESSION:
-                    $this->handleValidateSession($webSocketClient, $webSocketMessage->getData());
+                    $this->handleValidateSession($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
                     break;
                 case WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEREQUEST:
-                    $this->handleSubmitNewGameRequest($webSocketClient, $webSocketMessage->getData());
+                    $this->handleSubmitNewGameRequest($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
                     break;
                 case WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTS:
-                    $this->handleGetGameRequests($webSocketClient);
+                    $this->handleGetGameRequests($webSocketClient, $webSocketResponseType);
                     break;
                 case WEBSOCKET_REQUEST_TYPE_CANCELGAMEREQUEST:
-                    $this->handleCancelGameRequest($webSocketClient, $webSocketMessage->getData());
+                    $this->handleCancelGameRequest($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
                     break;
                 default:
                     echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
@@ -207,10 +207,8 @@ namespace LittleGoWeb
             }
         }
 
-        private function handleLogin(WebSocketClient $webSocketClient, array $messageData): void
+        private function handleLogin(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType): void
         {
-            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_LOGIN;
-
             // Use the same message for both failures - we don't want to give
             // an attacker a hint whether he guessed the email address
             // correctly
@@ -287,10 +285,8 @@ namespace LittleGoWeb
             return $sessionID;
         }
 
-        private function handleLogout(WebSocketClient $webSocketClient): void
+        private function handleLogout(WebSocketClient $webSocketClient, $webSocketResponseType): void
         {
-            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_LOGOUT;
-
             $sessionKey = $webSocketClient->getSession()->getSessionKey();
 
             // The client loses its authentication regardless of the
@@ -316,10 +312,8 @@ namespace LittleGoWeb
             }
         }
 
-        private function handleRegisterAccount(WebSocketClient $webSocketClient, array $messageData): void
+        private function handleRegisterAccount(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType): void
         {
-            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_REGISTERACCOUNT;
-
             $emailAddress = $messageData[WEBSOCKET_MESSAGEDATA_KEY_EMAILADDRESS];
             $displayName = $messageData[WEBSOCKET_MESSAGEDATA_KEY_DISPLAYNAME];
             $password = $messageData[WEBSOCKET_MESSAGEDATA_KEY_PASSWORD];
@@ -375,10 +369,8 @@ namespace LittleGoWeb
             return $passwordHash;
         }
 
-        private function handleValidateSession(WebSocketClient $webSocketClient, array $messageData): void
+        private function handleValidateSession(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType): void
         {
-            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION;
-
             $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
 
             $dbAccess = new DbAccess($this->config);
@@ -414,10 +406,8 @@ namespace LittleGoWeb
             }
         }
 
-        private function handleSubmitNewGameRequest(WebSocketClient $webSocketClient, array $messageData): void
+        private function handleSubmitNewGameRequest(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType): void
         {
-            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEREQUEST;
-
             $requestedBoardSize = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDBOARDSIZE]);
             $requestedStoneColor = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDSTONECOLOR]);
             $requestedHandicap = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDHANDICAP]);
@@ -457,19 +447,15 @@ namespace LittleGoWeb
             $webSocketClient->send($webSocketMessage);
         }
 
-        private function handleGetGameRequests(WebSocketClient $webSocketClient): void
+        private function handleGetGameRequests(WebSocketClient $webSocketClient, $webSocketResponseType): void
         {
-            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS;
-
             $dbAccess = new DbAccess($this->config);
 
             $this->findAndSendGameRequests($webSocketClient, $webSocketResponseType, $dbAccess);
         }
 
-        private function handleCancelGameRequest(WebSocketClient $webSocketClient, array $messageData): void
+        private function handleCancelGameRequest(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType): void
         {
-            $webSocketResponseType = WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST;
-
             $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
 
             $dbAccess = new DbAccess($this->config);
