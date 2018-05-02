@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Apr 29, 2018 at 04:45 PM
+-- Generation Time: May 02, 2018 at 06:54 AM
 -- Server version: 5.7.20
 -- PHP Version: 7.1.13
 
@@ -34,6 +34,25 @@ CREATE TABLE `gamerequest` (
   `requestedKoRule` tinyint(4) NOT NULL,
   `requestedScoringSystem` tinyint(4) NOT NULL,
   `userID` bigint(20) UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `gamerequestpairing`
+--
+
+CREATE TABLE `gamerequestpairing` (
+  `gameRequestPairingID` bigint(20) UNSIGNED NOT NULL,
+  `createTime` bigint(20) NOT NULL,
+  `blackPlayerGameRequestID` bigint(20) UNSIGNED NOT NULL,
+  `whitePlayerGameRequestID` bigint(20) UNSIGNED NOT NULL,
+  `boardSize` tinyint(4) NOT NULL,
+  `handicap` tinyint(4) NOT NULL,
+  `komi` float NOT NULL,
+  `koRule` tinyint(4) NOT NULL,
+  `scoringSystem` tinyint(4) NOT NULL,
+  `isRejected` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -74,6 +93,15 @@ ALTER TABLE `gamerequest`
   ADD KEY `userID` (`userID`);
 
 --
+-- Indexes for table `gamerequestpairing`
+--
+ALTER TABLE `gamerequestpairing`
+  ADD PRIMARY KEY (`gameRequestPairingID`),
+  ADD KEY `gamerequestpairing_blackPlayerGameRequestID` (`blackPlayerGameRequestID`),
+  ADD KEY `gamerequestpairing_whitePlayerGameRequestID` (`whitePlayerGameRequestID`),
+  ADD KEY `createTime` (`createTime`);
+
+--
 -- Indexes for table `session`
 --
 ALTER TABLE `session`
@@ -100,6 +128,12 @@ ALTER TABLE `gamerequest`
   MODIFY `gameRequestID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `gamerequestpairing`
+--
+ALTER TABLE `gamerequestpairing`
+  MODIFY `gameRequestPairingID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `session`
 --
 ALTER TABLE `session`
@@ -120,6 +154,13 @@ ALTER TABLE `user`
 --
 ALTER TABLE `gamerequest`
   ADD CONSTRAINT `gamerequest_userID` FOREIGN KEY (`userID`) REFERENCES `user` (`userID`);
+
+--
+-- Constraints for table `gamerequestpairing`
+--
+ALTER TABLE `gamerequestpairing`
+  ADD CONSTRAINT `gamerequestpairing_blackPlayerGameRequestID` FOREIGN KEY (`blackPlayerGameRequestID`) REFERENCES `gamerequest` (`gameRequestID`),
+  ADD CONSTRAINT `gamerequestpairing_whitePlayerGameRequestID` FOREIGN KEY (`whitePlayerGameRequestID`) REFERENCES `gamerequest` (`gameRequestID`);
 
 --
 -- Constraints for table `session`
