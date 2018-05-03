@@ -479,7 +479,7 @@ namespace LittleGoWeb
             $selectStatement = $this->pdo->prepare($selectQueryString);
 
             $selectStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_USERID),
+                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID),
                 $gameRequestID,
                 PDO::PARAM_INT);
 
