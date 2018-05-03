@@ -354,7 +354,7 @@ namespace LittleGoWeb
         {
             if ($gameRequestToMatch->getRequestedKomi() === $gameRequestCandidate->getRequestedKomi())
             {
-                if ($gameRequestToMatch->getRequestedKomi() === GAMEREQUEST_NOPREFERENCE)
+                if ($gameRequestToMatch->getRequestedKomi() === floatval(GAMEREQUEST_NOPREFERENCE))
                 {
                     if ($handicap === HANDICAP_NONE)
                     {
@@ -373,11 +373,11 @@ namespace LittleGoWeb
                     $komi = $gameRequestToMatch->getRequestedKomi();
                 }
             }
-            else if ($gameRequestToMatch->getRequestedKomi() === GAMEREQUEST_NOPREFERENCE)
+            else if ($gameRequestToMatch->getRequestedKomi() === floatval(GAMEREQUEST_NOPREFERENCE))
             {
                 $komi = $gameRequestCandidate->getRequestedKomi();
             }
-            else if ($gameRequestCandidate->getRequestedKomi() === GAMEREQUEST_NOPREFERENCE)
+            else if ($gameRequestCandidate->getRequestedKomi() === floatval(GAMEREQUEST_NOPREFERENCE))
             {
                 $komi = $gameRequestToMatch->getRequestedKomi();
             }
