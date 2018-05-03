@@ -130,7 +130,7 @@ Optionale weitere Anforderungen:
 * PAR-055 : Das System versucht immer dann, eine Paarung zu erstellen, wenn eine neue Spielanfrage in die Matchmaking Queue gelangt.
 * PAR-056 : Das System legt eine neue Spielanfrage ans Ende der Matchmaking Queue.
 * PAR-057 : Das System durchsucht die Matchmaking Queue nach einer passenden zweiten Spielanfrage von vorne. Die schon am längsten in der Queue befindliche Spielanfrage kommt somit zuerst zum Zug.
-* PAR-058 : Findet das System keine passende zweite Spielanfrage, so informiert es den Benutzer, der die neue Spiel darüber, dass nach anderen passenden Spielanfragen gesucht wird. Die Spielanfrage verbleibt vorerst ohne Paarung in der Matchmaking Queue.
+* PAR-058 : Findet das System keine passende zweite Spielanfrage, so informiert es den Benutzer, der die neue Spielanfrage gestartet hat, darüber, dass nach anderen passenden Spielanfragen gesucht wird. Die Spielanfrage verbleibt vorerst ohne Paarung in der Matchmaking Queue.
 * PAR-059 : Findet das System eine passende zweite Spielanfrage, so überprüft das System, ob der zweite Benutzer über das Netzwerk erreichbar ist (z.B. für den Fall, dass der schon länger wartende zweite Benutzer das Browser Tab geschlossen hat, o.ä.).
 * PAR-060 : Ist der zweite Benutzer nicht erreichbar, so sucht das System nach anderen passenden Spielanfragen.
 * PAR-061 : Ist der zweite Benutzer erreichbar, so nimmt das System die Paarung vor.
