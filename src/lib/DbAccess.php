@@ -56,7 +56,16 @@ namespace LittleGoWeb
                 $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_SESSION_SESSIONKEY),
                 $sessionKey,
                 PDO::PARAM_STR);
-            $selectStatement->execute();
+
+            try
+            {
+                $selectStatement->execute();
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return null;
+            }
 
             $row = $selectStatement->fetch(PDO::FETCH_ASSOC);
             if ($row)
@@ -113,6 +122,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
+                echo "PDOException: {$exception->getMessage()}\n";
                 return -1;
             }
         }
@@ -143,13 +153,21 @@ namespace LittleGoWeb
                 $session->getSessionID(),
                 PDO::PARAM_INT);
 
-            $updateStatement->execute();
+            try
+            {
+                $updateStatement->execute();
 
-            $numberOfUpdatedRows = $updateStatement->rowCount();
-            if ($numberOfUpdatedRows === 1)
-                return true;
-            else
+                $numberOfUpdatedRows = $updateStatement->rowCount();
+                if ($numberOfUpdatedRows === 1)
+                    return true;
+                else
+                    return false;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
                 return false;
+            }
         }
 
         // Deletes data for the session with the specified session key from
@@ -171,13 +189,21 @@ namespace LittleGoWeb
                 $sessionKey,
                 PDO::PARAM_STR);
 
-            $deleteStatement->execute();
+            try
+            {
+                $deleteStatement->execute();
 
-            $numberOfDeletedRows = $deleteStatement->rowCount();
-            if ($numberOfDeletedRows === 1)
-                return true;
-            else
+                $numberOfDeletedRows = $deleteStatement->rowCount();
+                if ($numberOfDeletedRows === 1)
+                    return true;
+                else
+                    return false;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
                 return false;
+            }
         }
 
         // Obtains the user data for the specified user ID from the database
@@ -254,7 +280,15 @@ namespace LittleGoWeb
         // object with the data, or null if the database has no user data.
         private function executePdoStatementFindUser(\PDOStatement $selectStatement): ?User
         {
-            $selectStatement->execute();
+            try
+            {
+                $selectStatement->execute();
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return null;
+            }
 
             $row = $selectStatement->fetch(PDO::FETCH_ASSOC);
             if ($row)
@@ -311,6 +345,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
+                echo "PDOException: {$exception->getMessage()}\n";
                 return -1;
             }
         }
@@ -384,6 +419,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
+                echo "PDOException: {$exception->getMessage()}\n";
                 return -1;
             }
         }
@@ -414,13 +450,21 @@ namespace LittleGoWeb
                 $gameRequest->getGameRequestID(),
                 PDO::PARAM_INT);
 
-            $updateStatement->execute();
+            try
+            {
+                $updateStatement->execute();
 
-            $numberOfUpdatedRows = $updateStatement->rowCount();
-            if ($numberOfUpdatedRows === 1)
-                return true;
-            else
+                $numberOfUpdatedRows = $updateStatement->rowCount();
+                if ($numberOfUpdatedRows === 1)
+                    return true;
+                else
+                    return false;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
                 return false;
+            }
         }
 
         // Deletes data for the game request with the specified game request
@@ -442,13 +486,21 @@ namespace LittleGoWeb
                 $gameRequestID,
                 PDO::PARAM_INT);
 
-            $deleteStatement->execute();
+            try
+            {
+                $deleteStatement->execute();
 
-            $numberOfDeletedRows = $deleteStatement->rowCount();
-            if ($numberOfDeletedRows === 1)
-                return true;
-            else
+                $numberOfDeletedRows = $deleteStatement->rowCount();
+                if ($numberOfDeletedRows === 1)
+                    return true;
+                else
+                    return false;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
                 return false;
+            }
         }
 
         // Obtains the game request data for the specified game request ID
@@ -624,6 +676,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
+                echo "PDOException: {$exception->getMessage()}\n";
                 return null;
             }
         }
@@ -763,6 +816,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
+                echo "PDOException: {$exception->getMessage()}\n";
                 return null;
             }
         }
@@ -837,6 +891,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
+                echo "PDOException: {$exception->getMessage()}\n";
                 return -1;
             }
         }
@@ -866,7 +921,15 @@ namespace LittleGoWeb
                     $gameRequestID,
                     PDO::PARAM_INT);
 
-                $deleteStatement->execute();
+                try
+                {
+                    $deleteStatement->execute();
+                }
+                catch (\PDOException $exception)
+                {
+                    echo "PDOException: {$exception->getMessage()}\n";
+                    return;
+                }
             }
         }
     }
