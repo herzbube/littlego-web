@@ -32,7 +32,7 @@ namespace LittleGoWeb {
         {
             $queryString = $this->getSelectStatement($tableName, $columnNames);
             $queryString .= " where ";
-            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames);
+            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames, SQL_OPERATOR_AND);
             $queryString .= ";";
 
             return $queryString;
@@ -85,7 +85,7 @@ namespace LittleGoWeb {
         {
             $queryString = $this->getSelectStatement($tableName, $columnNames);
             $queryString .= " where ";
-            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames);
+            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames, SQL_OPERATOR_AND);
             $queryString .= " order by ";
             $queryString .= $this->getColumnsWithOrderings($orderByColumnNames, $orderings);
             $queryString .= ";";
@@ -152,7 +152,7 @@ namespace LittleGoWeb {
         {
             $queryString = $this->getUpdateStatement($tableName, $columnNames);
             $queryString .= " where ";
-            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames);
+            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames, SQL_OPERATOR_AND);
             $queryString .= ";";
 
             return $queryString;
@@ -212,7 +212,7 @@ namespace LittleGoWeb {
         {
             $queryString = $this->getDeleteStatement($tableName);
             $queryString .= " where ";
-            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames);
+            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames, SQL_OPERATOR_AND);
             $queryString .= ";";
 
             return $queryString;
@@ -294,14 +294,14 @@ namespace LittleGoWeb {
         // should be generated.
         //
         // The resulting query fragment uses the "=" operator to compare the
-        // column content with a value, and the "AND" operator to combine the
-        // individual conditions.
+        // column content with a value, and the specified logical operator to
+        // combine the individual conditions.
         //
         // The resulting query fragment contains parameters that must be bound
         // to a prepared statement.
-        public function getWhereColumnsEqualValues(array $columnNames): string
+        public function getWhereColumnsEqualValues(array $columnNames, string $logicalOperator): string
         {
-            return $this->getColumnsEqualValues($columnNames, SQL_OPERATOR_AND);
+            return $this->getColumnsEqualValues($columnNames, $logicalOperator);
         }
 
         // Generates a query fragment that can be used in a WHERE clause. The

@@ -628,6 +628,68 @@ namespace LittleGoWeb
             }
         }
 
+        // Obtains the game request pairing data for the specified
+        // game request ID from the database and returns the data as a
+        // GameRequestPairing object. Returns null if the database has
+        // no game request pairing data for the specified game request ID.
+        public function findGameRequestPairingByGameRequestID(int $gameRequestID) : ?GameRequestPairing
+        {
+            $tableName = DB_TABLE_NAME_GAMEREQUESTPAIRING;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_GAMEREQUESTPAIRINGID,
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_CREATETIME,
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_BLACKPLAYERGAMEREQUESTID,
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_WHITEPLAYERGAMEREQUESTID,
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_BOARDSIZE,
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_HANDICAP,
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_KOMI,
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_KORULE,
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_SCORINGSYSTEM,
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_ISREJECTED);
+            $whereColumns = array(
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_BLACKPLAYERGAMEREQUESTID,
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_WHITEPLAYERGAMEREQUESTID
+            );
+
+            $selectQueryString = $this->sqlGenerator->getSelectStatement(
+                $tableName,
+                $columnNames);
+            $selectQueryString .= " where ";
+            $selectQueryString .= $this->sqlGenerator->getWhereColumnsEqualValues(
+                $whereColumns,
+                SQL_OPERATOR_OR);
+            $selectQueryString .= ";";
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_BLACKPLAYERGAMEREQUESTID),
+                $gameRequestID,
+                PDO::PARAM_INT);
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_WHITEPLAYERGAMEREQUESTID),
+                $gameRequestID,
+                PDO::PARAM_INT);
+
+            try
+            {
+                $selectStatement->execute();
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return null;
+            }
+
+            $gameRequestPairings = $this->executePdoStatementFindGameRequestPairings($selectStatement);
+            if ($gameRequestPairings === null)
+                return null;
+            else if (count($gameRequestPairings) === 0)
+                return null;
+            else
+                return $gameRequestPairings[0];
+        }
+
         // Obtains all game request pairings data from the database and
         // returns the data as an array object. Returns an empty array if the
         // database has no game request pairings data.
@@ -654,6 +716,15 @@ namespace LittleGoWeb
 
             $selectStatement = $this->pdo->prepare($selectQueryString);
 
+            return $this->executePdoStatementFindGameRequestPairings($selectStatement);
+        }
+
+        // Executes the prepared PDOStatement that represents a query to
+        // find multiple rows of game request pairing data in the database.
+        // Returns an array whose elements are GameRequestPairing objects.
+        // Returns null on failure.
+        private function executePdoStatementFindGameRequestPairings(\PDOStatement $selectStatement): ?array
+        {
             try
             {
                 $selectStatement->execute();

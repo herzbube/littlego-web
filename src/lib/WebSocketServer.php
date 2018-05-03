@@ -94,6 +94,9 @@ namespace LittleGoWeb
                 case WEBSOCKET_REQUEST_TYPE_CANCELGAMEREQUEST:
                     $this->handleCancelGameRequest($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
                     break;
+                case WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTPAIRING:
+                    $this->handleGetGameRequestPairing($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
+                    break;
                 default:
                     echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
             }
@@ -131,6 +134,8 @@ namespace LittleGoWeb
                     return WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS;
                 case WEBSOCKET_REQUEST_TYPE_CANCELGAMEREQUEST:
                     return WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST;
+                case WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTPAIRING:
+                    return WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTPAIRING;
                 default:
                     throw new \Exception("Unsupported request type $webSocketRequestType");
             }
@@ -559,6 +564,40 @@ namespace LittleGoWeb
                 $errorMessage = "Failed to delete game request";
                 $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
             }
+        }
+
+        private function handleGetGameRequestPairing(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType) : void
+        {
+            $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
+
+            $dbAccess = new DbAccess($this->config);
+
+            $gameRequestPairing = $dbAccess->findGameRequestPairingByGameRequestID($gameRequestID);
+            if ($gameRequestPairing === null)
+            {
+                $errorMessage = "Failed to retrieve game request pairing data from database";
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            // No error handling required, we trust that references are OK
+            // because of foreign key constraints in the database
+            $blackPlayerGameRequestID = $gameRequestPairing->getBlackPlayerGameRequestID();
+            $blackPlayerGameRequest = $dbAccess->findGameRequestByGameRequestID($blackPlayerGameRequestID);
+            $blackPlayer = $dbAccess->findUserByID($blackPlayerGameRequest->getUserID());
+            $gameRequestPairing->setBlackPlayer($blackPlayer);
+            $whitePlayerGameRequestID = $gameRequestPairing->getWhitePlayerGameRequestID();
+            $whitePlayerGameRequest = $dbAccess->findGameRequestByGameRequestID($whitePlayerGameRequestID);
+            $whitePlayer = $dbAccess->findUserByID($whitePlayerGameRequest->getUserID());
+            $gameRequestPairing->setWhitePlayer($whitePlayer);
+
+            $webSocketResponseData =
+                [
+                    WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
+                    WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTPAIRING => $gameRequestPairing->toJsonObject()
+                ];
+            $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+            $webSocketClient->send($webSocketMessage);
         }
 
         private function findAndSendGameRequests(WebSocketClient $webSocketClient, string $webSocketResponseType, DbAccess $dbAccess): void

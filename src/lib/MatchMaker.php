@@ -160,12 +160,10 @@ namespace LittleGoWeb
                 $createTime = time();
                 $rejected = GAMEREQUESTPAIRING_ISREJECTED_DEFAULT;
 
+                // No error handling required, we trust that references are OK
+                // because of foreign key constraints in the database
                 $blackPlayerUser = $this->dbAccess->findUserByID($blackPlayerUserID);
-                if ($blackPlayerUser === null)
-                    throw new \Exception("User not for black player, user ID = " . $blackPlayerUserID);
                 $whitePlayerUser = $this->dbAccess->findUserByID($whitePlayerUserID);
-                if ($whitePlayerUser === null)
-                    throw new \Exception("User not for white player, user ID = " . $whitePlayerUserID);
 
                 $gameRequestPairing = new GameRequestPairing(
                     $gameRequestPairingID,

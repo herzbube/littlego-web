@@ -40,8 +40,7 @@
         $("#" + ID_BUTTON_LOGOUT).on("click", onLogout);
 
         $("#" + ID_BUTTON_NEW_GAME_REQUEST_MODAL_SUBMIT).on("click", onSubmitNewGameRequest);
-        $("#" + ID_BUTTON_CONFIRM_GAME_REQUEST_PAIRING_MODAL_YES).on("click", onConfirmGameRequestPairing);
-        $("#" + ID_BUTTON_CONFIRM_GAME_REQUEST_PAIRING_MODAL_NO).on("click", onRejectGameRequestPairing);
+        $("#" + ID_BUTTON_CONFIRM_GAME_REQUEST_PAIRING_MODAL_START_GAME).on("click", onConfirmGameRequestPairing);
 
         theWebSocket.addEventListener("message", function(event) {
             handleWebSocketMessage(event);
@@ -272,6 +271,30 @@
         if (success)
         {
             updateGameRequestsDataTableWithJsonData(gameRequestsJsonObjects);
+        }
+        else
+        {
+            // TODO: Add error handling
+        }
+    }
+
+    function onConfirmGameRequest(dataItemAction)
+    {
+        var gameRequest = dataItemAction.dataItem;
+
+        var messageData =
+            {
+                gameRequestID: gameRequest.gameRequestID
+            };
+        // Triggers onConfirmGameRequestComplete
+        sendWebSocketMessage(theWebSocket, WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTPAIRING, messageData);
+    }
+
+    function onConfirmGameRequestComplete(success, gameRequestPairing, errorMessage)
+    {
+        if (success)
+        {
+            showConfirmGameRequestPairingModal(gameRequestPairing);
         }
         else
         {
@@ -575,11 +598,12 @@
         {
             case OPERATION_TYPE_GAME_REQUEST_CANCEL:
                 return onCancelGameRequest;
+            case OPERATION_TYPE_GAME_REQUEST_CONFIRM:
+                return onConfirmGameRequest;
             case OPERATION_TYPE_GAME_IN_PROGRESS_RESUME:
                 return onResumeGameInProgress;
             case OPERATION_TYPE_FINISHED_GAME_VIEW:
                 return onViewFinishedGame;
-            case OPERATION_TYPE_GAME_REQUEST_CONFIRM:
             case OPERATION_TYPE_GAME_IN_PROGRESS_RESIGN:
             case OPERATION_TYPE_FINISHED_GAME_EMAIL_RESULT:
             case OPERATION_TYPE_FINISHED_GAME_DELETE:
@@ -627,40 +651,48 @@
         if (success)
         {
             if (gameRequestPairing !== undefined)
-            {
-                var opponentDisplayName;
-                var stoneColor;
-                if (gameRequestPairing.blackPlayer.userID === theSession.userInfo.userID)
-                {
-                    opponentDisplayName = gameRequestPairing.whitePlayer.displayName;
-                    stoneColor = colorToString(COLOR_BLACK);
-                }
-                else
-                {
-                    opponentDisplayName = gameRequestPairing.blackPlayer.displayName;
-                    stoneColor = colorToString(COLOR_WHITE);
-                }
-                var boardSize = boardSizeToString(gameRequestPairing.boardSize);
-                var handicap = handicapToString(gameRequestPairing.handicap);
-                var komi = komiToString(gameRequestPairing.komi);
-                var koRule = koRuleToString(gameRequestPairing.koRule);
-                var scoringSystem = scoringSystemToString(gameRequestPairing.scoringSystem);
-
-                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_OPPONENT_NAME).html(opponentDisplayName);
-                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_STONE_COLOR).html(stoneColor);
-                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_BOARD_SIZE).html(boardSize);
-                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_HANDICAP).html(handicap);
-                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_KOMI).html(komi);
-                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_KO_RULE).html(koRule);
-                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_SCORING_SYSTEM).html(scoringSystem);
-
-                $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL).modal()
-            }
+                showConfirmGameRequestPairingModal(gameRequestPairing);
         }
         else
         {
             // TODO: Show error message while data is updated in the background
         }
+    }
+
+    function showConfirmGameRequestPairingModal(gameRequestPairing)
+    {
+        var opponentDisplayName;
+        var stoneColor;
+        if (gameRequestPairing.blackPlayer.userID === theSession.userInfo.userID)
+        {
+            opponentDisplayName = gameRequestPairing.whitePlayer.displayName;
+            stoneColor = colorToString(COLOR_BLACK).toLowerCase();
+        }
+        else
+        {
+            opponentDisplayName = gameRequestPairing.blackPlayer.displayName;
+            stoneColor = colorToString(COLOR_WHITE).toLocaleLowerCase();
+        }
+        var boardSize = boardSizeToString(gameRequestPairing.boardSize);
+        var handicap = handicapToString(gameRequestPairing.handicap);
+        var komi = komiToString(gameRequestPairing.komi);
+        var koRule = koRuleToString(gameRequestPairing.koRule);
+        var scoringSystem = scoringSystemToString(gameRequestPairing.scoringSystem);
+
+        $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_OPPONENT_NAME).html(opponentDisplayName);
+        $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_STONE_COLOR).html(stoneColor);
+        $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_BOARD_SIZE).html(boardSize);
+        $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_HANDICAP).html(handicap);
+        $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_KOMI).html(komi);
+        $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_KO_RULE).html(koRule);
+        $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_SCORING_SYSTEM).html(scoringSystem);
+
+        $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL).modal()
+    }
+
+    function onConfirmGameRequestPairing(event)
+    {
+        // TODO: send message to server, server updates game request state
     }
 
     function handleWebSocketMessage(event)
@@ -693,6 +725,13 @@
                 onCancelGameRequestComplete(
                     webSocketMessage.data.success,
                     webSocketMessage.data.gameRequests,
+                    webSocketMessage.data.errorMessage);
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTPAIRING:
+                onConfirmGameRequestComplete(
+                    webSocketMessage.data.success,
+                    webSocketMessage.data.gameRequestPairing,
                     webSocketMessage.data.errorMessage);
                 break;
 
