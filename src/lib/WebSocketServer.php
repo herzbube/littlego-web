@@ -59,7 +59,7 @@ namespace LittleGoWeb
                 return;
 
             $webSocketRequestType = $webSocketMessage->getMessageType();
-            echo "Received message '$webSocketRequestType' from connection! ({$from->resourceId})\n";
+            echo "Received message from connection {$from->resourceId}: $webSocketRequestType\n";
 
             $webSocketClient = $this->getWebSocketClient($from);
             $webSocketResponseType = $this->webSocketResponseTypeForRequestType($webSocketRequestType);

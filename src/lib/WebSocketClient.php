@@ -34,6 +34,8 @@ namespace LittleGoWeb
 
         public function send(WebSocketMessage $webSocketMessage) : void
         {
+            echo "Sending message to connection {$this->connection->resourceId}: {$webSocketMessage->getMessageType()}\n";
+
             $data = $webSocketMessage->toJsonString();
             $this->connection->send($data);
         }
