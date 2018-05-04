@@ -36,6 +36,10 @@ namespace LittleGoWeb
     const WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTPAIRING = "s2cGetGameRequestPairingResponse";
     const WEBSOCKET_RESPONSE_TYPE_CONFIRMGAMEREQUESTPAIRING = "s2cConfirmGameRequestPairingResponse";
 
+    // WebSocket messages proactively sent by the server to a client who didn't
+    // request anything (server outgoing/client incoming messages)
+    const WEBSOCKET_MESSAGE_TYPE_GAMEREQUESTPAIRINGFOUND = "s2cGameRequestPairingFoundMessage";
+
     // WebSocket messages
     const WEBSOCKET_JSON_KEY_MESSAGE_TYPE = "messageType";
     const WEBSOCKET_JSON_KEY_MESSAGE_DATA = "data";

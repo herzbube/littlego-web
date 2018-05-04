@@ -516,14 +516,13 @@ namespace LittleGoWeb
                 else
                     $otherUserID = $gameRequestPairing->getBlackPlayer()->getUserID();
 
-                $otherUserWebSocketClient = $this->getWebSocketClientByUserID($otherUserID);
-                if ($otherUserWebSocketClient !== null)
+                // Notify all clients where the other user is online
+                // TODO: Retrieve the data only once from the database!!!
+                $webSocketMessageType = WEBSOCKET_MESSAGE_TYPE_GAMEREQUESTPAIRINGFOUND;
+                foreach ($this->clients as $otherUserWebSocketClient)
                 {
-                    // TODO: Send message
-                }
-                else
-                {
-                    // Do nothing, the other player is not online
+                    if ($otherUserWebSocketClient->getSession()->getUserID() === $otherUserID)
+                        $this->findAndSendGameRequests($otherUserWebSocketClient, $webSocketMessageType, $dbAccess);
                 }
             }
         }
