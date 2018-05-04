@@ -411,7 +411,7 @@ namespace LittleGoWeb
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p>Hooray, a match for your game request has been found!</p>
+                    <p id="confirm-game-request-pairing-modal-game-request-id">Hooray, a match for your game request has been found!</p>
                     <p>Your opponent for this game is <span id="confirm-game-request-pairing-modal-opponent-name"></span>.</p>
                     <p>You will play <span id="confirm-game-request-pairing-modal-stone-color"></span>.</p>
                     <p>The game has the following characteristics:</p>

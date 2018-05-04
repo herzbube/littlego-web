@@ -23,6 +23,7 @@ namespace LittleGoWeb
     const WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTS = "c2sGetGameRequestsRequest";
     const WEBSOCKET_REQUEST_TYPE_CANCELGAMEREQUEST = "c2sCancelGameRequestRequest";
     const WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTPAIRING = "c2sGetGameRequestPairingRequest";
+    const WEBSOCKET_REQUEST_TYPE_CONFIRMGAMEREQUESTPAIRING = "c2sConfirmGameRequestPairingRequest";
 
     // WebSocket responses (server outgoing/client incoming messages)
     const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
@@ -33,6 +34,7 @@ namespace LittleGoWeb
     const WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS = "s2cGetGameRequestsResponse";
     const WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST = "s2cCancelGameRequestResponse";
     const WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTPAIRING = "s2cGetGameRequestPairingResponse";
+    const WEBSOCKET_RESPONSE_TYPE_CONFIRMGAMEREQUESTPAIRING = "s2cConfirmGameRequestPairingResponse";
 
     // WebSocket messages
     const WEBSOCKET_JSON_KEY_MESSAGE_TYPE = "messageType";
@@ -45,6 +47,8 @@ namespace LittleGoWeb
     const WEBSOCKET_MESSAGEDATA_KEY_USERINFO = "userInfo";
     const WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID = "gameRequestID";
     const WEBSOCKET_MESSAGEDATA_KEY_CREATETIME = "createTime";
+    const WEBSOCKET_MESSAGEDATA_KEY_BLACKPLAYERGAMEREQUESTID = "blackPlayerGameRequestID";
+    const WEBSOCKET_MESSAGEDATA_KEY_WHITEPLAYERGAMEREQUESTID = "whitePlayerGameRequestID";
     const WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDBOARDSIZE = "requestedBoardSize";
     const WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDSTONECOLOR = "requestedStoneColor";
     const WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDHANDICAP = "requestedHandicap";

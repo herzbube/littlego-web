@@ -650,6 +650,8 @@
 
         if (success)
         {
+            // The pairing is optional - it's present only if the server found
+            // a game request matching the one that we submitted
             if (gameRequestPairing !== undefined)
                 showConfirmGameRequestPairingModal(gameRequestPairing);
         }
@@ -663,15 +665,18 @@
     {
         var opponentDisplayName;
         var stoneColor;
+        var gameRequestID;
         if (gameRequestPairing.blackPlayer.userID === theSession.userInfo.userID)
         {
             opponentDisplayName = gameRequestPairing.whitePlayer.displayName;
             stoneColor = colorToString(COLOR_BLACK).toLowerCase();
+            gameRequestID = gameRequestPairing.blackPlayerGameRequestID;
         }
         else
         {
             opponentDisplayName = gameRequestPairing.blackPlayer.displayName;
             stoneColor = colorToString(COLOR_WHITE).toLocaleLowerCase();
+            gameRequestID = gameRequestPairing.whitePlayerGameRequestID;
         }
         var boardSize = boardSizeToString(gameRequestPairing.boardSize);
         var handicap = handicapToString(gameRequestPairing.handicap);
@@ -687,12 +692,43 @@
         $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_KO_RULE).html(koRule);
         $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_SCORING_SYSTEM).html(scoringSystem);
 
+        // Temporarily store the game request ID so that we can
+        // retrieve it when the user hits the confirm button
+        $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_GAME_REQUEST_ID)
+            .data(DATA_KEY_GAME_REQUEST_ID, gameRequestID);
+
         $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL).modal()
     }
 
     function onConfirmGameRequestPairing(event)
     {
+        // Retrieve the game request ID that was temporarily stored
+        // in a data attribute
+        var gameRequestID = $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL_GAME_REQUEST_ID)
+            .data(DATA_KEY_GAME_REQUEST_ID);
+
+        $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL).modal('hide');
+
+        var messageData =
+            {
+                gameRequestID: gameRequestID
+            };
+        // Triggers onConfirmGameRequestPairingComplete
+        sendWebSocketMessage(theWebSocket, WEBSOCKET_REQUEST_TYPE_CONFIRMGAMEREQUESTPAIRING, messageData);
+
         // TODO: send message to server, server updates game request state
+    }
+
+    function onConfirmGameRequestPairingComplete(success, gameRequests, errorMessage)
+    {
+        if (success)
+        {
+            updateGameRequestsDataTableWithJsonData(gameRequests);
+        }
+        else
+        {
+            // TODO: Add error handling
+        }
     }
 
     function handleWebSocketMessage(event)
@@ -732,6 +768,13 @@
                 onConfirmGameRequestComplete(
                     webSocketMessage.data.success,
                     webSocketMessage.data.gameRequestPairing,
+                    webSocketMessage.data.errorMessage);
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_CONFIRMGAMEREQUESTPAIRING:
+                onConfirmGameRequestPairingComplete(
+                    webSocketMessage.data.success,
+                    webSocketMessage.data.gameRequests,
                     webSocketMessage.data.errorMessage);
                 break;
 

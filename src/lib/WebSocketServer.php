@@ -97,6 +97,9 @@ namespace LittleGoWeb
                 case WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTPAIRING:
                     $this->handleGetGameRequestPairing($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
                     break;
+                case WEBSOCKET_REQUEST_TYPE_CONFIRMGAMEREQUESTPAIRING:
+                    $this->handleConfirmGameRequestPairing($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
+                    break;
                 default:
                     echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
             }
@@ -136,6 +139,8 @@ namespace LittleGoWeb
                     return WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST;
                 case WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTPAIRING:
                     return WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTPAIRING;
+                case WEBSOCKET_REQUEST_TYPE_CONFIRMGAMEREQUESTPAIRING:
+                    return WEBSOCKET_RESPONSE_TYPE_CONFIRMGAMEREQUESTPAIRING;
                 default:
                     throw new \Exception("Unsupported request type $webSocketRequestType");
             }
@@ -600,6 +605,33 @@ namespace LittleGoWeb
             $webSocketClient->send($webSocketMessage);
         }
 
+        private function handleConfirmGameRequestPairing(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType) : void
+        {
+            $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
+
+            $dbAccess = new DbAccess($this->config);
+
+            $gameRequest = $dbAccess->findGameRequestByGameRequestID($gameRequestID);
+            if ($gameRequest === null)
+            {
+                $errorMessage = "Failed to retrieve game request data from database";
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $gameRequest->setState(GAMEREQUEST_STATE_CONFIRMEDPAIRING);
+
+            $success = $dbAccess->updateGameRequest($gameRequest);
+            if (! $success)
+            {
+                $errorMessage = "Failed to update game request data in database";
+                $this->sendErrorResponse($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $this->findAndSendGameRequests($webSocketClient, $webSocketResponseType, $dbAccess);
+        }
+
         private function findAndSendGameRequests(WebSocketClient $webSocketClient, string $webSocketResponseType, DbAccess $dbAccess): void
         {
             $userID = $webSocketClient->getSession()->getUserID();
@@ -639,6 +671,7 @@ namespace LittleGoWeb
 
         private function sendErrorResponse(WebSocketClient $webSocketClient, string $webSocketResponseType, string $errorMessage): void
         {
+            echo $errorMessage . "\n";
             $webSocketResponseData =
                 [
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => false,

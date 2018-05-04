@@ -176,6 +176,8 @@ namespace LittleGoWeb
             return array(
                 WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTPAIRINGID => $this->gameRequestPairingID,
                 WEBSOCKET_MESSAGEDATA_KEY_CREATETIME => $this->createTime,
+                WEBSOCKET_MESSAGEDATA_KEY_BLACKPLAYERGAMEREQUESTID => $this->blackPlayerGameRequestID,
+                WEBSOCKET_MESSAGEDATA_KEY_WHITEPLAYERGAMEREQUESTID => $this->whitePlayerGameRequestID,
                 WEBSOCKET_MESSAGEDATA_KEY_BOARDSIZE => $this->boardSize,
                 WEBSOCKET_MESSAGEDATA_KEY_HANDICAP => $this->handicap,
                 WEBSOCKET_MESSAGEDATA_KEY_KOMI => $this->komi,
