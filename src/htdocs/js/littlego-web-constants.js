@@ -81,12 +81,16 @@ const ACTION_TYPE_SECONDARY = 1;
 const ACTION_TYPE_SUCCESS = 2;
 const ACTION_TYPE_DANGER = 3;
 
+const BADGE_SYMBOL = "!";
+
+
 // ----------------------------------------------------------------------
 // Application IDs
 // ----------------------------------------------------------------------
 const PREFIX_ID_CONTAINER = "container-";
 const PREFIX_ID_BUTTON = "button-";
 const PREFIX_ID_ALERT = "alert-";
+const PREFIX_ID_BADGE = "badge-";
 
 const TAB_NAME_GAME_REQUESTS = "game-requests";
 const TAB_NAME_GAMES_IN_PROGRESS = "games-in-progress";
@@ -160,10 +164,15 @@ const ID_SESSION_DISPLAY_NAME = "session-display-name";
 // Data attributes
 const DATA_KEY_GAME_REQUEST_ID = "game-request-id";
 
+// Badges
+const ID_BADGE_GAME_REQUESTS = PREFIX_ID_BADGE + "game-request-pairings-found";
+
+
 // ----------------------------------------------------------------------
 // Application classes
 // ----------------------------------------------------------------------
 const CLASS_DATA_PLACEHOLDER = "data-placeholder";
+
 
 // ----------------------------------------------------------------------
 // Bootstrap classes, attributes and values
@@ -187,7 +196,7 @@ const BOOTSTRAP_ATTRIBUTE_VALUE_MODAL = "modal";
 // ----------------------------------------------------------------------
 // WebSocket messages
 // ----------------------------------------------------------------------
-// WebSocket events (client outgoing/server incoming messages)
+// WebSocket requests (client outgoing/server incoming messages)
 const WEBSOCKET_REQUEST_TYPE_LOGIN = "c2sLogin";
 const WEBSOCKET_REQUEST_TYPE_LOGOUT = "c2sLogout";
 const WEBSOCKET_REQUEST_TYPE_REGISTERACCOUNT = "c2sRegisterAccount";
@@ -208,3 +217,7 @@ const WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS = "s2cGetGameRequestsResponse";
 const WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST = "s2cCancelGameRequestResponse";
 const WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTPAIRING = "s2cGetGameRequestPairingResponse";
 const WEBSOCKET_RESPONSE_TYPE_CONFIRMGAMEREQUESTPAIRING = "s2cConfirmGameRequestPairingResponse";
+
+// WebSocket messages proactively sent by the server to a client who didn't
+// request anything (server outgoing/client incoming messages)
+const WEBSOCKET_MESSAGE_TYPE_GAMEREQUESTPAIRINGFOUND = "s2cGameRequestPairingFoundMessage";

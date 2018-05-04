@@ -167,7 +167,7 @@ namespace LittleGoWeb
             <div id="navbar-items" class="collapse navbar-collapse nav-pills justify-content-end">
                 <div class="navbar-nav">
                     <!-- No clunky list element necessary in Bootstrap -->
-                    <a id="button-game-requests" class="nav-item nav-link" href="#">Game requests</a>
+                    <a id="button-game-requests" class="nav-item nav-link" href="#">Game requests <span id="badge-game-request-pairings-found" class="badge badge-danger"></span></a>
                     <a id="button-games-in-progress" class="nav-item nav-link" href="#">Games in progress</a>
                     <a id="button-finished-games" class="nav-item nav-link" href="#">Finished games</a>
                     <a id="button-high-scores" class="nav-item nav-link" href="#">High Scores</a>

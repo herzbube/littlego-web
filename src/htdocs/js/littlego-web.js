@@ -207,6 +207,7 @@
 
         updateGameRequestsData();
         activateTab(TAB_NAME_GAME_REQUESTS);
+        clearBadge(ID_BADGE_GAME_REQUESTS);
     }
 
     function onGamesInProgress(event)
@@ -252,6 +253,16 @@
 
         // Triggers onSessionValidationComplete
         theSession.invalidate();
+    }
+
+    function setBadge(badgeID)
+    {
+        $("#" + badgeID).html(BADGE_SYMBOL);
+    }
+
+    function clearBadge(badgeID)
+    {
+        $("#" + badgeID).empty();
     }
 
     function onCancelGameRequest(dataItemAction)
@@ -731,6 +742,24 @@
         }
     }
 
+    // This is triggered not as a response to this client requesting
+    // data, instead it is triggered because the server notifies us
+    // about a pairing that was found because some other client
+    // submitted a game request.
+    function onGameRequestPairingFound(success, gameRequests)
+    {
+        if (success)
+        {
+            setBadge(ID_BADGE_GAME_REQUESTS);
+            updateGameRequestsDataTableWithJsonData(gameRequests);
+        }
+        else
+        {
+            // We ignore all errors. Because we didn't request the
+            // data the server shouldn't send us error messages.
+        }
+    }
+
     function handleWebSocketMessage(event)
     {
         var webSocketMessage = JSON.parse(event.data);
@@ -776,6 +805,12 @@
                     webSocketMessage.data.success,
                     webSocketMessage.data.gameRequests,
                     webSocketMessage.data.errorMessage);
+                break;
+
+            case WEBSOCKET_MESSAGE_TYPE_GAMEREQUESTPAIRINGFOUND:
+                onGameRequestPairingFound(
+                    webSocketMessage.data.success,
+                    webSocketMessage.data.gameRequests);
                 break;
 
             default:
