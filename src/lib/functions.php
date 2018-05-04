@@ -187,7 +187,7 @@ namespace LittleGoWeb
                 </tbody>
             </table>
             <div class="row">
-                <div class="col-6"><small>(*) = Don't care</small></div>
+                <div class="col-6"><small>(*) = No preference</small></div>
                 <div class="col-6 text-right"><button id="button-new-game-request" class="btn btn-success" data-toggle="modal" data-target="#new-game-request-modal">New game</button></div>
             </div>
         </div>
