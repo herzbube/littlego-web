@@ -167,6 +167,11 @@ namespace LittleGoWeb
     const GAMEREQUEST_STATE_UNCONFIRMEDPAIRING = 1;
     const GAMEREQUEST_STATE_CONFIRMEDPAIRING = 2;
 
+    // Game constants
+    const GAME_STATE_INPROGRESS_PLAYING = 0;
+    const GAME_STATE_INPROGRESS_SCORING = 1;
+    const GAME_STATE_FINISHED = 1;
+
     // Game parameter constants
     const BOARDSIZE_7 = 7;
     const BOARDSIZE_9 = 9;
@@ -235,6 +240,24 @@ namespace LittleGoWeb
     const DB_COLUMN_NAME_GAMEREQUESTPAIRING_KORULE = "koRule";
     const DB_COLUMN_NAME_GAMEREQUESTPAIRING_SCORINGSYSTEM = "scoringSystem";
     const DB_COLUMN_NAME_GAMEREQUESTPAIRING_ISREJECTED = "isRejected";
+
+    // Database table game
+    const DB_TABLE_NAME_GAME = "game";
+    const DB_COLUMN_NAME_GAME_GAMEID = "gameID";
+    const DB_COLUMN_NAME_GAME_CREATETIME = "createTime";
+    const DB_COLUMN_NAME_GAME_BOARDSIZE = "boardSize";
+    const DB_COLUMN_NAME_GAME_HANDICAP = "handicap";
+    const DB_COLUMN_NAME_GAME_KOMI = "komi";
+    const DB_COLUMN_NAME_GAME_KORULE = "koRule";
+    const DB_COLUMN_NAME_GAME_SCORINGSYSTEM = "scoringSystem";
+    const DB_COLUMN_NAME_GAME_STATE = "state";
+
+    // Database table gamesusersmapping
+    const DB_TABLE_NAME_GAMESUSERSMAPPING = "gamesusersmapping";
+    const DB_COLUMN_NAME_GAMESUSERSMAPPING_GAMESUSERSMAPPINGID = "gamesusersmappingID";
+    const DB_COLUMN_NAME_GAMESUSERSMAPPING_GAMEID = "gameID";
+    const DB_COLUMN_NAME_GAMESUSERSMAPPING_USERID = "userID";
+    const DB_COLUMN_NAME_GAMESUSERSMAPPING_STONECOLOR = "stoneColor";
 }
 
 ?>

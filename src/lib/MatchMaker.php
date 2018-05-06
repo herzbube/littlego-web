@@ -156,14 +156,37 @@ namespace LittleGoWeb
 
                 // We have a match!
 
-                $gameRequestPairingID = GAMEREQUESTPAIRING_GAMEREQUESTPAIRINGID_DEFAULT;
-                $createTime = time();
-                $rejected = GAMEREQUESTPAIRING_ISREJECTED_DEFAULT;
-
                 // No error handling required, we trust that references are OK
                 // because of foreign key constraints in the database
                 $blackPlayerUser = $this->dbAccess->findUserByID($blackPlayerUserID);
                 $whitePlayerUser = $this->dbAccess->findUserByID($whitePlayerUserID);
+
+                // We immediately create the game because at the moment users
+                // cannot reject a pairing (PAR-035, PAR-063).
+                $gameID = GAME_GAMEID_DEFAULT;
+                $createTime = time();
+                $state = GAME_STATE_INPROGRESS_PLAYING;
+                $game = new Game(
+                    $gameID,
+                    $createTime,
+                    $boardSize,
+                    $handicap,
+                    $komi,
+                    $koRule,
+                    $scoringSystem,
+                    $state);
+                $game->setBlackPlayer($blackPlayerUser);
+                $game->setWhitePlayer($whitePlayerUser);
+
+                $gameID = $this->dbAccess->insertGame($game, $blackPlayerUserID, $whitePlayerUserID);
+                if ($gameID === -1)
+                    throw new \Exception("Failed to insert game");
+                $game->setGameID($gameID);
+
+
+                $gameRequestPairingID = GAMEREQUESTPAIRING_GAMEREQUESTPAIRINGID_DEFAULT;
+                $createTime = time();
+                $rejected = GAMEREQUESTPAIRING_ISREJECTED_DEFAULT;
 
                 $gameRequestPairing = new GameRequestPairing(
                     $gameRequestPairingID,
@@ -189,6 +212,7 @@ namespace LittleGoWeb
                 foreach ($gameRequestsToUpdate as $gameRequestToUpdate)
                 {
                     $gameRequestToUpdate->setState(GAMEREQUEST_STATE_UNCONFIRMEDPAIRING);
+                    $gameRequestToUpdate->setGameID($gameID);
                     $success = $this->dbAccess->updateGameRequest($gameRequestToUpdate);
                     if (! $success)
                         throw new \Exception("Failed to update game request " . $gameRequestToUpdate->getGameRequestID());
