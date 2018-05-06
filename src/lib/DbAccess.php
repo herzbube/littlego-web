@@ -254,6 +254,74 @@ namespace LittleGoWeb
             return $this->executePdoStatementFindUser($selectStatement);
         }
 
+
+        // Obtains the user data for the specified game ID from the database
+        // and returns the data as an associative array consisting of two User
+        // objects. The keys are the constants COLOR_BLACK and COLOR_WHITE to
+        // indicate which user is playing which stone color. Returns null if
+        // the database has no user data for the specified game ID (because
+        // there is no game with that ID).
+        public function findUsersByGameID(int $gameID): ?array
+        {
+            // select
+            //     user.*
+            // from
+            //     user
+            //     inner join gamesusersmapping on user.userID = gamesusersmapping.userID
+            // where
+            //     gamesusersmapping.gameID = 123
+            //         and
+            //     gamesusersmapping.stoneColor = 0
+
+            $mainTableName = DB_TABLE_NAME_USER;
+            $joinAndWhereTableName = DB_TABLE_NAME_GAMESUSERSMAPPING;
+            $columnNames = array(
+                DB_COLUMN_NAME_USER_USERID,
+                DB_COLUMN_NAME_USER_EMAILADDRESS,
+                DB_COLUMN_NAME_USER_DISPLAYNAME,
+                DB_COLUMN_NAME_USER_PASSWORDHASH);
+            $selectQueryString = $this->sqlGenerator->getSelectStatement(
+                $mainTableName,
+                $columnNames);
+            $selectQueryString .= $this->sqlGenerator->getInnerJoinClause(
+                $mainTableName,
+                $joinAndWhereTableName,
+                DB_COLUMN_NAME_USER_USERID);
+
+            $selectQueryString .= " where ";
+            $whereColumnNames = array(
+                DB_COLUMN_NAME_GAMESUSERSMAPPING_GAMEID,
+                DB_COLUMN_NAME_GAMESUSERSMAPPING_STONECOLOR);
+            $selectQueryString .= $this->sqlGenerator->getWhereColumnsEqualValues(
+                $joinAndWhereTableName,
+                $whereColumnNames,
+                SQL_OPERATOR_AND);
+
+            $users = array();
+            $stoneColors = array(COLOR_BLACK, COLOR_WHITE);  // order is important!
+            foreach ($stoneColors as $stoneColor)
+            {
+                $selectStatement = $this->pdo->prepare($selectQueryString);
+
+                $selectStatement->bindValue(
+                    $this->sqlGenerator->getParameterNameForColumName($joinAndWhereTableName, DB_COLUMN_NAME_GAMESUSERSMAPPING_GAMEID),
+                    $gameID,
+                    PDO::PARAM_INT);
+                $selectStatement->bindValue(
+                    $this->sqlGenerator->getParameterNameForColumName($joinAndWhereTableName, DB_COLUMN_NAME_GAMESUSERSMAPPING_STONECOLOR),
+                    $stoneColor,
+                    PDO::PARAM_INT);
+
+                $user = $this->executePdoStatementFindUser($selectStatement);
+                if ($user === null)
+                    return null;
+
+                $users[$stoneColor] = $user;
+            }
+
+            return $users;
+        }
+
         // Returns an already prepared PDOStatement that represents a query to
         // find user data in the database by the specified column name. The
         // caller must bind the value to the PDOStatement before it can be
@@ -962,6 +1030,282 @@ namespace LittleGoWeb
                     return;
                 }
             }
+        }
+
+        // Obtains the games in progress data for the specified user ID from
+        // the database and returns the data as an array object. Returns an
+        // empty array if the database has no games in progress data for the
+        // specified user ID.
+        //
+        // The array is ordered descending by create time (i.e. newest
+        // first), then descending by game ID.
+        //
+        // On failure, returns null.
+        public function findGamesInProgressByUserID(int $userID) : ?array
+        {
+            // The query looks like this. It joins the "gamerequest" table
+            // to filter out games for which the user has not yet confirmed
+            // the pairing.
+            //
+            // select
+            //     game.*
+            // from
+            //     game
+            //     inner join gamesusersmapping on game.gameID = gamesusersmapping.gameID
+            //     left join  gamerequest       on game.gameID = gamerequest.gameID
+            // where
+            //     game.state <> GAME_STATE_FINISHED
+            //         and
+            //     gamesusersmapping.userID = 123
+            //         and
+            //     (
+            //         gamerequest.gameID is null
+            //             or
+            //         (
+            //             gamerequest.userID = 123
+            //                 and
+            //             gamerequest.state = GAMEREQUEST_STATE_CONFIRMEDPAIRING
+            //         )
+            //     )
+            // order by
+            //     game.createTime desc
+
+            $mainTableName = DB_TABLE_NAME_GAME;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAME_GAMEID,
+                DB_COLUMN_NAME_GAME_CREATETIME,
+                DB_COLUMN_NAME_GAME_BOARDSIZE,
+                DB_COLUMN_NAME_GAME_HANDICAP,
+                DB_COLUMN_NAME_GAME_KOMI,
+                DB_COLUMN_NAME_GAME_KORULE,
+                DB_COLUMN_NAME_GAME_SCORINGSYSTEM,
+                DB_COLUMN_NAME_GAME_STATE);
+            $selectQueryString = $this->sqlGenerator->getSelectStatement(
+                $mainTableName,
+                $columnNames);
+            $selectQueryString .= $this->sqlGenerator->getInnerJoinClause(
+                $mainTableName,
+                DB_TABLE_NAME_GAMESUSERSMAPPING,
+                DB_COLUMN_NAME_GAME_GAMEID);
+            $selectQueryString .= $this->sqlGenerator->getLeftJoinClause(
+                $mainTableName,
+                DB_TABLE_NAME_GAMEREQUEST,
+                DB_COLUMN_NAME_GAME_GAMEID);
+
+            $selectQueryString .= " where ";
+            $selectQueryString .= $this->sqlGenerator->getWhereColumnNotEqualsValue(
+                $mainTableName,
+            DB_COLUMN_NAME_GAME_STATE);
+
+            $selectQueryString .= SQL_OPERATOR_AND;
+
+            $selectQueryString .= $this->sqlGenerator->getWhereColumnEqualsValue(
+                DB_TABLE_NAME_GAMESUSERSMAPPING,
+                DB_COLUMN_NAME_GAMESUSERSMAPPING_USERID);
+
+            $selectQueryString .= SQL_OPERATOR_AND;
+
+            $selectQueryString .= SQL_OPERATOR_PARANTHESIS_OPEN;
+            $selectQueryString .= $this->sqlGenerator->getWhereColumnIsNull(
+                DB_TABLE_NAME_GAMEREQUEST,
+                DB_COLUMN_NAME_GAMEREQUEST_GAMEID);
+            $selectQueryString .= SQL_OPERATOR_OR;
+            $selectQueryString .= SQL_OPERATOR_PARANTHESIS_OPEN;
+            $selectQueryString .= $this->sqlGenerator->getWhereColumnEqualsValue(
+                DB_TABLE_NAME_GAMEREQUEST,
+                DB_COLUMN_NAME_GAMEREQUEST_USERID);
+            $selectQueryString .= SQL_OPERATOR_AND;
+            $selectQueryString .= $this->sqlGenerator->getWhereColumnEqualsValue(
+                DB_TABLE_NAME_GAMEREQUEST,
+                DB_COLUMN_NAME_GAMEREQUEST_STATE);
+            $selectQueryString .= SQL_OPERATOR_PARANTHESIS_CLOSE;
+            $selectQueryString .= SQL_OPERATOR_PARANTHESIS_CLOSE;
+
+            $selectQueryString .= " order by ";
+            $orderByColumnNames = array(
+                DB_COLUMN_NAME_GAME_CREATETIME,
+                DB_COLUMN_NAME_GAME_GAMEID);
+            $orderings = array(
+                false,
+                false);
+            $selectQueryString .= $this->sqlGenerator->getColumnsWithOrderings(
+                $mainTableName,
+                $orderByColumnNames,
+                $orderings);
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($mainTableName, DB_COLUMN_NAME_GAME_STATE),
+                GAME_STATE_FINISHED,
+                PDO::PARAM_INT);
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_TABLE_NAME_GAMESUSERSMAPPING, DB_COLUMN_NAME_GAMESUSERSMAPPING_USERID),
+                $userID,
+                PDO::PARAM_INT);
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_TABLE_NAME_GAMEREQUEST, DB_COLUMN_NAME_GAMEREQUEST_USERID),
+                $userID,
+                PDO::PARAM_INT);
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_TABLE_NAME_GAMEREQUEST, DB_COLUMN_NAME_GAMEREQUEST_STATE),
+                GAMEREQUEST_STATE_CONFIRMEDPAIRING,
+                PDO::PARAM_INT);
+
+            return $this->executePdoStatementFindGames($selectStatement);
+        }
+
+        // Executes the prepared PDOStatement that represents a query to
+        // find multiple rows of game data in the database. Returns
+        // an array whose elements are Game objects. Returns null
+        // on failure.
+        private function executePdoStatementFindGames(\PDOStatement $selectStatement) : ?array
+        {
+            try
+            {
+                $selectStatement->execute();
+
+                $games = [];
+
+                while ($row = $selectStatement->fetch(PDO::FETCH_ASSOC))
+                {
+                    $gameID = intval($row[DB_COLUMN_NAME_GAME_GAMEID]);
+                    $createTime = intval($row[DB_COLUMN_NAME_GAME_CREATETIME]);
+                    $boardSize = intval($row[DB_COLUMN_NAME_GAME_BOARDSIZE]);
+                    $handicap = intval($row[DB_COLUMN_NAME_GAME_HANDICAP]);
+                    $komi = floatval($row[DB_COLUMN_NAME_GAME_KOMI]);
+                    $koRule = intval($row[DB_COLUMN_NAME_GAME_KORULE]);
+                    $scoringSystem = intval($row[DB_COLUMN_NAME_GAME_SCORINGSYSTEM]);
+                    $state = intval($row[DB_COLUMN_NAME_GAME_STATE]);
+
+                    $game = new Game(
+                        $gameID,
+                        $createTime,
+                        $boardSize,
+                        $handicap,
+                        $komi,
+                        $koRule,
+                        $scoringSystem,
+                        $state);
+
+                    array_push($games, $game);
+                }
+
+                return $games;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return null;
+            }
+        }
+
+        // Obtains the game move data for the last move of the specified game
+        // ID from the database and returns the data as a GameMove object.
+        // Returns null if the database has game move data for the specified
+        // game ID.
+        public function findLastGameMove(int $gameID) : ?GameMove
+        {
+            $tableName = DB_TABLE_NAME_GAMEMOVE;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAMEMOVE_GAMEMOVEID,
+                DB_COLUMN_NAME_GAMEMOVE_CREATETIME,
+                DB_COLUMN_NAME_GAMEMOVE_GAMEID,
+                DB_COLUMN_NAME_GAMEMOVE_MOVETYPE,
+                DB_COLUMN_NAME_GAMEMOVE_MOVECOLOR,
+                DB_COLUMN_NAME_GAMEMOVE_VERTEXX,
+                DB_COLUMN_NAME_GAMEMOVE_VERTEXY);
+            $whereColumnNames = array(DB_COLUMN_NAME_GAMEMOVE_GAMEID);
+            $orderByColumnNames = array(
+                DB_COLUMN_NAME_GAMEMOVE_GAMEMOVEID);
+            $orderings = array(
+                false);
+            $limit = 1;
+
+            $selectQueryString = $this->sqlGenerator->getSelectStatementWithOrderByAndWhereAndLimitClause(
+                $tableName,
+                $columnNames,
+                $whereColumnNames,
+                $orderByColumnNames,
+                $orderings,
+                $limit);
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEMOVE_GAMEID),
+                $gameID,
+                PDO::PARAM_STR);
+
+            try
+            {
+                $selectStatement->execute();
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return null;
+            }
+
+            $row = $selectStatement->fetch(PDO::FETCH_ASSOC);
+            if ($row)
+            {
+                $gameMoveID = intval($row[DB_COLUMN_NAME_GAMEMOVE_GAMEMOVEID]);
+                $createTeim = $row[DB_COLUMN_NAME_GAMEMOVE_CREATETIME];
+                $gameID = intval($row[DB_COLUMN_NAME_GAMEMOVE_GAMEID]);
+                $moveType = intval($row[DB_COLUMN_NAME_GAMEMOVE_MOVETYPE]);
+                $moveColor = intval($row[DB_COLUMN_NAME_GAMEMOVE_MOVECOLOR]);
+                $vertexX = intval($row[DB_COLUMN_NAME_GAMEMOVE_VERTEXX]);
+                $vertexY = intval($row[DB_COLUMN_NAME_GAMEMOVE_VERTEXY]);
+
+                return new GameMove(
+                    $gameMoveID,
+                    $createTeim,
+                    $gameID,
+                    $moveType,
+                    $moveColor,
+                    $vertexX,
+                    $vertexY);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        // Obtains the number of moves played for the specified game ID from
+        // the database. Returns that number on success, returns -1 on
+        // failure.
+        public function findNumberOfMovesPlayed(int $gameID) : int
+        {
+            $tableName = DB_TABLE_NAME_GAMEMOVE;
+            $aliasName = "numberOfMovesPlayed";
+            $whereColumnNames = array(DB_COLUMN_NAME_GAMEMOVE_GAMEID);
+            $selectQueryString = $this->sqlGenerator->getSelectCountStatementWithWhereClause(
+                $tableName,
+                $aliasName,
+                $whereColumnNames);
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEMOVE_GAMEID),
+                $gameID,
+                PDO::PARAM_STR);
+
+            try
+            {
+                $selectStatement->execute();
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return -1;
+            }
+
+            $row = $selectStatement->fetch(PDO::FETCH_ASSOC);
+            $numberOfMovesPlayed = intval($row[$aliasName]);
+            return $numberOfMovesPlayed;
         }
 
         // Inserts a new row into the database that contains the data in the

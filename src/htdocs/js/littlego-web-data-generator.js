@@ -2,69 +2,6 @@
 // This file contains functions that generate fake JSON data.
 // ----------------------------------------------------------------------
 
-function createGamesInProgress()
-{
-    var gamesInProgressJsonObjects = createGamesInProgressJsonObjects();
-
-    var gamesInProgress = [];
-    gamesInProgressJsonObjects.forEach(function(gameInProgressJsonObject) {
-        var gameInProgress = new GameInProgress(gameInProgressJsonObject);
-        gamesInProgress.push(gameInProgress);
-    });
-
-    return gamesInProgress;
-}
-
-function createGamesInProgressJsonObjects()
-{
-    return [
-        {
-            "id" : 81,
-            "startTime" : startDate2MillisecondsSinceTheEpoch(STARTDATE_LESS_THAN_1_HOUR_AGO),
-            "boardSize" : BOARDSIZE_19,
-            "handicap" : 0,
-            "komi" : 7.5,
-            "koRule" : KORULE_SIMPLE_KO,
-            "scoringSystem": SCORINGSYSTEM_AREA_SCORING,
-            "numberOfMovesPlayed" : 13,
-            "nextMoveColor" : COLOR_WHITE
-        },
-        {
-            "id" : 42,
-            "startTime" : startDate2MillisecondsSinceTheEpoch(STARTDATE_3_HOURS_AGO),
-            "boardSize" : BOARDSIZE_9,
-            "handicap" : 2,
-            "komi" : 0.5,
-            "koRule" : KORULE_POSITIONAL_SUPERKO,
-            "scoringSystem": SCORINGSYSTEM_TERRITORY_SCORING,
-            "numberOfMovesPlayed" : 50,
-            "nextMoveColor" : COLOR_BLACK
-        },
-        {
-            "id" : 33,
-            "startTime" : startDate2MillisecondsSinceTheEpoch(STARTDATE_1_DAY_AGO),
-            "boardSize" : BOARDSIZE_13,
-            "handicap" : 0,
-            "komi" : 6.5,
-            "koRule" : KORULE_SITUATIONAL_SUPERKO,
-            "scoringSystem": SCORINGSYSTEM_TERRITORY_SCORING,
-            "numberOfMovesPlayed" : 123,
-            "nextMoveColor" : COLOR_WHITE
-        },
-        {
-            "id" : 14,
-            "startTime" : startDate2MillisecondsSinceTheEpoch(STARTDATE_7_DAYS_AGO),
-            "boardSize" : BOARDSIZE_7,
-            "handicap" : 4,
-            "komi" : 0,
-            "koRule" : KORULE_SIMPLE_KO,
-            "scoringSystem": SCORINGSYSTEM_AREA_SCORING,
-            "numberOfMovesPlayed" : 0,
-            "nextMoveColor" : COLOR_BLACK
-        }
-    ];
-}
-
 function createFinishedGames()
 {
     var finishedGamesJsonObjects = createFinishedGamesJsonObjects();

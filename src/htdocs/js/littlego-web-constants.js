@@ -206,6 +206,7 @@ const WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTS = "c2sGetGameRequestsRequest";
 const WEBSOCKET_REQUEST_TYPE_CANCELGAMEREQUEST = "c2sCancelGameRequestRequest";
 const WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTPAIRING = "c2sGetGameRequestPairingRequest";
 const WEBSOCKET_REQUEST_TYPE_CONFIRMGAMEREQUESTPAIRING = "c2sConfirmGameRequestPairingRequest";
+const WEBSOCKET_REQUEST_TYPE_GETGAMESINPROGRESS = "c2sGetGamesInProgressRequest";
 
 // WebSocket responses (server outgoing/client incoming messages)
 const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
@@ -217,6 +218,7 @@ const WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS = "s2cGetGameRequestsResponse";
 const WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST = "s2cCancelGameRequestResponse";
 const WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTPAIRING = "s2cGetGameRequestPairingResponse";
 const WEBSOCKET_RESPONSE_TYPE_CONFIRMGAMEREQUESTPAIRING = "s2cConfirmGameRequestPairingResponse";
+const WEBSOCKET_RESPONSE_TYPE_GETGAMESINPROGRESS = "s2cGetGamesInProgressResponse";
 
 // WebSocket messages proactively sent by the server to a client who didn't
 // request anything (server outgoing/client incoming messages)

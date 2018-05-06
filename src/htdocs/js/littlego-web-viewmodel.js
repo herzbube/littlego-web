@@ -123,8 +123,8 @@ var GameRequest = (function ()
 //
 // var jsonObject =
 // {
-//   "id" : 12345,                 // a unique ID
-//   "startTime" : 123457890,      // milliseconds since the epoch
+//   "gameID" : 12345,             // a unique ID
+//   "createTime" : 123457890,     // milliseconds since the epoch
 //   "boardSize" : 19,             // valid values: 7, 9, 11, 13, 15, 17, 19
 //   "handicap" : 0,               // valid values: 0, 2-9
 //   "komi" : 7.5,                 // valid values: 0, 0.5, 5.0, 5.5, [...], 8.0
@@ -142,9 +142,9 @@ var GameInProgress = (function ()
     // JSON object.
     function GameInProgress(jsonObject)
     {
-        this.id = jsonObject.id;
+        this.gameID = jsonObject.gameID;
 
-        this.startTime = startTimeToString(jsonObject.startTime);
+        this.createTime = startTimeToString(jsonObject.createTime * 1000);
         this.boardSize = boardSizeToString(jsonObject.boardSize);
         this.handicap = handicapToString(jsonObject.handicap);
         this.komi = komiToString(jsonObject.komi);
@@ -161,8 +161,8 @@ var GameInProgress = (function ()
     GameInProgress.prototype.getDataTableValues = function()
     {
         return [
-            this.startTime,
-            this.id,
+            this.createTime,
+            this.gameID,
             this.boardSize,
             this.handicap,
             this.komi,

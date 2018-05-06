@@ -412,8 +412,37 @@
     {
         var appContainerID = ID_CONTAINER_GAMES_IN_PROGRESS;
         var numberOfColumns = NUMBER_OF_COLUMNS_GAMES_IN_PROGRESS_TABLE;
-        var dataRetrievalFunction = createGamesInProgress;
-        updateDataTableWithFakeData(appContainerID, numberOfColumns, dataRetrievalFunction);
+        clearDataTableAndAddDataRetrievalPlaceholderMessage(appContainerID, numberOfColumns);
+
+        var messageData = { };
+        // Triggers onGetGamesInProgressComplete
+        sendWebSocketMessage(theWebSocket, WEBSOCKET_REQUEST_TYPE_GETGAMESINPROGRESS, messageData);
+    }
+
+    function onGetGamesInProgressComplete(success, gamesInProgressJsonObjects, errorMessage)
+    {
+        if (success)
+        {
+            updateGamesInProgressDataTableWithJsonData(gamesInProgressJsonObjects);
+        }
+        else
+        {
+            // TODO: Add error handling
+        }
+    }
+
+    function updateGamesInProgressDataTableWithJsonData(gamesInProgressJsonObjects)
+    {
+        var gamesInProgress = [];
+        gamesInProgressJsonObjects.forEach(function(gameInProgressJsonObject) {
+            var gameInProgress = new GameInProgress(gameInProgressJsonObject);
+            gamesInProgress.push(gameInProgress);
+        });
+
+        var appContainerID = ID_CONTAINER_GAMES_IN_PROGRESS;
+        var numberOfColumns = NUMBER_OF_COLUMNS_GAMES_IN_PROGRESS_TABLE;
+        var noDataPlaceholderMessage = "You have no games in progress.";
+        updateDataTable(appContainerID, gamesInProgress, numberOfColumns, noDataPlaceholderMessage);
     }
 
     function updateFinishedGamesData()
@@ -804,6 +833,13 @@
                 onConfirmGameRequestPairingComplete(
                     webSocketMessage.data.success,
                     webSocketMessage.data.gameRequests,
+                    webSocketMessage.data.errorMessage);
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_GETGAMESINPROGRESS:
+                onGetGamesInProgressComplete(
+                    webSocketMessage.data.success,
+                    webSocketMessage.data.gamesInProgress,
                     webSocketMessage.data.errorMessage);
                 break;
 
