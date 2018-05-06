@@ -87,9 +87,18 @@ namespace LittleGoWeb
 
     // SQL query generation
     const PREPARED_STATEMENT_PARAMETER_PREFIX = ":";
+    // This separator is used when concatenating table name + column name
+    // to form a bound parameter name. There is no official documentation
+    // on what characters can be legally used to form parameter names, so
+    // I experimentally determined that the underscore character ("_") works,
+    // whereas the following do NOT work: dash character ("-"),
+    // dot character ("."), plus character ("+"). A theory is that parameter
+    // names work just like PHP variable names, which would mean that
+    // a parameter name can consist of numbers and letters and underscore ("_")
+    // characters and must start with a letter.
+    const PREPARED_STATEMENT_PARAMETER_SEPARATOR = "_";
     const SQL_QUOTE_CHARACTER = "`";
     const SQL_OBJECT_SEPARATOR = ".";
-    const SQL_NAME_SEPARATOR = ".";
     const SQL_OPERATOR_AND = " and ";
     const SQL_OPERATOR_OR = " or ";
     const SQL_OPERATOR_EQUALS = " = ";

@@ -53,7 +53,7 @@ namespace LittleGoWeb
 
             $selectStatement = $this->pdo->prepare($selectQueryString);
             $selectStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_SESSION_SESSIONKEY),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SESSION_SESSIONKEY),
                 $sessionKey,
                 PDO::PARAM_STR);
 
@@ -101,15 +101,15 @@ namespace LittleGoWeb
 
             $insertStatement = $this->pdo->prepare($insertQueryString);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_SESSION_SESSIONKEY),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SESSION_SESSIONKEY),
                 $session->getSessionKey(),
                 PDO::PARAM_STR);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_SESSION_USERID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SESSION_USERID),
                 $session->getUserID(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_SESSION_VALIDUNTIL),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SESSION_VALIDUNTIL),
                 $session->getValidUntil(),
                 PDO::PARAM_INT);
 
@@ -145,11 +145,11 @@ namespace LittleGoWeb
 
             $updateStatement = $this->pdo->prepare($updateQueryString);
             $updateStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_SESSION_VALIDUNTIL),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SESSION_VALIDUNTIL),
                 $session->getValidUntil(),
                 PDO::PARAM_INT);
             $updateStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_SESSION_SESSIONID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SESSION_SESSIONID),
                 $session->getSessionID(),
                 PDO::PARAM_INT);
 
@@ -185,7 +185,7 @@ namespace LittleGoWeb
 
             $deleteStatement = $this->pdo->prepare($deleteQueryString);
             $deleteStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_SESSION_SESSIONKEY),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SESSION_SESSIONKEY),
                 $sessionKey,
                 PDO::PARAM_STR);
 
@@ -213,8 +213,9 @@ namespace LittleGoWeb
         {
             $selectStatement = $this->getPdoStatementFindUser(DB_COLUMN_NAME_USER_USERID);
 
+            $tableName = DB_TABLE_NAME_USER;
             $selectStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_USER_USERID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_USER_USERID),
                 $userID,
                 PDO::PARAM_INT);
 
@@ -228,8 +229,9 @@ namespace LittleGoWeb
         {
             $selectStatement = $this->getPdoStatementFindUser(DB_COLUMN_NAME_USER_EMAILADDRESS);
 
+            $tableName = DB_TABLE_NAME_USER;
             $selectStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_USER_EMAILADDRESS),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_USER_EMAILADDRESS),
                 $emailAddress,
                 PDO::PARAM_STR);
 
@@ -243,8 +245,9 @@ namespace LittleGoWeb
         {
             $selectStatement = $this->getPdoStatementFindUser(DB_COLUMN_NAME_USER_DISPLAYNAME);
 
+            $tableName = DB_TABLE_NAME_USER;
             $selectStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_USER_DISPLAYNAME),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_USER_DISPLAYNAME),
                 $displayName,
                 PDO::PARAM_STR);
 
@@ -324,15 +327,15 @@ namespace LittleGoWeb
 
             $insertStatement = $this->pdo->prepare($insertQueryString);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_USER_EMAILADDRESS),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_USER_EMAILADDRESS),
                 $user->getEmailAddress(),
                 PDO::PARAM_STR);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_USER_DISPLAYNAME),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_USER_DISPLAYNAME),
                 $user->getDisplayName(),
                 PDO::PARAM_STR);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_USER_PASSWORDHASH),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_USER_PASSWORDHASH),
                 $user->getPasswordHash(),
                 PDO::PARAM_STR);
 
@@ -375,39 +378,39 @@ namespace LittleGoWeb
 
             $insertStatement = $this->pdo->prepare($insertQueryString);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_CREATETIME),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_CREATETIME),
                 $gameRequest->getCreateTime(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDBOARDSIZE),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDBOARDSIZE),
                 $gameRequest->getRequestedBoardSize(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSTONECOLOR),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSTONECOLOR),
                 $gameRequest->getRequestedStoneColor(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDHANDICAP),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDHANDICAP),
                 $gameRequest->getRequestedHandicap(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKOMI),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKOMI),
                 $gameRequest->getRequestedKomi(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE),
                 $gameRequest->getRequestedKoRule(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM),
                 $gameRequest->getRequestedScoringSystem(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_USERID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_USERID),
                 $gameRequest->getUserID(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_STATE),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_STATE),
                 $gameRequest->getState(),
                 PDO::PARAM_INT);
             if ($gameRequest->getGameID() === GAMEREQUEST_GAMEID_DEFAULT)
@@ -460,15 +463,15 @@ namespace LittleGoWeb
 
             $updateStatement = $this->pdo->prepare($updateQueryString);
             $updateStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_STATE),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_STATE),
                 $gameRequest->getState(),
                 PDO::PARAM_INT);
             $updateStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_GAMEID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_GAMEID),
                 $gameRequest->getGameID(),
                 PDO::PARAM_INT);
             $updateStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID),
                 $gameRequest->getGameRequestID(),
                 PDO::PARAM_INT);
 
@@ -504,7 +507,7 @@ namespace LittleGoWeb
 
             $deleteStatement = $this->pdo->prepare($deleteQueryString);
             $deleteStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID),
                 $gameRequestID,
                 PDO::PARAM_INT);
 
@@ -554,7 +557,7 @@ namespace LittleGoWeb
             $selectStatement = $this->pdo->prepare($selectQueryString);
 
             $selectStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID),
                 $gameRequestID,
                 PDO::PARAM_INT);
 
@@ -609,7 +612,7 @@ namespace LittleGoWeb
             $selectStatement = $this->pdo->prepare($selectQueryString);
 
             $selectStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_USERID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_USERID),
                 $userID,
                 PDO::PARAM_INT);
 
@@ -736,6 +739,7 @@ namespace LittleGoWeb
                 $columnNames);
             $selectQueryString .= " where ";
             $selectQueryString .= $this->sqlGenerator->getWhereColumnsEqualValues(
+                $tableName,
                 $whereColumns,
                 SQL_OPERATOR_OR);
             $selectQueryString .= ";";
@@ -743,11 +747,11 @@ namespace LittleGoWeb
             $selectStatement = $this->pdo->prepare($selectQueryString);
 
             $selectStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_BLACKPLAYERGAMEREQUESTID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUESTPAIRING_BLACKPLAYERGAMEREQUESTID),
                 $gameRequestID,
                 PDO::PARAM_INT);
             $selectStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_WHITEPLAYERGAMEREQUESTID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUESTPAIRING_WHITEPLAYERGAMEREQUESTID),
                 $gameRequestID,
                 PDO::PARAM_INT);
 
@@ -873,39 +877,39 @@ namespace LittleGoWeb
 
             $insertStatement = $this->pdo->prepare($insertQueryString);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_CREATETIME),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUESTPAIRING_CREATETIME),
                 $gameRequestPairing->getCreateTime(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_BLACKPLAYERGAMEREQUESTID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUESTPAIRING_BLACKPLAYERGAMEREQUESTID),
                 $gameRequestPairing->getBlackPlayerGameRequestID(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_WHITEPLAYERGAMEREQUESTID),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUESTPAIRING_WHITEPLAYERGAMEREQUESTID),
                 $gameRequestPairing->getWhitePlayerGameRequestID(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_BOARDSIZE),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUESTPAIRING_BOARDSIZE),
                 $gameRequestPairing->getBoardSize(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_HANDICAP),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUESTPAIRING_HANDICAP),
                 $gameRequestPairing->getHandicap(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_KOMI),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUESTPAIRING_KOMI),
                 strval($gameRequestPairing->getKomi()),
                 PDO::PARAM_STR);  // PDO has no PARAM_FLOAT, float values must be bound as string :-(
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_KORULE),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUESTPAIRING_KORULE),
                 $gameRequestPairing->getKoRule(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_SCORINGSYSTEM),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUESTPAIRING_SCORINGSYSTEM),
                 $gameRequestPairing->getScoringSystem(),
                 PDO::PARAM_INT);
             $insertStatement->bindValue(
-                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUESTPAIRING_ISREJECTED),
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUESTPAIRING_ISREJECTED),
                 $gameRequestPairing->isRejected(),
                 PDO::PARAM_BOOL);
 
@@ -944,7 +948,7 @@ namespace LittleGoWeb
 
                 $deleteStatement = $this->pdo->prepare($deleteQueryString);
                 $deleteStatement->bindValue(
-                    $this->sqlGenerator->getParameterNameForColumName($whereColumn),
+                    $this->sqlGenerator->getParameterNameForColumName($tableName, $whereColumn),
                     $gameRequestID,
                     PDO::PARAM_INT);
 

@@ -32,7 +32,7 @@ namespace LittleGoWeb {
         {
             $queryString = $this->getSelectStatement($tableName, $columnNames);
             $queryString .= " where ";
-            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames, SQL_OPERATOR_AND);
+            $queryString .= $this->getWhereColumnsEqualValues($tableName, $whereColumnNames, SQL_OPERATOR_AND);
             $queryString .= ";";
 
             return $queryString;
@@ -55,7 +55,7 @@ namespace LittleGoWeb {
         {
             $queryString = $this->getSelectStatement($tableName, $columnNames);
             $queryString .= " order by ";
-            $queryString .= $this->getColumnsWithOrderings($orderByColumnNames, $orderings);
+            $queryString .= $this->getColumnsWithOrderings($tableName, $orderByColumnNames, $orderings);
             $queryString .= ";";
 
             return $queryString;
@@ -85,9 +85,9 @@ namespace LittleGoWeb {
         {
             $queryString = $this->getSelectStatement($tableName, $columnNames);
             $queryString .= " where ";
-            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames, SQL_OPERATOR_AND);
+            $queryString .= $this->getWhereColumnsEqualValues($tableName, $whereColumnNames, SQL_OPERATOR_AND);
             $queryString .= " order by ";
-            $queryString .= $this->getColumnsWithOrderings($orderByColumnNames, $orderings);
+            $queryString .= $this->getColumnsWithOrderings($tableName, $orderByColumnNames, $orderings);
             $queryString .= ";";
 
             return $queryString;
@@ -114,7 +114,7 @@ namespace LittleGoWeb {
         {
             $queryString = $this->getSelectStatement($tableName, $columnNames);
             $queryString .= " order by ";
-            $queryString .= $this->getColumnsWithOrderings($orderByColumnNames, $orderings);
+            $queryString .= $this->getColumnsWithOrderings($tableName, $orderByColumnNames, $orderings);
             $queryString .= " limit ";
             $queryString .= $limit;
             $queryString .= ";";
@@ -130,7 +130,7 @@ namespace LittleGoWeb {
         public function getSelectStatement(string $tableName, array $columnNames): string
         {
             $queryFragment = "select ";
-            $queryFragment .= $this->getColumnNames($columnNames);
+            $queryFragment .= $this->getColumnNames($tableName, $columnNames);
             $queryFragment .= " from ";
             $queryFragment .= $this->getFullyQualifiedTableName($tableName);
 
@@ -152,7 +152,7 @@ namespace LittleGoWeb {
         {
             $queryString = $this->getUpdateStatement($tableName, $columnNames);
             $queryString .= " where ";
-            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames, SQL_OPERATOR_AND);
+            $queryString .= $this->getWhereColumnsEqualValues($tableName, $whereColumnNames, SQL_OPERATOR_AND);
             $queryString .= ";";
 
             return $queryString;
@@ -171,7 +171,7 @@ namespace LittleGoWeb {
             $queryFragment = "update ";
             $queryFragment .= $this->getFullyQualifiedTableName($tableName);
             $queryFragment .= " set ";
-            $queryFragment .= $this->getUpdateColumnsWithValues($columnNames);
+            $queryFragment .= $this->getUpdateColumnsWithValues($tableName, $columnNames);
 
             return $queryFragment;
         }
@@ -189,11 +189,11 @@ namespace LittleGoWeb {
             $queryString = "insert into ";
             $queryString .= $this->getFullyQualifiedTableName($tableName);
             $queryString .= SQL_OPERATOR_PARANTHESIS_OPEN;
-            $queryString .= $this->getColumnNames($columnNames);
+            $queryString .= $this->getColumnNames($tableName, $columnNames);
             $queryString .= SQL_OPERATOR_PARANTHESIS_CLOSE;
             $queryString .= " values ";
             $queryString .= SQL_OPERATOR_PARANTHESIS_OPEN;
-            $queryString .= $this->getValues($columnNames);
+            $queryString .= $this->getValues($tableName, $columnNames);
             $queryString .= SQL_OPERATOR_PARANTHESIS_CLOSE;
             $queryString .= ";";
 
@@ -212,7 +212,7 @@ namespace LittleGoWeb {
         {
             $queryString = $this->getDeleteStatement($tableName);
             $queryString .= " where ";
-            $queryString .= $this->getWhereColumnsEqualValues($whereColumnNames, SQL_OPERATOR_AND);
+            $queryString .= $this->getWhereColumnsEqualValues($tableName, $whereColumnNames, SQL_OPERATOR_AND);
             $queryString .= ";";
 
             return $queryString;
@@ -231,15 +231,18 @@ namespace LittleGoWeb {
         // Generates a query fragment that can be used anywhere where a
         // comma-separated list of column names is appropriate.
         //
+        // The table name parameter is required to form unambiguous column
+        // names, which might be required in a query that uses JOINs.
+        //
         // The specified array lists the column names that should appear in the
         // query fragment.
-        public function getColumnNames(array $columnNames): string
+        public function getColumnNames(string $tableName, array $columnNames): string
         {
             $queryFragment = "";
             foreach ($columnNames as $columnName)
             {
                 $queryFragment .= SQL_OPERATOR_COMMA;
-                $queryFragment .= $columnName;
+                $queryFragment .= $this->getFullyQualifiedColumnName($tableName, $columnName);
             }
 
             if (strlen($queryFragment) > 0)
@@ -251,18 +254,21 @@ namespace LittleGoWeb {
         // Generates a query fragment that can be used anywhere where a
         // comma-separated list of values is appropriate.
         //
+        // The table name parameter is required to form unambiguous column
+        // names, which might be required in a query that uses JOINs.
+        //
         // The specified array lists the column names for which the values
         // appear in the query fragment.
         //
         // The resulting query fragment contains parameters that must be bound
         // to a prepared statement.
-        public function getValues(array $columnNames): string
+        public function getValues(string $tableName, array $columnNames): string
         {
             $queryFragment = "";
             foreach ($columnNames as $columnName)
             {
                 $queryFragment .= SQL_OPERATOR_COMMA;
-                $queryFragment .= $this->getParameterNameForColumName($columnName);
+                $queryFragment .= $this->getParameterNameForColumName($tableName, $columnName);
             }
 
             if (strlen($queryFragment) > 0)
@@ -274,21 +280,26 @@ namespace LittleGoWeb {
         // Generates a query fragment that can be used in a WHERE clause. The
         // query fragment does not include the "WHERE" SQL keyword.
         //
-        // The parameter specifies the column name for which the condition
-        // should be generated.
+        // The parameters specify the table and column name for which the
+        // condition should be generated. The table name is required to form
+        // an unambiguous column name (which might be required in a query
+        // that uses JOINs).
         //
         // The resulting query fragment uses the "=" operator to compare the
         // column content with a value.
         //
         // The resulting query fragment contains parameters that must be bound
         // to a prepared statement.
-        public function getWhereColumnEqualsValue(string $columnName): string
+        public function getWhereColumnEqualsValue(string $tableName, string $columnName): string
         {
-            return $this->getColumnsEqualValues(array($columnName), SQL_OPERATOR_AND);
+            return $this->getColumnsEqualValues($tableName, array($columnName), SQL_OPERATOR_AND);
         }
 
         // Generates a query fragment that can be used in a WHERE clause. The
         // query fragment does not include the "WHERE" SQL keyword.
+        //
+        // The table name parameter is required to form unambiguous column
+        // names, which might be required in a query that uses JOINs.
         //
         // The specified array lists the column names for which conditions
         // should be generated.
@@ -299,13 +310,16 @@ namespace LittleGoWeb {
         //
         // The resulting query fragment contains parameters that must be bound
         // to a prepared statement.
-        public function getWhereColumnsEqualValues(array $columnNames, string $logicalOperator): string
+        public function getWhereColumnsEqualValues(string $tableName, array $columnNames, string $logicalOperator): string
         {
-            return $this->getColumnsEqualValues($columnNames, $logicalOperator);
+            return $this->getColumnsEqualValues($tableName, $columnNames, $logicalOperator);
         }
 
         // Generates a query fragment that can be used in a WHERE clause. The
         // query fragment does not include the "WHERE" SQL keyword.
+        //
+        // The table name parameter is required to form an unambiguous column
+        // name, which might be required in a query that uses JOINs.
         //
         // The parameter specifies the column name for which the condition
         // should be generated.
@@ -315,13 +329,16 @@ namespace LittleGoWeb {
         //
         // The resulting query fragment contains parameters that must be bound
         // to a prepared statement.
-        public function getWhereColumnNotEqualsValue(string $columnName): string
+        public function getWhereColumnNotEqualsValue(string $tableName, string $columnName): string
         {
-            return $this->getColumnNotEqualsValue($columnName);
+            return $this->getColumnNotEqualsValue($tableName, $columnName);
         }
 
         // Generates a query fragment that can be used in an UPDATE statement.
         // The query fragment does not include the "UPDATE" SQL keyword.
+        //
+        // The table name parameter is required to form unambiguous column
+        // names, which might be required in a query that uses JOINs.
         //
         // The specified array lists the column names to be updated.
         //
@@ -330,13 +347,16 @@ namespace LittleGoWeb {
         //
         // The resulting query fragment contains parameters that must be bound
         // to a prepared statement.
-        public function getUpdateColumnsWithValues(array $columnNames): string
+        public function getUpdateColumnsWithValues(string $tableName, array $columnNames): string
         {
-            return $this->getColumnsEqualValues($columnNames, SQL_OPERATOR_COMMA);
+            return $this->getColumnsEqualValues($tableName, $columnNames, SQL_OPERATOR_COMMA);
         }
 
         // Generates a query fragment that combines the specified column names
         // with corresponding parameter values using the "=" operator.
+        //
+        // The table name parameter is required to form unambiguous column
+        // names, which might be required in a query that uses JOINs.
         //
         // The specified operator is used to separate the individual
         // "columnName = value" pairs. For instance, this could be the logical
@@ -346,13 +366,13 @@ namespace LittleGoWeb {
         //
         // The resulting query fragment contains parameters that must be bound
         // to a prepared statement.
-        private function getColumnsEqualValues(array $columnNames, string $operator): string
+        private function getColumnsEqualValues(string $tableName, array $columnNames, string $operator): string
         {
             $queryFragment = "";
             foreach ($columnNames as $columnName)
             {
                 $queryFragment .= $operator;
-                $queryFragment .= $this->getColumnEqualsValue($columnName);
+                $queryFragment .= $this->getColumnEqualsValue($tableName, $columnName);
             }
 
             if (strlen($queryFragment) > 0)
@@ -364,33 +384,42 @@ namespace LittleGoWeb {
         // Generates a query fragment that combines the specified column name
         // with a parameter value using the "=" operator.
         //
+        // The table name parameter is required to form an unambiguous column
+        // name, which might be required in a query that uses JOINs.
+        //
         // This is private helper function.
-        private function getColumnEqualsValue(string $columnName): string
+        private function getColumnEqualsValue(string $tableName, string $columnName): string
         {
-            return $this->getColumnComparisonWithValue($columnName, SQL_OPERATOR_EQUALS);
+            return $this->getColumnComparisonWithValue($tableName, $columnName, SQL_OPERATOR_EQUALS);
         }
 
         // Generates a query fragment that combines the specified column name
         // with a parameter value using the "<>" operator.
         //
+        // The table name parameter is required to form an unambiguous column
+        // name, which might be required in a query that uses JOINs.
+        //
         // This is private helper function.
-        private function getColumnNotEqualsValue(string $columnName): string
+        private function getColumnNotEqualsValue(string $tableName, string $columnName): string
         {
-            return $this->getColumnComparisonWithValue($columnName, SQL_OPERATOR_NOTEQUALS);
+            return $this->getColumnComparisonWithValue($tableName, $columnName, SQL_OPERATOR_NOTEQUALS);
         }
 
         // Generates a query fragment that combines the specified column name
         // with a parameter value using the specified comparison operator.
         //
+        // The table name parameter is required to form an unambiguous column
+        // name, which might be required in a query that uses JOINs.
+        //
         // This only works for operators that have a left-hand-side and a
         // right-hand-side operator.
         //
         // This is private helper function.
-        private function getColumnComparisonWithValue(string $columnName, string $comparisonOperator): string
+        private function getColumnComparisonWithValue(string $tableName, string $columnName, string $comparisonOperator): string
         {
-            $queryFragment = $columnName;
+            $queryFragment = $this->getFullyQualifiedColumnName($tableName, $columnName);
             $queryFragment .= $comparisonOperator;
-            $queryFragment .= $this->getParameterNameForColumName($columnName);
+            $queryFragment .= $this->getParameterNameForColumName($tableName, $columnName);
 
             return $queryFragment;
         }
@@ -399,6 +428,9 @@ namespace LittleGoWeb {
         // with "ASC" or "DESC" keywords. The result can be used in an
         // ORDER BY clause.
         //
+        // The table name parameter is required to form unambiguous column
+        // names, which might be required in a query that uses JOINs.
+        //
         // The first specified array lists the column names, the second
         // specified array lists how each column should be ordered. The second
         // array must have the same number of elements as the first array. A
@@ -406,7 +438,7 @@ namespace LittleGoWeb {
         // column descending.
         //
         // This is private helper function.
-        private function getColumnsWithOrderings(array $columnNames, array $orderings): string
+        public function getColumnsWithOrderings(string $tableName, array $columnNames, array $orderings): string
         {
             $columnNamesWithOrderings = array_combine($columnNames, $orderings);
 
@@ -414,7 +446,7 @@ namespace LittleGoWeb {
             foreach ($columnNamesWithOrderings as $columnName => $ordering)
             {
                 $queryFragment .= SQL_OPERATOR_COMMA;
-                $queryFragment .= $this->getColumnWithOrdering($columnName, $ordering);
+                $queryFragment .= $this->getColumnWithOrdering($tableName, $columnName, $ordering);
             }
 
             if (strlen($queryFragment) > 0)
@@ -427,10 +459,13 @@ namespace LittleGoWeb {
         // with an "ASC" or "DESC" keyword. The result can be used in an
         // ORDER BY clause.
         //
+        // The table name parameter is required to form an unambiguous column
+        // name, which might be required in a query that uses JOINs.
+        //
         // This is private helper function.
-        private function getColumnWithOrdering(string $columnName, bool $ascending): string
+        public function getColumnWithOrdering(string $tableName, string $columnName, bool $ascending): string
         {
-            $queryFragment = $columnName;
+            $queryFragment = $this->getFullyQualifiedColumnName($tableName, $columnName);
             if ($ascending)
                 $queryFragment .= SQL_OPERATOR_ASCENDING;
             else
@@ -439,17 +474,31 @@ namespace LittleGoWeb {
             return $queryFragment;
         }
 
-        // Returns the parameter name for the specified column name.
-        public function getParameterNameForColumName(string $columnName): string
+        // Returns the parameter name for the specified combination of
+        // table name and column name.
+        public function getParameterNameForColumName(string $tableName, string $columnName): string
         {
-            return PREPARED_STATEMENT_PARAMETER_PREFIX . $columnName;
+            // It's not strictly necessary that we use a separator, but
+            // it makes the query string more human readable when debugging
+            // queries.
+            return PREPARED_STATEMENT_PARAMETER_PREFIX . $tableName . PREPARED_STATEMENT_PARAMETER_SEPARATOR . $columnName;
         }
 
         // Returns a fully qualified table name for the specified unqualified
-        // table name.
+        // table name. The result is unambiguous within the database that was
+        // specified in the SqlGenerator constructor.
         private function getFullyQualifiedTableName(string $unqualifiedTableName)
         {
-            return SQL_QUOTE_CHARACTER . $this->databaseName . SQL_QUOTE_CHARACTER . SQL_NAME_SEPARATOR . $unqualifiedTableName;
+            return SQL_QUOTE_CHARACTER . $this->databaseName . SQL_QUOTE_CHARACTER . SQL_OBJECT_SEPARATOR . $unqualifiedTableName;
+        }
+
+        // Returns a fully qualified column name for the specified unqualified
+        // column name. The result is unambiguous as long as the specified
+        // table name is unique in a query. The specified table name can be an
+        // alias.
+        private function getFullyQualifiedColumnName(string $tableName, $unqualifiedColumnName)
+        {
+            return $tableName . SQL_OBJECT_SEPARATOR . $unqualifiedColumnName;
         }
     }
 }
