@@ -726,12 +726,12 @@ namespace LittleGoWeb
                 array_push($gameRequestsJSON, $gameRequest->toJsonObject());
             }
 
-            $webSocketResponseData =
+            $webSocketMessageData =
                 [
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
                     WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTS => $gameRequestsJSON
                 ];
-            $webSocketMessage = new WebSocketMessage($webSocketMessageType, $webSocketResponseData);
+            $webSocketMessage = new WebSocketMessage($webSocketMessageType, $webSocketMessageData);
             $webSocketClient->send($webSocketMessage);
         }
 

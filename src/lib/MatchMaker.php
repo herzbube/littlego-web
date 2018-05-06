@@ -200,13 +200,28 @@ namespace LittleGoWeb
                     $scoringSystem,
                     $rejected);
 
+                // TODO: This is a misuse of the GameRequestPairing object!
+                // We attach the User objects to the GameRequestPairing so
+                // that the user information is transmitted to the client
+                // over WebSocket (the client needs the information so that
+                // it can display playing color and opponent name). It would
+                // be better if our caller who sends the WebSocket message
+                // attaches the user information in a separate property,
+                // outside of the GameRequestPairing information.
                 $gameRequestPairing->setBlackPlayer($blackPlayerUser);
                 $gameRequestPairing->setWhitePlayer($whitePlayerUser);
 
                 // TODO: Add transaction that spans all database operations
+                // This is important in case one of our own operations
+                // fails. It is also important because at this moment the
+                // user who submitted $gameRequestCandidate might choose to
+                // cancel (= delete) the game request. Since WebSocket messages
+                // are processed in parallel, the result is undefined unless
+                // we emply transactions.
                 $gameRequestPairingID = $this->dbAccess->insertGameRequestPairing($gameRequestPairing);
                 if ($gameRequestPairingID === -1)
                     throw new \Exception("Failed to insert game request pairing");
+                $gameRequestPairing->setGameRequestPairingID($gameRequestPairingID);
 
                 $gameRequestsToUpdate = [$gameRequestToMatch, $gameRequestCandidate];
                 foreach ($gameRequestsToUpdate as $gameRequestToUpdate)

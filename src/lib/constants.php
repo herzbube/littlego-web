@@ -42,7 +42,7 @@ namespace LittleGoWeb
     // request anything (server outgoing/client incoming messages)
     const WEBSOCKET_MESSAGE_TYPE_GAMEREQUESTPAIRINGFOUND = "s2cGameRequestPairingFoundMessage";
 
-    // WebSocket messages
+    // WebSocket message keys used to compose the JSON message data
     const WEBSOCKET_JSON_KEY_MESSAGE_TYPE = "messageType";
     const WEBSOCKET_JSON_KEY_MESSAGE_DATA = "data";
     const WEBSOCKET_MESSAGEDATA_KEY_EMAILADDRESS = "emailAddress";

@@ -116,7 +116,7 @@ namespace LittleGoWeb
             return $this->komi;
         }
 
-        public function setkomi(float $komi): void
+        public function setKomi(float $komi): void
         {
             $this->komi = $komi;
         }
