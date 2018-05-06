@@ -366,7 +366,8 @@ namespace LittleGoWeb
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE,
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM,
                 DB_COLUMN_NAME_GAMEREQUEST_USERID,
-                DB_COLUMN_NAME_GAMEREQUEST_STATE);
+                DB_COLUMN_NAME_GAMEREQUEST_STATE,
+                DB_COLUMN_NAME_GAMEREQUEST_GAMEID);
 
             $insertQueryString = $this->sqlGenerator->getInsertStatement(
                 $tableName,
@@ -409,6 +410,20 @@ namespace LittleGoWeb
                 $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_STATE),
                 $gameRequest->getState(),
                 PDO::PARAM_INT);
+            if ($gameRequest->getGameID() === GAMEREQUEST_GAMEID_DEFAULT)
+            {
+                $insertStatement->bindValue(
+                    $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_GAMEID),
+                    null,
+                    PDO::PARAM_NULL);
+            }
+            else
+            {
+                $insertStatement->bindValue(
+                    $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_GAMEID),
+                    $gameRequest->getGameID(),
+                    PDO::PARAM_INT);
+            }
 
             try
             {
@@ -431,8 +446,11 @@ namespace LittleGoWeb
         public function updateGameRequest(GameRequest $gameRequest): bool
         {
             $tableName = DB_TABLE_NAME_GAMEREQUEST;
-            // The game request's state is the only column that can change
-            $columnNames = array(DB_COLUMN_NAME_GAMEREQUEST_STATE);
+            // The game request's state and game ID are the only columns that
+            // can change
+            $columnNames = array(
+                DB_COLUMN_NAME_GAMEREQUEST_STATE,
+                DB_COLUMN_NAME_GAMEREQUEST_GAMEID);
             $whereColumnNames = array(DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID);
 
             $updateQueryString = $this->sqlGenerator->getUpdateStatementWithWhereClause(
@@ -444,6 +462,10 @@ namespace LittleGoWeb
             $updateStatement->bindValue(
                 $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_STATE),
                 $gameRequest->getState(),
+                PDO::PARAM_INT);
+            $updateStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_GAMEID),
+                $gameRequest->getGameID(),
                 PDO::PARAM_INT);
             $updateStatement->bindValue(
                 $this->sqlGenerator->getParameterNameForColumName(DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID),
@@ -520,7 +542,8 @@ namespace LittleGoWeb
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE,
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM,
                 DB_COLUMN_NAME_GAMEREQUEST_USERID,
-                DB_COLUMN_NAME_GAMEREQUEST_STATE);
+                DB_COLUMN_NAME_GAMEREQUEST_STATE,
+                DB_COLUMN_NAME_GAMEREQUEST_GAMEID);
             $whereColumnNames = array(DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID);
 
             $selectQueryString = $this->sqlGenerator->getSelectStatementWithWhereClause(
@@ -566,7 +589,8 @@ namespace LittleGoWeb
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE,
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM,
                 DB_COLUMN_NAME_GAMEREQUEST_USERID,
-                DB_COLUMN_NAME_GAMEREQUEST_STATE);
+                DB_COLUMN_NAME_GAMEREQUEST_STATE,
+                DB_COLUMN_NAME_GAMEREQUEST_GAMEID);
             $whereColumnNames = array(DB_COLUMN_NAME_GAMEREQUEST_USERID);
             $orderByColumnNames = array(
                 DB_COLUMN_NAME_GAMEREQUEST_CREATETIME,
@@ -613,7 +637,8 @@ namespace LittleGoWeb
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE,
                 DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM,
                 DB_COLUMN_NAME_GAMEREQUEST_USERID,
-                DB_COLUMN_NAME_GAMEREQUEST_STATE);
+                DB_COLUMN_NAME_GAMEREQUEST_STATE,
+                DB_COLUMN_NAME_GAMEREQUEST_GAMEID);
             $orderByColumnNames = array(
                 DB_COLUMN_NAME_GAMEREQUEST_CREATETIME,
                 DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID);
@@ -656,6 +681,7 @@ namespace LittleGoWeb
                     $requestedScoringSystem = intval($row[DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM]);
                     $userID = intval($row[DB_COLUMN_NAME_GAMEREQUEST_USERID]);
                     $state = intval($row[DB_COLUMN_NAME_GAMEREQUEST_STATE]);
+                    $gameID = intval($row[DB_COLUMN_NAME_GAMEREQUEST_GAMEID]);
 
                     $gameRequest = new GameRequest(
                         $gameRequestID,
@@ -667,7 +693,8 @@ namespace LittleGoWeb
                         $requestedKoRule,
                         $requestedScoringSystem,
                         $userID,
-                        $state);
+                        $state,
+                        $gameID);
 
                     array_push($gameRequests, $gameRequest);
                 }

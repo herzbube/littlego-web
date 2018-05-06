@@ -472,6 +472,7 @@ namespace LittleGoWeb
             $createTime = time();
             $userID = $webSocketClient->getSession()->getUserID();
             $state = GAMEREQUEST_STATE_UNPAIRED;
+            $gameID = GAMEREQUEST_GAMEID_DEFAULT;
             $gameRequest = new GameRequest(
                 $gameRequestID,
                 $createTime,
@@ -482,7 +483,8 @@ namespace LittleGoWeb
                 $requestedKoRule,
                 $requestedScoringSystem,
                 $userID,
-                $state);
+                $state,
+                $gameID);
 
             $gameRequestID = $dbAccess->insertGameRequest($gameRequest);
             if ($gameRequestID === -1)

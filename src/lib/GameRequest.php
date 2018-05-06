@@ -19,6 +19,7 @@ namespace LittleGoWeb
         private $requestedScoringSystem = GAMEREQUEST_SCORINGSYSTEM_DEFAULT;
         private $userID = GAMEREQUEST_USERID_DEFAULT;
         private $state = GAMEREQUEST_STATE_DEFAULT;
+        private $gameID = GAMEREQUEST_GAMEID_DEFAULT;
 
         public function __construct(
             int $gameRequestID,
@@ -30,7 +31,8 @@ namespace LittleGoWeb
             int $requestedKoRule,
             int $requestedScoringSystem,
             int $userID,
-            int $state)
+            int $state,
+            int $gameID)
         {
             $this->gameRequestID = $gameRequestID;
             $this->createTime = $createTime;
@@ -42,6 +44,7 @@ namespace LittleGoWeb
             $this->requestedScoringSystem = $requestedScoringSystem;
             $this->userID = $userID;
             $this->state = $state;
+            $this->gameID = $gameID;
         }
 
         public function getGameRequestID(): int
@@ -144,6 +147,16 @@ namespace LittleGoWeb
             $this->state = $state;
         }
 
+        public function getGameID(): int
+        {
+            return $this->gameID;
+        }
+
+        public function setGameID(int $gameID): void
+        {
+            $this->gameID = $gameID;
+        }
+
         public function toJsonObject(): array
         {
             return array(
@@ -155,7 +168,8 @@ namespace LittleGoWeb
                 WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDKOMI => $this->requestedKomi,
                 WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDKORULE => $this->requestedKoRule,
                 WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDSCORINGSYSTEM => $this->requestedScoringSystem,
-                WEBSOCKET_MESSAGEDATA_KEY_STATE => $this->state
+                WEBSOCKET_MESSAGEDATA_KEY_STATE => $this->state,
+                WEBSOCKET_MESSAGEDATA_KEY_GAMEID => $this->gameID
                 // No user ID - the client who requests the data already
                 // knows the user ID
             );
