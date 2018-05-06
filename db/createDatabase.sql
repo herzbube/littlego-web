@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 02, 2018 at 03:44 PM
+-- Generation Time: May 05, 2018 at 06:19 PM
 -- Server version: 5.7.20
 -- PHP Version: 7.1.13
 
@@ -21,6 +21,39 @@ USE `littlego-web`;
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `game`
+--
+
+CREATE TABLE `game` (
+  `gameID` bigint(20) UNSIGNED NOT NULL,
+  `createTime` bigint(20) NOT NULL,
+  `boardSize` tinyint(4) NOT NULL,
+  `handicap` tinyint(4) NOT NULL,
+  `komi` float NOT NULL,
+  `koRule` tinyint(4) NOT NULL,
+  `scoringSystem` tinyint(4) NOT NULL,
+  `state` tinyint(4) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `gamemove`
+--
+
+CREATE TABLE `gamemove` (
+  `gameMoveID` bigint(20) UNSIGNED NOT NULL,
+  `createTime` bigint(20) NOT NULL,
+  `gameID` bigint(20) UNSIGNED NOT NULL,
+  `moveType` tinyint(4) NOT NULL,
+  `moveColor` tinyint(4) NOT NULL,
+  `vertexX` tinyint(4) NOT NULL,
+  `vertexY` tinyint(4) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `gamerequest`
 --
 
@@ -34,7 +67,8 @@ CREATE TABLE `gamerequest` (
   `requestedKoRule` tinyint(4) NOT NULL,
   `requestedScoringSystem` tinyint(4) NOT NULL,
   `userID` bigint(20) UNSIGNED NOT NULL,
-  `state` tinyint(4) NOT NULL
+  `state` tinyint(4) NOT NULL,
+  `gameID` bigint(20) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -54,6 +88,34 @@ CREATE TABLE `gamerequestpairing` (
   `koRule` tinyint(4) NOT NULL,
   `scoringSystem` tinyint(4) NOT NULL,
   `isRejected` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `gameresult`
+--
+
+CREATE TABLE `gameresult` (
+  `gameResultID` bigint(20) UNSIGNED NOT NULL,
+  `createTime` bigint(20) NOT NULL,
+  `gameID` bigint(20) UNSIGNED NOT NULL,
+  `resultType` tinyint(4) NOT NULL,
+  `winningStoneColor` tinyint(4) NOT NULL,
+  `winningPoints` float NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `gamesusersmapping`
+--
+
+CREATE TABLE `gamesusersmapping` (
+  `gamesusersmappingID` bigint(20) UNSIGNED NOT NULL,
+  `gameID` bigint(20) UNSIGNED NOT NULL,
+  `userID` bigint(20) UNSIGNED NOT NULL,
+  `stoneColor` tinyint(4) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -87,12 +149,28 @@ CREATE TABLE `user` (
 --
 
 --
+-- Indexes for table `game`
+--
+ALTER TABLE `game`
+  ADD PRIMARY KEY (`gameID`),
+  ADD KEY `createTime` (`createTime`);
+
+--
+-- Indexes for table `gamemove`
+--
+ALTER TABLE `gamemove`
+  ADD PRIMARY KEY (`gameMoveID`),
+  ADD KEY `gamemove_gameID` (`gameID`),
+  ADD KEY `createTime` (`createTime`);
+
+--
 -- Indexes for table `gamerequest`
 --
 ALTER TABLE `gamerequest`
   ADD PRIMARY KEY (`gameRequestID`),
   ADD KEY `gamerequest_userID` (`userID`),
-  ADD KEY `createTime` (`createTime`);
+  ADD KEY `createTime` (`createTime`),
+  ADD KEY `gamerequest_gameID` (`gameID`);
 
 --
 -- Indexes for table `gamerequestpairing`
@@ -102,6 +180,23 @@ ALTER TABLE `gamerequestpairing`
   ADD KEY `gamerequestpairing_blackPlayerGameRequestID` (`blackPlayerGameRequestID`),
   ADD KEY `gamerequestpairing_whitePlayerGameRequestID` (`whitePlayerGameRequestID`),
   ADD KEY `createTime` (`createTime`);
+
+--
+-- Indexes for table `gameresult`
+--
+ALTER TABLE `gameresult`
+  ADD PRIMARY KEY (`gameResultID`),
+  ADD KEY `gameresult_gameID` (`gameID`),
+  ADD KEY `createTime` (`createTime`);
+
+--
+-- Indexes for table `gamesusersmapping`
+--
+ALTER TABLE `gamesusersmapping`
+  ADD PRIMARY KEY (`gamesusersmappingID`),
+  ADD UNIQUE KEY `gameID_userID` (`gameID`,`userID`) USING BTREE,
+  ADD UNIQUE KEY `gameID_stoneColor` (`gameID`,`stoneColor`) USING BTREE,
+  ADD KEY `gamesusersmapping_userID` (`userID`);
 
 --
 -- Indexes for table `session`
@@ -124,6 +219,18 @@ ALTER TABLE `user`
 --
 
 --
+-- AUTO_INCREMENT for table `game`
+--
+ALTER TABLE `game`
+  MODIFY `gameID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `gamemove`
+--
+ALTER TABLE `gamemove`
+  MODIFY `gameMoveID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `gamerequest`
 --
 ALTER TABLE `gamerequest`
@@ -134,6 +241,18 @@ ALTER TABLE `gamerequest`
 --
 ALTER TABLE `gamerequestpairing`
   MODIFY `gameRequestPairingID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `gameresult`
+--
+ALTER TABLE `gameresult`
+  MODIFY `gameResultID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `gamesusersmapping`
+--
+ALTER TABLE `gamesusersmapping`
+  MODIFY `gamesusersmappingID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `session`
@@ -152,9 +271,16 @@ ALTER TABLE `user`
 --
 
 --
+-- Constraints for table `gamemove`
+--
+ALTER TABLE `gamemove`
+  ADD CONSTRAINT `gamemove_gameID` FOREIGN KEY (`gameID`) REFERENCES `game` (`gameID`);
+
+--
 -- Constraints for table `gamerequest`
 --
 ALTER TABLE `gamerequest`
+  ADD CONSTRAINT `gamerequest_gameID` FOREIGN KEY (`gameID`) REFERENCES `game` (`gameID`),
   ADD CONSTRAINT `gamerequest_userID` FOREIGN KEY (`userID`) REFERENCES `user` (`userID`);
 
 --
@@ -163,6 +289,19 @@ ALTER TABLE `gamerequest`
 ALTER TABLE `gamerequestpairing`
   ADD CONSTRAINT `gamerequestpairing_blackPlayerGameRequestID` FOREIGN KEY (`blackPlayerGameRequestID`) REFERENCES `gamerequest` (`gameRequestID`),
   ADD CONSTRAINT `gamerequestpairing_whitePlayerGameRequestID` FOREIGN KEY (`whitePlayerGameRequestID`) REFERENCES `gamerequest` (`gameRequestID`);
+
+--
+-- Constraints for table `gameresult`
+--
+ALTER TABLE `gameresult`
+  ADD CONSTRAINT `gameresult_gameID` FOREIGN KEY (`gameID`) REFERENCES `game` (`gameID`);
+
+--
+-- Constraints for table `gamesusersmapping`
+--
+ALTER TABLE `gamesusersmapping`
+  ADD CONSTRAINT `gamesusersmapping_gameID` FOREIGN KEY (`gameID`) REFERENCES `game` (`gameID`),
+  ADD CONSTRAINT `gamesusersmapping_userID` FOREIGN KEY (`userID`) REFERENCES `user` (`userID`);
 
 --
 -- Constraints for table `session`
