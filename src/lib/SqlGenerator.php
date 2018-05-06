@@ -39,6 +39,28 @@ namespace LittleGoWeb {
         }
 
         // Generates a full query string (including the terminating ";") that
+        // contains a SELECT statement including a WHERE clause.
+        //
+        // The SELECT statement performs a "COUNT(*)". The second parameter
+        // specifies the alias name that should be used as the column name of
+        // the count result.
+        //
+        // The specified array lists the column names that should appear
+        // in the WHERE part of the query.
+        //
+        // The resulting query string contains parameters that must be bound
+        // to a prepared statement.
+        public function getSelectCountStatementWithWhereClause(string $tableName, string $aliasName, array $whereColumnNames) : string
+        {
+            $queryString = $this->getSelectCountStatement($tableName, $aliasName);
+            $queryString .= " where ";
+            $queryString .= $this->getWhereColumnsEqualValues($tableName, $whereColumnNames, SQL_OPERATOR_AND);
+            $queryString .= ";";
+
+            return $queryString;
+        }
+
+        // Generates a full query string (including the terminating ";") that
         // contains a SELECT statement including an ORDER BY clause.
         //
         // The first specified array lists the column names that should appear
@@ -122,8 +144,42 @@ namespace LittleGoWeb {
             return $queryString;
         }
 
+        // Generates a full query string (including the terminating ";") that
+        // contains a SELECT statement including a WHERE, an ORDER BY and a
+        // LIMIT clause.
+        //
+        // The first specified array lists the column names that should appear
+        // in the SELECT part of the query.
+        //
+        // The second specified array lists the column names that should appear
+        // in the WHERE part of the query.
+        //
+        // The third specified array lists the column names that should appear
+        // in the ORDER BY part of the query.
+        //
+        // The fourth specified array lists how each ORDER BY column should be
+        // ordered. The array must have the same number of elements as the
+        // third array. A true value orders the column ascending, a false
+        // value orders the column descending.
+        //
+        // The fifth parameter value specifies the value to use for the LIMIT
+        // clause.
+        public function getSelectStatementWithOrderByAndWhereAndLimitClause(string $tableName, array $columnNames, array $whereColumnNames, array $orderByColumnNames, array $orderings, int $limit): string
+        {
+            $queryString = $this->getSelectStatement($tableName, $columnNames);
+            $queryString .= " where ";
+            $queryString .= $this->getWhereColumnsEqualValues($tableName, $whereColumnNames, SQL_OPERATOR_AND);
+            $queryString .= " order by ";
+            $queryString .= $this->getColumnsWithOrderings($tableName, $orderByColumnNames, $orderings);
+            $queryString .= " limit ";
+            $queryString .= $limit;
+            $queryString .= ";";
+
+            return $queryString;
+        }
+
         // Generates a query fragment that contains a SELECT statement without
-        // a WHERE clause.
+        // a WHERE or any other clauses.
         //
         // The specified array lists the column names that should appear in
         // the query fragment.
@@ -131,6 +187,22 @@ namespace LittleGoWeb {
         {
             $queryFragment = "select ";
             $queryFragment .= $this->getColumnNames($tableName, $columnNames);
+            $queryFragment .= " from ";
+            $queryFragment .= $this->getFullyQualifiedTableName($tableName);
+
+            return $queryFragment;
+        }
+
+        // Generates a query fragment that contains a SELECT statement without
+        // a WHERE or any other clauses.
+        //
+        // The SELECT statement performs a "COUNT(*)". The second parameter
+        // specifies the alias name that should be used as the column name of
+        // the count result.
+        public function getSelectCountStatement(string $tableName, string $aliasName): string
+        {
+            $queryFragment = "select ";
+            $queryFragment .= " count(*) as $aliasName";
             $queryFragment .= " from ";
             $queryFragment .= $this->getFullyQualifiedTableName($tableName);
 
@@ -226,6 +298,44 @@ namespace LittleGoWeb {
             $queryFragment .= $this->getFullyQualifiedTableName($tableName);
 
             return $queryFragment;
+        }
+
+        // Generates a query fragment that contains an INNER JOIN clause.
+        // The resulting query fragment is suitable for appending to a
+        // partial FROM clause.
+        //
+        // The JOIN is performed on a single column only, for which the
+        // name must be specified. Both the left and right table must use
+        // the same column name.
+        public function getInnerJoinClause(
+            string $tableNameLeft,
+            string $tableNameRight,
+            string $columnName): string
+        {
+            return $this->getJoinClause(
+                SQL_JOINNAME_INNERJOIN,
+                $tableNameLeft,
+                $tableNameRight,
+                $columnName);
+        }
+
+        // Generates a query fragment that contains a LEFT JOIN clause.
+        // The resulting query fragment is suitable for appending to a
+        // partial FROM clause.
+        //
+        // The JOIN is performed on a single column only, for which the
+        // name must be specified. Both the left and right table must use
+        // the same column name.
+        public function getLeftJoinClause(
+            string $tableNameLeft,
+            string $tableNameRight,
+            string $columnName): string
+        {
+            return $this->getJoinClause(
+                SQL_JOINNAME_LEFTJOIN,
+                $tableNameLeft,
+                $tableNameRight,
+                $columnName);
         }
 
         // Generates a query fragment that can be used anywhere where a
@@ -334,6 +444,24 @@ namespace LittleGoWeb {
             return $this->getColumnNotEqualsValue($tableName, $columnName);
         }
 
+        // Generates a query fragment that can be used in a WHERE clause. The
+        // query fragment does not include the "WHERE" SQL keyword.
+        //
+        // The table name parameter is required to form an unambiguous column
+        // name, which might be required in a query that uses JOINs.
+        //
+        // The parameter specifies the column name for which the condition
+        // should be generated.
+        //
+        // The resulting query fragment uses the "IS NULL" operator.
+        public function getWhereColumnIsNull(string $tableName, string $columnName): string
+        {
+            $queryFragment = $this->getFullyQualifiedColumnName($tableName, $columnName);
+            $queryFragment .= SQL_OPERATOR_ISNULL;
+
+            return $queryFragment;
+        }
+
         // Generates a query fragment that can be used in an UPDATE statement.
         // The query fragment does not include the "UPDATE" SQL keyword.
         //
@@ -350,6 +478,29 @@ namespace LittleGoWeb {
         public function getUpdateColumnsWithValues(string $tableName, array $columnNames): string
         {
             return $this->getColumnsEqualValues($tableName, $columnNames, SQL_OPERATOR_COMMA);
+        }
+
+        // Generates a query fragment that contains a JOIN clause with the
+        // specified name. The resulting query fragment is suitable for
+        // appending to a partial FROM clause.
+        //
+        // The JOIN is performed on a single column only, for which the
+        // name must be specified. Both the left and right table must use
+        // the same column name.
+        private function getJoinClause(
+            string $joinName,
+            string $tableNameLeft,
+            string $tableNameRight,
+            string $columnName): string
+        {
+            $queryString = $joinName;
+            $queryString .= $this->getFullyQualifiedTableName($tableNameRight);
+            $queryString .= SQL_OPERATOR_ON;
+            $queryString .= $tableNameLeft . SQL_OBJECT_SEPARATOR . $columnName;
+            $queryString .= SQL_OPERATOR_EQUALS;
+            $queryString .= $tableNameRight . SQL_OBJECT_SEPARATOR . $columnName;
+
+            return $queryString;
         }
 
         // Generates a query fragment that combines the specified column names

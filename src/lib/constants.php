@@ -103,11 +103,15 @@ namespace LittleGoWeb
     const SQL_OPERATOR_OR = " or ";
     const SQL_OPERATOR_EQUALS = " = ";
     const SQL_OPERATOR_NOTEQUALS = " <> ";
+    const SQL_OPERATOR_ISNULL = " is null ";
     const SQL_OPERATOR_COMMA = ", ";
     const SQL_OPERATOR_PARANTHESIS_OPEN = " ( ";
     const SQL_OPERATOR_PARANTHESIS_CLOSE = " ) ";
     const SQL_OPERATOR_ASCENDING = " asc ";
     const SQL_OPERATOR_DESCENDING = " desc ";
+    const SQL_OPERATOR_ON = " on ";
+    const SQL_JOINNAME_INNERJOIN = " inner join ";
+    const SQL_JOINNAME_LEFTJOIN = " left join ";
 
     // Data classes defaults
     const SESSION_SESSIONID_DEFAULT = -1;
