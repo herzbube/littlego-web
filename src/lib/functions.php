@@ -82,6 +82,7 @@ namespace LittleGoWeb
     <script src="js/littlego-web-session.js"></script>
     <script src="js/littlego-web-go.js"></script>
     <script src="js/littlego-web-drawing.js"></script>
+    <script src="js/littlego-web-board.js"></script>
     <!-- Main script that starts the application -->
     <script src="js/littlego-web.js"></script>
     <!--
@@ -219,6 +220,11 @@ namespace LittleGoWeb
         <div id="container-high-scores" class="container-fluid">
             <p>High scores are not yet available.</p>
         </div>
+        <div id="container-play-placeholder" class="container-fluid">
+            <div class="row text-center">
+                <div class="col-12">Retrieving game data ...</div>
+            </div>
+        </div>
         <div id="container-play" class="container-fluid">
             <div class="row">
                 <!--
@@ -263,14 +269,25 @@ namespace LittleGoWeb
                             columns.
                         -->
                         <div class="col-6">
-                           <div id="player-black" class="placeholder">
-                                <small>Player black placeholder</small>
+                            <div id="board-player-info-black" class="board-player-info container-fluid">
+                                <div class="row">
+                                    <div id="board-player-name-black" class="col-12"></div>
+                                </div>
+                                <div class="row">
+                                    <div id="board-number-of-captures-black" class="col-12"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="col-6">
-                           <div id="player-white" class="placeholder">
-                                <small>Player white placeholder</small>
-                            </div>
+                           <div id="board-player-info-white" class="board-player-info container-fluid">
+                                <div class="row">
+                                    <div id="board-player-name-white" class="col-12"></div>
+                                </div>
+                                <div class="row">
+                                    <div id="board-number-of-captures-white" class="col-8"></div>
+                                    <div id="board-komi" class="col-4"></div>
+                                </div>
+                           </div>
                         </div>
                     </div>
                     <div class="row">

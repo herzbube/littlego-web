@@ -13,14 +13,24 @@ var GoGame = (function ()
 {
     "use strict";
 
-    // Creates a new GoGame object.
+    // Creates a new GoGame object without any moves.
     function GoGame(boardSize, handicap, komi, goGameRules)
     {
         this.boardSize = boardSize;
         this.handicap = handicap;
         this.komi = komi;
         this.goGameRules = goGameRules;
+        this.goPlayerBlack = new GoPlayer(COLOR_BLACK);
+        this.goPlayerWhite = new GoPlayer(COLOR_WHITE);
+        this.firstMove = null;
     }
+
+    // Returns true if the GoGame has at least one move. Returns false
+    // if the GoGame has no moves.
+    GoGame.prototype.hasMoves = function()
+    {
+        return (this.firstMove !== null);
+    };
 
     return GoGame;
 })();

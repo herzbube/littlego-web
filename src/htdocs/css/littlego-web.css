@@ -12,6 +12,30 @@
         display: none;
     }
 
+    .board-player-info {
+        padding: 0.5em;
+        margin-bottom: 1em;
+    }
+
+    #board-player-info-black {
+        background-color: black;
+        /* "Black 3D" gradient from http://www.colorzilla.com/gradient-editor/ */
+        background: linear-gradient(to bottom, #7d7e7d 0%, #0e0e0e 100%);
+        color: white;
+    }
+
+    #board-player-info-white {
+        background-color: white;
+        /* "White 3D" gradient from http://www.colorzilla.com/gradient-editor/ */
+        background: linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
+        border: solid black thin;
+        color: black;
+    }
+
+    #board-komi {
+        text-align: right;
+    }
+
     /* TODO: Remove when placeholders are removed */
     .placeholder {
         background-color: white;

@@ -103,6 +103,9 @@ namespace LittleGoWeb
                 case WEBSOCKET_REQUEST_TYPE_GETGAMESINPROGRESS:
                     $this->handleGetGamesInProgress($webSocketClient, $webSocketResponseType);
                     break;
+                case WEBSOCKET_REQUEST_TYPE_GETGAMEINPROGRESSWITHMOVES:
+                    $this->handleGetGameInProgressWithMoves($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
+                    break;
                 default:
                     echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
             }
@@ -146,6 +149,8 @@ namespace LittleGoWeb
                     return WEBSOCKET_RESPONSE_TYPE_CONFIRMGAMEREQUESTPAIRING;
                 case WEBSOCKET_REQUEST_TYPE_GETGAMESINPROGRESS:
                     return WEBSOCKET_RESPONSE_TYPE_GETGAMESINPROGRESS;
+                case WEBSOCKET_REQUEST_TYPE_GETGAMEINPROGRESSWITHMOVES:
+                    return WEBSOCKET_RESPONSE_TYPE_GETGAMEINPROGRESSWITHMOVES;
                 default:
                     throw new \Exception("Unsupported request type $webSocketRequestType");
             }
@@ -654,43 +659,13 @@ namespace LittleGoWeb
             $gamesInProgressJSON = array();
             foreach ($gamesInProgress as $gameInProgress)
             {
-                $users = $dbAccess->findUsersByGameID($gameInProgress->getGameID());
-                if ($users === null)
-                {
-                    $errorMessage = "Failed to retrieve users for game in progress from database";
-                    $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
-                    return;
-                }
-                $gameInProgress->setBlackPlayer($users[COLOR_BLACK]);
-                $gameInProgress->setWhitePlayer($users[COLOR_WHITE]);
-
-                if ($gameInProgress->getState() === GAME_STATE_INPROGRESS_PLAYING)
-                {
-                    $lastGameMove = $dbAccess->findLastGameMove($gameInProgress->getGameID());
-                    if ($lastGameMove === null)
-                    {
-                        if ($gameInProgress->getHandicap() === 0)
-                            $gameInProgress->setNextMoveColor(COLOR_BLACK);
-                        else
-                            $gameInProgress->setNextMoveColor(COLOR_WHITE);
-                    }
-                    else
-                    {
-                        if ($lastGameMove->getMoveColor() === COLOR_BLACK)
-                            $gameInProgress->setNextMoveColor(COLOR_WHITE);
-                        else
-                            $gameInProgress->setNextMoveColor(COLOR_BLACK);
-                    }
-                }
-
-                $numberOfMovesPlayed = $dbAccess->findNumberOfMovesPlayed($gameInProgress->getGameID());
-                if ($numberOfMovesPlayed === -1)
-                {
-                    $errorMessage = "Failed to retrieve number of moves played from database";
-                    $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
-                    return;
-                }
-                $gameInProgress->setNumberOfMovesPlayed($numberOfMovesPlayed);
+                $success = $this->addDataToGameInProgress(
+                    $webSocketClient,
+                    $webSocketResponseType,
+                    $gameInProgress,
+                    $dbAccess);
+                if (! $success)
+                    return;  // helper function has already sent WebSocket error message
 
                 array_push($gamesInProgressJSON, $gameInProgress->toJsonObject());
             }
@@ -702,6 +677,99 @@ namespace LittleGoWeb
                 ];
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
             $webSocketClient->send($webSocketMessage);
+        }
+
+        private function handleGetGameInProgressWithMoves(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType) : void
+        {
+            $gameID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEID];
+
+            $dbAccess = new DbAccess($this->config);
+
+            $userID = $webSocketClient->getSession()->getUserID();
+            $gamesInProgress = $dbAccess->findGamesInProgressByUserID($userID);
+            if ($gamesInProgress === null)
+            {
+                $errorMessage = "Failed to retrieve games in progress data from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            foreach ($gamesInProgress as $gameInProgress)
+            {
+                if ($gameInProgress->getGameID() !== $gameID)
+                    continue;
+
+                $success = $this->addDataToGameInProgress(
+                    $webSocketClient,
+                    $webSocketResponseType,
+                    $gameInProgress,
+                    $dbAccess);
+                if (! $success)
+                    return;  // helper function has already sent WebSocket error message
+
+                // TODO: Get game moves data from database
+                $gameMoves = [];
+
+                $webSocketResponseData =
+                    [
+                        WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
+                        WEBSOCKET_MESSAGEDATA_KEY_GAMEINPROGRESS => $gameInProgress->toJsonObject(),
+                        WEBSOCKET_MESSAGEDATA_KEY_GAMEMOVES => $gameMoves
+                    ];
+                $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+                $webSocketClient->send($webSocketMessage);
+
+                // We found the single game that we are interested in, so we
+                // can stop looping now
+                return;
+            }
+        }
+
+        private function addDataToGameInProgress(
+            WebSocketClient $webSocketClient,
+            string $webSocketResponseType,
+            Game $gameInProgress,
+            DbAccess $dbAccess) : bool
+        {
+            $users = $dbAccess->findUsersByGameID($gameInProgress->getGameID());
+            if ($users === null)
+            {
+                $errorMessage = "Failed to retrieve users for game in progress from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return false;
+            }
+            $gameInProgress->setBlackPlayer($users[COLOR_BLACK]);
+            $gameInProgress->setWhitePlayer($users[COLOR_WHITE]);
+
+            if ($gameInProgress->getState() === GAME_STATE_INPROGRESS_PLAYING)
+            {
+                $lastGameMove = $dbAccess->findLastGameMove($gameInProgress->getGameID());
+                if ($lastGameMove === null)
+                {
+                    if ($gameInProgress->getHandicap() === 0)
+                        $gameInProgress->setNextMoveColor(COLOR_BLACK);
+                    else
+                        $gameInProgress->setNextMoveColor(COLOR_WHITE);
+                }
+                else
+                {
+                    if ($lastGameMove->getMoveColor() === COLOR_BLACK)
+                        $gameInProgress->setNextMoveColor(COLOR_WHITE);
+                    else
+                        $gameInProgress->setNextMoveColor(COLOR_BLACK);
+                }
+            }
+
+            $numberOfMovesPlayed = $dbAccess->findNumberOfMovesPlayed($gameInProgress->getGameID());
+            if ($numberOfMovesPlayed === -1)
+            {
+                $errorMessage = "Failed to retrieve number of moves played from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return false;
+            }
+            $gameInProgress->setNumberOfMovesPlayed($numberOfMovesPlayed);
+
+            return true;
         }
 
         private function findAndSendGameRequests(WebSocketClient $webSocketClient, string $webSocketMessageType, DbAccess $dbAccess): void

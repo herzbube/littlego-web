@@ -25,6 +25,7 @@ namespace LittleGoWeb
     const WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTPAIRING = "c2sGetGameRequestPairingRequest";
     const WEBSOCKET_REQUEST_TYPE_CONFIRMGAMEREQUESTPAIRING = "c2sConfirmGameRequestPairingRequest";
     const WEBSOCKET_REQUEST_TYPE_GETGAMESINPROGRESS = "c2sGetGamesInProgressRequest";
+    const WEBSOCKET_REQUEST_TYPE_GETGAMEINPROGRESSWITHMOVES = "c2sGetGameInProgressWithMovesRequest";
 
     // WebSocket responses (server outgoing/client incoming messages)
     const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
@@ -37,6 +38,7 @@ namespace LittleGoWeb
     const WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTPAIRING = "s2cGetGameRequestPairingResponse";
     const WEBSOCKET_RESPONSE_TYPE_CONFIRMGAMEREQUESTPAIRING = "s2cConfirmGameRequestPairingResponse";
     const WEBSOCKET_RESPONSE_TYPE_GETGAMESINPROGRESS = "s2cGetGamesInProgressResponse";
+    const WEBSOCKET_RESPONSE_TYPE_GETGAMEINPROGRESSWITHMOVES = "s2cGetGameInProgressWithMovesResponse";
 
     // WebSocket messages proactively sent by the server to a client who didn't
     // request anything (server outgoing/client incoming messages)
@@ -82,6 +84,8 @@ namespace LittleGoWeb
     const WEBSOCKET_MESSAGEDATA_KEY_VERTEXX = "vertexX";
     const WEBSOCKET_MESSAGEDATA_KEY_VERTEXY = "vertexY";
     const WEBSOCKET_MESSAGEDATA_KEY_GAMESINPROGRESS = "gamesInProgress";
+    const WEBSOCKET_MESSAGEDATA_KEY_GAMEINPROGRESS = "gameInProgress";
+    const WEBSOCKET_MESSAGEDATA_KEY_GAMEMOVES = "gameMoves";
     const WEBSOCKET_MESSAGEDATA_KEY_SUCCESS = "success";
     const WEBSOCKET_MESSAGEDATA_KEY_ERRORMESSAGE = "errorMessage";
 

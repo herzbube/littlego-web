@@ -114,6 +114,20 @@ function numberOfMovesPlayedToString(numberOfMovesPlayed)
         throw new Error("Unsupported number of moves played value: " + numberOfMovesPlayed);
 }
 
+// Converts the specified number of captured stones into a string that is
+// suitable for displaying in the UI. Throws an Error object for invalid values.
+function numberOfCapturedStonesToString(numberOfCapturedStones)
+{
+    if (numberOfCapturedStones === 0)
+        return "No captures";
+    else if (numberOfCapturedStones === 1)
+        return "" + numberOfCapturedStones + " capture";
+    else if (numberOfCapturedStones >1)
+        return "" + numberOfCapturedStones + " captures";
+    else
+        throw new Error("Unsupported number of captured stones value: " + numberOfCapturedStones);
+}
+
 // Converts the specified start time value into a string that is suitable for
 // displaying in the UI. Throws an Error object for invalid values.
 function startTimeToString(startTimeInMilliseconds)

@@ -1,5 +1,6 @@
 // ----------------------------------------------------------------------
-// This file contains all view model classes
+// This file contains the view model classes that are used to populate the
+// various tables on the application main tabs.
 // ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------

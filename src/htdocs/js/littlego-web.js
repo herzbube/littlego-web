@@ -7,6 +7,7 @@
     "use strict";
 
     // Declare a few global variables
+    var theBoard = null;
     var theSession = null;
 
     var websocketUrl =
@@ -47,6 +48,10 @@
         });
 
         theWebSocket.addEventListener("open", function(event) {
+            // Create the Board object before the Session object so that
+            // it is ready to be immediately displayed on successful
+            // session validation.
+            theBoard = new Board(theWebSocket, onBoardDataHasFinishedLoading);
             // We can create the Session object only after the document is
             // ready because the validationComplete event handler needs to
             // show or hide elements in the DOM.
@@ -317,35 +322,21 @@
     {
         var gameInProgress = dataItemAction.dataItem;
 
-        showBoard();
+        theBoard.setupBoardForGameInProgress(gameInProgress.gameID);
 
-        // TODO: Actually show data for the game in progress.
+        makeAppContainerVisible(ID_CONTAINER_PLAY_PLACEHOLDER);
+        makeNavItemActive(ID_BUTTON_GAMES_IN_PROGRESS);
     }
 
-    function onViewFinishedGame(dataItemAction)
+    function onBoardDataHasFinishedLoading()
     {
-        var finishedGame = dataItemAction.dataItem;
-
-        showBoard();
-
-        // TODO: Actually show data for the finished game.
+        makeAppContainerVisible(ID_CONTAINER_PLAY);
     }
 
     function activateTab(tabName)
     {
         makeNavItemActive(PREFIX_ID_BUTTON + tabName);
         makeAppContainerVisible(PREFIX_ID_CONTAINER + tabName);
-    }
-
-    function showBoard()
-    {
-        makeAppContainerVisible(ID_CONTAINER_PLAY);
-        makeNavItemActive(ID_BUTTON_GAMES_IN_PROGRESS);
-
-        // Start drawing the board AFTER the board container has been
-        // made visible, otherwise the container has width/height 0.
-        var containerBoard = $("#" + ID_CONTAINER_BOARD);
-        drawGoBoard(containerBoard);
     }
 
     function makeNavItemActive(navItemID)
@@ -642,9 +633,8 @@
                 return onConfirmGameRequest;
             case OPERATION_TYPE_GAME_IN_PROGRESS_RESUME:
                 return onResumeGameInProgress;
-            case OPERATION_TYPE_FINISHED_GAME_VIEW:
-                return onViewFinishedGame;
             case OPERATION_TYPE_GAME_IN_PROGRESS_RESIGN:
+            case OPERATION_TYPE_FINISHED_GAME_VIEW:
             case OPERATION_TYPE_FINISHED_GAME_EMAIL_RESULT:
             case OPERATION_TYPE_FINISHED_GAME_DELETE:
                 // Returning undefined causes the "not yet implemented" dialog
