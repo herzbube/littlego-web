@@ -266,7 +266,7 @@ namespace LittleGoWeb
             }
         }
 
-        private function handleLogin(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType): void
+        private function handleLogin(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType): void
         {
             // Use the same message for both failures - we don't want to give
             // an attacker a hint whether he guessed the email address
@@ -344,7 +344,7 @@ namespace LittleGoWeb
             return $sessionID;
         }
 
-        private function handleLogout(WebSocketClient $webSocketClient, $webSocketResponseType): void
+        private function handleLogout(WebSocketClient $webSocketClient, string $webSocketResponseType): void
         {
             $sessionKey = $webSocketClient->getSession()->getSessionKey();
 
@@ -371,7 +371,7 @@ namespace LittleGoWeb
             }
         }
 
-        private function handleRegisterAccount(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType): void
+        private function handleRegisterAccount(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType): void
         {
             $emailAddress = $messageData[WEBSOCKET_MESSAGEDATA_KEY_EMAILADDRESS];
             $displayName = $messageData[WEBSOCKET_MESSAGEDATA_KEY_DISPLAYNAME];
@@ -430,7 +430,7 @@ namespace LittleGoWeb
             return $passwordHash;
         }
 
-        private function handleValidateSession(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType): void
+        private function handleValidateSession(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType): void
         {
             $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
 
@@ -467,7 +467,7 @@ namespace LittleGoWeb
             }
         }
 
-        private function handleSubmitNewGameRequest(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType): void
+        private function handleSubmitNewGameRequest(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType): void
         {
             $requestedBoardSize = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDBOARDSIZE]);
             $requestedStoneColor = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDSTONECOLOR]);
@@ -539,14 +539,14 @@ namespace LittleGoWeb
             }
         }
 
-        private function handleGetGameRequests(WebSocketClient $webSocketClient, $webSocketResponseType): void
+        private function handleGetGameRequests(WebSocketClient $webSocketClient, string $webSocketResponseType): void
         {
             $dbAccess = new DbAccess($this->config);
 
             $this->findAndSendGameRequests($webSocketClient, $webSocketResponseType, $dbAccess);
         }
 
-        private function handleCancelGameRequest(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType): void
+        private function handleCancelGameRequest(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType): void
         {
             $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
 
@@ -582,7 +582,7 @@ namespace LittleGoWeb
             }
         }
 
-        private function handleGetGameRequestPairing(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType) : void
+        private function handleGetGameRequestPairing(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType) : void
         {
             $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
 
@@ -616,7 +616,7 @@ namespace LittleGoWeb
             $webSocketClient->send($webSocketMessage);
         }
 
-        private function handleConfirmGameRequestPairing(WebSocketClient $webSocketClient, array $messageData, $webSocketResponseType) : void
+        private function handleConfirmGameRequestPairing(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType) : void
         {
             $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
 
@@ -643,7 +643,7 @@ namespace LittleGoWeb
             $this->findAndSendGameRequests($webSocketClient, $webSocketResponseType, $dbAccess);
         }
 
-        private function handleGetGamesInProgress(WebSocketClient $webSocketClient, $webSocketResponseType) : void
+        private function handleGetGamesInProgress(WebSocketClient $webSocketClient, string $webSocketResponseType) : void
         {
             $dbAccess = new DbAccess($this->config);
 
