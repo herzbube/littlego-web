@@ -235,7 +235,7 @@ namespace LittleGoWeb
                     the board must share the available horizontal space with
                     the right-hand-side elements.
                 -->
-                <div id="left-hand-side" class="col-12 col-md-8">
+                <div id="board-left-hand-side" class="col-12 col-md-8">
                     <div id="container-board" />
                         <!-- Content is filled in dynamically -->
                     </div>
@@ -259,8 +259,8 @@ namespace LittleGoWeb
                     the right-hand-side elements must share the available
                     horizontal space with the board.
                 -->
-                <div id="right-hand-side" class="col-12 col-md-4">
-                    <div class="row">
+                <div id="board-right-hand-side" class="col-12 col-md-4">
+                    <div class="row board-right-hand-side-section">
                         <!--
                             Regardless of how much horizontal space the
                             right-hand-side elements take up, we distribute
@@ -279,7 +279,7 @@ namespace LittleGoWeb
                             </div>
                         </div>
                         <div class="col-6">
-                           <div id="board-player-info-white" class="board-player-info container-fluid">
+                            <div id="board-player-info-white" class="board-player-info container-fluid">
                                 <div class="row">
                                     <div id="board-player-name-white" class="col-12"></div>
                                 </div>
@@ -287,17 +287,42 @@ namespace LittleGoWeb
                                     <div id="board-number-of-captures-white" class="col-8"></div>
                                     <div id="board-komi" class="col-4"></div>
                                 </div>
-                           </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                           <div id="controls" class="placeholder">
-                                <small>Controls placeholder</small>
                             </div>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row board-right-hand-side-section">
+                        <div class="col-12">
+                            <div id="container-board-mode-navigation" class="board-right-hand-side-subsection">
+                                <ul class="nav nav-tabs">
+                                    <li class="nav-item">
+                                        <button id="button-board-mode-play" class="nav-link btn btn-link active">Play Mode</button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button id="button-board-mode-analyze" class="nav-link btn btn-link">Analyze Mode</button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button id="button-board-mode-scoring" class="nav-link btn btn-link">Scoring Mode</button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div id="container-board-controls" class="board-right-hand-side-subsection">
+                                <div id="container-board-controls-play-mode">
+                                    <button id="button-board-control-pass" class="btn btn-outline-dark">Pass</button>
+                                </div>
+                                <div id="container-board-controls-analyze-mode">
+                                    <button id="button-board-control-rewindtostart" class="btn btn-outline-dark" title"Go to first board position" data-toggle="modal" data-target="#notYetImplemented">First</button>
+                                    <button id="button-board-control-back" class="btn btn-outline-dark" title"Go to previousboard position" data-toggle="modal" data-target="#notYetImplemented">Previous</button>
+                                    <button id="button-board-control-forward" class="btn btn-outline-dark" title"Go to next board position" data-toggle="modal" data-target="#notYetImplemented">Next</button>
+                                    <button id="button-board-control-forwardtoend" class="btn btn-outline-dark" title"Go to lastboard position" data-toggle="modal" data-target="#notYetImplemented">Last</button>
+                                </div>
+                                <div id="container-board-controls-scoring-mode">
+                                    <button id="button-board-control-calculate-score" class="btn btn-outline-dark" title"Calculate the new score" data-toggle="modal" data-target="#notYetImplemented">Calculate</button>
+                                    <button id="button-board-control-toggle-mark-mode" class="btn btn-outline-dark" title"Start marking as seki" data-toggle="modal" data-target="#notYetImplemented">Seki</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row board-right-hand-side-section">
                         <div class="col-12">
                            <div id="status-area" class="placeholder">
                                 <small>Status area placeholder</small>

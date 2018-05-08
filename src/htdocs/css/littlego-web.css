@@ -12,9 +12,15 @@
         display: none;
     }
 
+    .board-right-hand-side-section {
+        margin-bottom: 2em;
+    }
+    .board-right-hand-side-subsection {
+        margin-bottom: 1em;
+    }
+
     .board-player-info {
         padding: 0.5em;
-        margin-bottom: 1em;
     }
 
     #board-player-info-black {
@@ -41,11 +47,6 @@
         background-color: white;
         border: solid black thin;
         padding: 0.5em;
-    }
-
-    /* TODO: Remove when placeholders are removed */
-    .placeholder {
-        margin-bottom: 1em;
     }
 
     #container-login-form, #container-registration-form

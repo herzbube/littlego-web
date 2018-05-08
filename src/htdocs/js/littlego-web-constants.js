@@ -163,6 +163,14 @@ const ID_BOARD_NUMBER_OF_CAPTURES_BLACK = PREFIX_BOARD + "number-of-captures-bla
 const ID_BOARD_PLAYER_NAME_WHITE = PREFIX_BOARD + "player-name-white";
 const ID_BOARD_NUMBER_OF_CAPTURES_WHITE = PREFIX_BOARD + "number-of-captures-white";
 const ID_BOARD_KOMI = PREFIX_BOARD + "komi";
+const ID_CONTAINER_BOARD_MODE_NAVIGATION = PREFIX_ID_CONTAINER + "board-mode-navigation";
+const ID_BUTTON_BOARD_MODE_PLAY = PREFIX_ID_BUTTON + "board-mode-play";
+const ID_BUTTON_BOARD_MODE_ANALYZE = PREFIX_ID_BUTTON + "board-mode-analyze";
+const ID_BUTTON_BOARD_MODE_SCORING = PREFIX_ID_BUTTON + "board-mode-scoring";
+const ID_CONTAINER_BOARD_CONTROLS = PREFIX_ID_CONTAINER + "board-controls";
+const ID_CONTAINER_BOARD_CONTROLS_PLAY_MODE = PREFIX_ID_CONTAINER + "board-controls-play-mode";
+const ID_CONTAINER_BOARD_CONTROLS_ANALYZE_MODE = PREFIX_ID_CONTAINER + "board-controls-analyze-mode";
+const ID_CONTAINER_BOARD_CONTROLS_SCORING_MODE = PREFIX_ID_CONTAINER + "board-controls-scoring-mode";
 
 // Modals
 const ID_MODAL_NOT_YET_IMPLEMENTED = "notYetImplemented";

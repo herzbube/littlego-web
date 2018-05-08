@@ -16,6 +16,18 @@ var Board = (function ()
         });
 
         this.onBoardDataHasFinishedLoading = callbackBoardDataHasFinishedLoading;
+
+        $("#" + ID_BUTTON_BOARD_MODE_PLAY).on("click", function(event) {
+            self.onBoardModePlay(event);
+        });
+        $("#" + ID_BUTTON_BOARD_MODE_ANALYZE).on("click", function(event) {
+            self.onBoardModeAnalyze(event);
+        });
+        $("#" + ID_BUTTON_BOARD_MODE_SCORING).on("click", function(event) {
+            self.onBoardModeScoring(event);
+        });
+
+        this.makeBoardControlsContainerVisible(ID_CONTAINER_BOARD_CONTROLS_PLAY_MODE, ID_BUTTON_BOARD_MODE_PLAY);
     }
 
     // Internal function. Handles incoming WebSocket messages that are
@@ -110,6 +122,41 @@ var Board = (function ()
 
         $("#" + ID_BOARD_KOMI).html(
             komiToString(boardPlayerInfoWhite.komi));
+    };
+
+    Board.prototype.onBoardModePlay = function(event)
+    {
+        this.makeBoardControlsContainerVisible(ID_CONTAINER_BOARD_CONTROLS_PLAY_MODE, ID_BUTTON_BOARD_MODE_PLAY);
+    };
+
+    Board.prototype.onBoardModeAnalyze = function(event)
+    {
+        this.makeBoardControlsContainerVisible(ID_CONTAINER_BOARD_CONTROLS_ANALYZE_MODE, ID_BUTTON_BOARD_MODE_ANALYZE);
+    };
+
+    Board.prototype.onBoardModeScoring = function(event)
+    {
+        this.makeBoardControlsContainerVisible(ID_CONTAINER_BOARD_CONTROLS_SCORING_MODE, ID_BUTTON_BOARD_MODE_SCORING);
+    };
+
+    Board.prototype.makeBoardControlsContainerVisible = function(boardControlsContainerID, boardModeNavigationButtonID)
+    {
+        this.hideAllBoardControlsContainers();
+        this.deactivateAllBoardModeNavigationTabs();
+
+        $("#" + boardControlsContainerID).show();
+        $("#" + boardModeNavigationButtonID).addClass(BOOTSTRAP_CLASS_ACTIVE);
+    };
+
+    Board.prototype.hideAllBoardControlsContainers = function()
+    {
+        // Use the direct child selector for better performance
+        $("#" + ID_CONTAINER_BOARD_CONTROLS +  " > div").hide();
+    };
+
+    Board.prototype.deactivateAllBoardModeNavigationTabs = function()
+    {
+        $("#" + ID_CONTAINER_BOARD_MODE_NAVIGATION +  " button").removeClass(BOOTSTRAP_CLASS_ACTIVE);
     };
 
     return Board;
