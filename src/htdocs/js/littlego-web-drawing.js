@@ -228,3 +228,122 @@ function drawCircles(positions, radius, fillColor, cellDimension, paper)
         circleSvg.attr("stroke-width", "0");
     })
 }
+
+// ----------------------------------------------------------------------
+// Compatibility classes and functions that emulate iOS' CoreGraphics
+// structs and functions. We need these so that we can reuse a lot of the
+// drawing code from the Little Go iOS project.
+// ----------------------------------------------------------------------
+function CGSize(width, height)
+{
+    this.width = width;
+    this.height = height;
+    this.toString = function() { return "width = " + this.width + ", height = " + this.height; };
+}
+
+function CGSizeMake(width, height)
+{
+    return new CGSize(width, height);
+}
+
+const CGSizeZero = CGSizeMake(0, 0);
+
+function CGSizeEqualToSize(size1, size2)
+{
+    // Use ==, not ===, because some of the drawing code operates with
+    // integers and some operates with floats
+    return (size1.width == size2.width && size1.height == size2.height);
+}
+
+
+function CGPoint(x, y)
+{
+    this.x = x;
+    this.y = y;
+    this.toString = function() { return "x = " + this.x + ", y = " + this.y; };
+}
+
+function CGPointMake(x, y)
+{
+    return new CGPoint(x, y);
+}
+
+const CGPointZero = CGPointMake(0, 0);
+
+function CGPointEqualToPoint(point1, point2)
+{
+    // Use ==, not ===, because some of the drawing code operates with
+    // integers and some operates with floats
+    return (point1.x == point2.x && point1.y == point2.y);
+}
+
+
+function CGRect(origin, size)
+{
+    // Make copies of the incoming CGPoint and CGSize objects! If we don't
+    // make copies and the caller modifies the CGRect that we return, the
+    // modifications will be made to the original CGPoint and CGSize objects.
+    this.origin = CGPointMake(origin.x, origin.y);
+    this.size = CGSizeMake(size.width, size.height);
+    this.toString = function()
+    {
+        return "x = " + this.origin.x
+            + ", y = " + this.origin.y
+            + ", width = " + this.size.width
+            + ", height = " + this.size.height;
+    };
+}
+
+function CGRectMake(origin, size)
+{
+    return new CGRect(origin, size);
+}
+
+const CGRectZero = CGRectMake(CGPointZero, CGSizeZero);
+
+function CGRectGetMidX(rect)
+{
+    return rect.origin.x + (rect.size.width / 2.0);
+}
+
+function CGRectGetMidY(rect)
+{
+    return rect.origin.y + (rect.size.height / 2.0);
+}
+
+function BoardViewIntersection(goPoint, coordinates)
+{
+    // Don't make a copy! The GoPoint object must remain tied to its
+    // GoBoard object.
+    this.goPoint = goPoint;
+    // Make a copy. For an explanation read the comments in CGRectMake().
+    this.coordinates = CGPointMake(coordinates.x, coordinates.y);
+    this.toString = function()
+    {
+        return "vertex = " + this.goPoint.goVertex
+            + ", x = " + this.coordinates.x
+            + ", y = " + this.coordinates.y;
+    };
+}
+
+function BoardViewIntersectionMake(goPoint, coordinates)
+{
+    return new BoardViewIntersection(goPoint, coordinates);
+}
+
+const BoardViewIntersectionNull = BoardViewIntersectionMake(null, CGPointZero);
+
+function BoardViewIntersectionEqualToIntersection(intersection1, intersection2)
+{
+    if (intersection1.goPoint.goVertex.x != intersection2.goPoint.goVertex.x)
+        return false;
+    else if (intersection1.goPoint.goVertex.y != intersection2.goPoint.goVertex.y)
+        return false;
+    else
+        return CGPointEqualToPoint(intersection1.coordinates, intersection2.coordinates);
+}
+
+function BoardViewIntersectionIsNullIntersection(intersection)
+{
+    return BoardViewIntersectionEqualToIntersection(intersection, BoardViewIntersectionNull);
+}
