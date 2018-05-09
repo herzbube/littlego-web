@@ -80,11 +80,13 @@ var Board = (function ()
             if (this.onBoardDataHasFinishedLoading !== undefined)
                 this.onBoardDataHasFinishedLoading();
 
+            var goBoard = new GoBoard(
+                gameInProgressJsonObject.boardSize);
             var goGameRules = new GoGameRules(
                 gameInProgressJsonObject.koRule,
                 gameInProgressJsonObject.scoringSystem);
             var goGame = new GoGame(
-                gameInProgressJsonObject.boardSize,
+                goBoard,
                 gameInProgressJsonObject.handicap,
                 gameInProgressJsonObject.komi,
                 goGameRules);

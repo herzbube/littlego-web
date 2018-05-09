@@ -10,6 +10,12 @@ const BOARDSIZE_15 = 15;
 const BOARDSIZE_17 = 17;
 const BOARDSIZE_19 = 19;
 const BOARDSIZE_SMALLEST = BOARDSIZE_7;
+const BOARDSIZE_UNDEFINED = -1;
+
+const GOBOARDCORNER_BOTTOMLEFT = 0;   // A1 on all board sizes
+const GOBOARDCORNER_BOTTOMRIGHT = 1;  // T1 on a 19x19 board
+const GOBOARDCORNER_TOPLEFT = 2;      // A19 on a 19x19 board
+const GOBOARDCORNER_TOPRIGHT = 3;     // T19 on a 19x19 board
 
 const COLOR_NONE = -1;
 const COLOR_BLACK = 0;

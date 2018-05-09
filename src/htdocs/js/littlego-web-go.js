@@ -14,9 +14,9 @@ var GoGame = (function ()
     "use strict";
 
     // Creates a new GoGame object without any moves.
-    function GoGame(boardSize, handicap, komi, goGameRules)
+    function GoGame(goBoard, handicap, komi, goGameRules)
     {
-        this.boardSize = boardSize;
+        this.goBoard = goBoard;
         this.handicap = handicap;
         this.komi = komi;
         this.goGameRules = goGameRules;
@@ -218,6 +218,38 @@ var GoBoard = (function ()
         }
 
         return this.getPointAtVertexCoordinates(x, y);
+    };
+
+    // Returns the GoPoint object located at the corner of the board
+    // defined by @a corner.
+    GoBoard.prototype.getPointAtCorner = function(goBoardCorner)
+    {
+        var x;
+        var y;
+        switch (goBoardCorner)
+        {
+            case GOBOARDCORNER_BOTTOMLEFT:
+                x = 1;
+                y = 1;
+                break;
+            case GOBOARDCORNER_BOTTOMRIGHT:
+                x = this.boardSize;
+                y = 1;
+                break;
+            case GOBOARDCORNER_TOPLEFT:
+                x = 1;
+                y = this.boardSize;
+                break;
+            case GOBOARDCORNER_TOPRIGHT:
+                x = this.boardSize;
+                y = this.boardSize;
+                break;
+            default:
+                throw new Error("Invalid board cornder: " + goBoardCorner);
+        }
+
+        var goVertex = new GoVertex(x, y);
+        return this.getPointAtVertex(goVertex);
     };
 
     // Returns an array of all GoBoardRegion objects on this board.
