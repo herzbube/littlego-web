@@ -178,6 +178,12 @@ const ID_CONTAINER_BOARD_CONTROLS_PLAY_MODE = PREFIX_ID_CONTAINER + "board-contr
 const ID_CONTAINER_BOARD_CONTROLS_ANALYZE_MODE = PREFIX_ID_CONTAINER + "board-controls-analyze-mode";
 const ID_CONTAINER_BOARD_CONTROLS_SCORING_MODE = PREFIX_ID_CONTAINER + "board-controls-scoring-mode";
 
+// SVG
+const ID_SVG_BOARD = "board";
+const ID_SVG_STARPOINT_PREFIX = "starpoint-"
+const ID_SVG_STONE_PREFIX = "starpoint-"
+const ID_SVG_NEXTMOVEINDICATOR = "next-move-indicator";
+
 // Modals
 const ID_MODAL_NOT_YET_IMPLEMENTED = "notYetImplemented";
 

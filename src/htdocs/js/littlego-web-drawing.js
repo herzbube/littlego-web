@@ -19,6 +19,9 @@ const STROKE_COLOR_WHITE_LAST_MOVE_SYMBOL = "black";
 const FILL_COLOR_STAR_POINT = "black";
 const FILL_COLOR_BLACK_STONE = "black";
 const FILL_COLOR_WHITE_STONE = "white";
+const FILL_OPACITY_STARPOINT = 1.0;
+const FILL_OPACITY_STONE = 1.0;
+const FILL_OPACITY_NEXTMOVEINDICATOR = 0.6;
 
 
 var DrawingController = (function ()
@@ -31,6 +34,8 @@ var DrawingController = (function ()
         this.jQueryObjectContainerCanvas = jQueryObjectContainerCanvas;
         this.goGame = goGame;
         this.boardViewMetrics = new BoardViewMetrics(goGame);
+        this.paper = null;
+        this.boardViewIntersectionOfPreviousMouseMoveEvent = null;
     }
 
     // This is the main function that triggers drawing the Go board. The parameter
@@ -45,9 +50,16 @@ var DrawingController = (function ()
     {
         this.eraseCurrentGoBoard(this.jQueryObjectContainerCanvas);
 
-        var paper = this.createPaper(this.jQueryObjectContainerCanvas);
+        this.paper = this.createPaper(this.jQueryObjectContainerCanvas);
 
-        this.boardViewMetrics.updateWithBaseSize(CGSizeMake(paper.width, paper.height));
+        // TODO: Add this event handler only if it's the user's turn to play
+        var self = this;
+        $("#" + ID_SVG_BOARD).on("mousemove", function(event) {
+            self.onMouseMove(event);
+        });
+        this.boardViewIntersectionOfPreviousMouseMoveEvent = null;
+
+        this.boardViewMetrics.updateWithBaseSize(CGSizeMake(this.paper.width, this.paper.height));
         this.boardViewMetrics.updateWithBoardSize(this.goGame.goBoard.boardSize);
 
         // TODO: Fake data! Remove this as soon as we have moves
@@ -63,9 +75,9 @@ var DrawingController = (function ()
 
         // The order in which layers are drawn is important! Later layers are
         // drawn on top of earlier layers.
-        this.drawGridLayer(paper);
-        this.drawStonesLayer(paper);
-        this.drawSymbolsLayer(paper);
+        this.drawGridLayer();
+        this.drawStonesLayer();
+        this.drawSymbolsLayer();
     };
 
     DrawingController.prototype.eraseCurrentGoBoard = function ()
@@ -96,7 +108,7 @@ var DrawingController = (function ()
         var paper = Raphael(domElementContainerCanvas, canvasWidth, canvasHeight);
 
         // This is required so that CSS properties are applied (e.g. the background)
-        paper.canvas.id = "board";
+        paper.canvas.id = ID_SVG_BOARD;
 
         // For unknown reasons Raphael adds this to the svg element:
         //   style="overflow: hidden; position: relative; top: -0.666626px;"
@@ -111,10 +123,10 @@ var DrawingController = (function ()
     };
 
     // Draws the line grid and the star points.
-    DrawingController.prototype.drawGridLayer = function(paper)
+    DrawingController.prototype.drawGridLayer = function()
     {
         this.boardViewMetrics.lineRectangles.forEach(function(lineRectangle) {
-            var lineRectangleSvg = paper.rect(
+            var lineRectangleSvg = this.paper.rect(
                 lineRectangle.origin.x,
                 lineRectangle.origin.y,
                 lineRectangle.size.width,
@@ -124,18 +136,20 @@ var DrawingController = (function ()
 
         this.goGame.goBoard.starPoints.forEach(function(starPoint) {
             var starPointCoordinates = this.boardViewMetrics.getCoordinatesFromGoPoint(starPoint);
+            var starPointID = ID_SVG_STARPOINT_PREFIX + starPoint.goVertex.toString();
 
             this.drawCircle(
                 starPointCoordinates.x,
                 starPointCoordinates.y,
                 this.boardViewMetrics.starPointRadius,
                 this.boardViewMetrics.starPointColor,
-                paper);
+                FILL_OPACITY_STARPOINT,
+                starPointID);
         }, this);
     };
 
     // Draws the black and white stones
-    DrawingController.prototype.drawStonesLayer = function(paper)
+    DrawingController.prototype.drawStonesLayer = function()
     {
         this.goGame.goBoard.points.forEach(function(pointsXAxis) {
             pointsXAxis.forEach(function(goPoint) {
@@ -143,6 +157,7 @@ var DrawingController = (function ()
                     return;
 
                 var goPointCoordinates = this.boardViewMetrics.getCoordinatesFromGoPoint(goPoint);
+                var stoneID = ID_SVG_STONE_PREFIX + goPoint.goVertex.toString();
 
                 var stoneColor;
                 if (goPoint.hasBlackStone())
@@ -155,13 +170,14 @@ var DrawingController = (function ()
                     goPointCoordinates.y,
                     this.boardViewMetrics.stoneRadius,
                     stoneColor,
-                    paper);
+                    FILL_OPACITY_STONE,
+                    stoneID);
             }, this);
         }, this);
     };
 
     // Draws the symbols (e.g. last move, move numbers)
-    DrawingController.prototype.drawSymbolsLayer = function(paper)
+    DrawingController.prototype.drawSymbolsLayer = function()
     {
         // TODO: Get last move from GoBoardPosition
         //var lastMove = this.goGame.goBoardPosition.getCurrentMove;
@@ -177,7 +193,7 @@ var DrawingController = (function ()
         if (lastMove !== null && GOMOVE_TYPE_PLAY === lastMove.moveType)
         {
             var lastMoveSymbolRect = this.getSymbolRectCenteredAtPoint(lastMove.goPoint);
-            var lastMoveSymbolSvg = paper.rect(
+            var lastMoveSymbolSvg = this.paper.rect(
                 lastMoveSymbolRect.origin.x,
                 lastMoveSymbolRect.origin.y,
                 lastMoveSymbolRect.size.width,
@@ -195,18 +211,94 @@ var DrawingController = (function ()
         }
     };
 
-    DrawingController.prototype.drawCircle = function(centerX, centerY, radius, fillColor, paper)
+    // Draws the "next move" indicator at the specified intersection if the
+    // player can place a stone on this intersection.
+    //
+    // Note that "can place a stone" does not include a check if the move would
+    // be legal, because such a check would be much too expensive.
+    DrawingController.prototype.drawNextMoveIndicatorIfStoneCanBePlacedAtIntersection = function(boardViewIntersection)
     {
-        var circleSvg = paper.circle(
+        if (boardViewIntersection.goPoint === null)
+        {
+            // Don't draw anything
+        }
+        else
+        {
+            if (boardViewIntersection.goPoint.hasStone())
+            {
+                // Don't draw anything
+            }
+            else
+            {
+                // TODO: Get last move from GoBoardPosition
+                //var lastMove = this.goGame.goBoardPosition.getCurrentMove;
+                var lastMove = this.goGame.firstMove;
+                while (lastMove !== null)
+                {
+                    if (lastMove.nextGoMove === null)
+                        break;
+                    else
+                        lastMove = lastMove.nextGoMove;
+                }
+
+                // TODO Refactor this "next move color" calculation into
+                // GoGame getter function
+                var nextMoveColor;
+                if (lastMove !== null)
+                {
+                    if (this.goGame.handicap === 0)
+                        nextMoveColor = COLOR_BLACK;
+                    else
+                        nextMoveColor = COLOR_WHITE;
+                }
+                else
+                {
+                    if (lastMove.goPlayer.isBlack())
+                        nextMoveColor = COLOR_WHITE;
+                    else
+                        nextMoveColor = COLOR_BLACK;
+                }
+                var nextMoveStoneColor;
+                if (nextMoveColor === COLOR_BLACK)
+                    nextMoveStoneColor = FILL_COLOR_BLACK_STONE;
+                else
+                    nextMoveStoneColor = FILL_COLOR_WHITE_STONE;
+
+                this.drawCircle(
+                    boardViewIntersection.coordinates.x,
+                    boardViewIntersection.coordinates.y,
+                    this.boardViewMetrics.stoneRadius,
+                    nextMoveStoneColor,
+                    FILL_OPACITY_NEXTMOVEINDICATOR,
+                    ID_SVG_NEXTMOVEINDICATOR);
+            }
+        }
+    };
+
+    DrawingController.prototype.clearNextMoveIndicatorIfExists = function()
+    {
+        var nextMoveIndicator = this.paper.getById(ID_SVG_NEXTMOVEINDICATOR);
+        if (nextMoveIndicator !== null)
+            nextMoveIndicator.remove();
+    };
+
+    DrawingController.prototype.drawCircle = function(centerX, centerY, radius, fillColor, fillOpacity, id)
+    {
+        var circleSvg = this.paper.circle(
             centerX,
             centerY,
             radius);
         circleSvg.attr(
             "fill",
             fillColor);
+        circleSvg.attr(
+            "fill-opacity",
+            fillOpacity);
         // TODO: Remove stroke-width entirely - we don't need it, but
         // Raphael adds stroke-width != 0 for us.
         circleSvg.attr("stroke-width", "0");
+
+        circleSvg.id = id;
     };
 
     DrawingController.prototype.getSymbolRectCenteredAtPoint = function(goPoint)
@@ -234,6 +326,41 @@ var DrawingController = (function ()
         var symbolOrigin = CGPointMake(x, y);
 
         return CGRectMake(symbolOrigin, symbolSize);
+    };
+
+    DrawingController.prototype.onMouseMove = function(event)
+    {
+        // We want the coordinates on the canvas. The event target is not
+        // always the canvas (i.e. the main "svg" element), the event target
+        // is whatever SVG construct the mouse happens to move over at the
+        // moment. For this reason we can't use event.target as the source
+        // of the bounding client rectangle, instead we must use the
+        // well-known paper.canvas.
+        //
+        // Also note that we can't use a pre-calculated bounding client
+        // rectangle, because that rectangle changes when the browser
+        // window scrolls.
+        var paperBoundingClientRect = this.paper.canvas.getBoundingClientRect();
+        var coordinates = CGPointMake(
+            event.clientX - paperBoundingClientRect.left,
+            event.clientY - paperBoundingClientRect.top);
+
+        var intersectionNearCoordinates = this.boardViewMetrics.getIntersectionNearCoordinates(coordinates);
+
+        if (this.boardViewIntersectionOfPreviousMouseMoveEvent !== null)
+        {
+            // Don't need to draw anything if the previous mouse move event
+            // was near the same intersection
+            var sameIntersectionAsPreviousMouseMoveEvent = BoardViewIntersectionEqualToIntersection(
+                intersectionNearCoordinates,
+                this.boardViewIntersectionOfPreviousMouseMoveEvent);
+            if (sameIntersectionAsPreviousMouseMoveEvent)
+                return;
+        }
+        this.boardViewIntersectionOfPreviousMouseMoveEvent = intersectionNearCoordinates;
+
+        this.clearNextMoveIndicatorIfExists();
+        this.drawNextMoveIndicatorIfStoneCanBePlacedAtIntersection(intersectionNearCoordinates);
     };
 
     return DrawingController;
@@ -847,7 +974,7 @@ var BoardViewMetrics = (function ()
     // because @a coordinates are outside the board's edges).
     //
     // The origin of the coordinate system is assumed to be in the top-left corner.
-    BoardViewMetrics.prototype.pointFromCoordinates = function(coordinates)
+    BoardViewMetrics.prototype.getPointFromCoordinates = function(coordinates)
     {
         var x = 1 + (coordinates.x - this.topLeftPointX) / this.pointDistance;
         var y = this.boardSize - (coordinates.y - this.topLeftPointY) / this.pointDistance;
@@ -868,7 +995,7 @@ var BoardViewMetrics = (function ()
     //     hit the exact coordinate of the intersection.
     // - If @a coordinates are a sufficient distance away from the Go board edges,
     //   there is no "closest" intersection
-    BoardViewMetrics.prototype.intersectionNear = function(coordinates)
+    BoardViewMetrics.prototype.getIntersectionNearCoordinates = function(coordinates)
     {
         var halfPointDistance = Math.floor(this.pointDistance / 2);
         var coordinatesOutOfRange = false;
@@ -933,7 +1060,7 @@ var BoardViewMetrics = (function ()
             coordinates.y =
                 this.topLeftPointY
                 + this.pointDistance * Math.floor((coordinates.y - this.topLeftPointY) / this.pointDistance);
-            var pointAtCoordinates = this.pointFromCoordinates(coordinates);
+            var pointAtCoordinates = this.getPointFromCoordinates(coordinates);
             if (pointAtCoordinates !== null)
             {
                 return BoardViewIntersectionMake(pointAtCoordinates, coordinates);
@@ -1166,12 +1293,24 @@ const BoardViewIntersectionNull = BoardViewIntersectionMake(null, CGPointZero);
 
 function BoardViewIntersectionEqualToIntersection(intersection1, intersection2)
 {
-    if (intersection1.goPoint.goVertex.x != intersection2.goPoint.goVertex.x)
-        return false;
-    else if (intersection1.goPoint.goVertex.y != intersection2.goPoint.goVertex.y)
-        return false;
-    else
+    if (intersection1.goPoint === null && intersection2.goPoint === null)
+    {
         return CGPointEqualToPoint(intersection1.coordinates, intersection2.coordinates);
+    }
+    else if (intersection1.goPoint === null && intersection2.goPoint !== null ||
+        intersection1.goPoint !== null && intersection2.goPoint === null)
+    {
+        return false;
+    }
+    else
+    {
+        if (intersection1.goPoint.goVertex.x !== intersection2.goPoint.goVertex.x)
+            return false;
+        else if (intersection1.goPoint.goVertex.y !== intersection2.goPoint.goVertex.y)
+            return false;
+        else
+            return CGPointEqualToPoint(intersection1.coordinates, intersection2.coordinates);
+    }
 }
 
 function BoardViewIntersectionIsNullIntersection(intersection)
