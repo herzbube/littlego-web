@@ -89,6 +89,7 @@ var GoBoard = (function ()
         ["D4", "J4", "O4", "D9", "J9", "O9", "D14", "J14", "O14"],    // board size 17
         ["D4", "K4", "Q4", "D10", "K10", "Q10", "D16", "K16", "Q16"]  // board size 19
     ];
+    const CHAR_CODE_LETTER_A = "A".charCodeAt(0);
     const CHAR_CODE_LETTER_I = "I".charCodeAt(0);
 
     // Creates a new GoBoard object with the specified size. Immediately
@@ -132,6 +133,7 @@ var GoBoard = (function ()
             var x = starPointVertex.charCodeAt(0);
             if (x >= CHAR_CODE_LETTER_I)
                 x--;
+            x -= CHAR_CODE_LETTER_A;
             var y = parseInt(starPointVertex.substring(1));
 
             var starPoint = this.getPointAtVertexCoordinates(x, y);
