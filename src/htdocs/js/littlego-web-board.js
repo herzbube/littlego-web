@@ -102,7 +102,8 @@ var Board = (function ()
             // Start drawing the board AFTER the board container has been
             // made visible, otherwise the container has width/height 0.
             var containerBoard = $("#" + ID_CONTAINER_BOARD);
-            drawGoBoard(containerBoard);
+            var drawingController = new DrawingController(containerBoard, goGame);
+            drawingController.drawGoBoard();
         }
         else
         {
