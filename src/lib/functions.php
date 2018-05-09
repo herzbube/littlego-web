@@ -260,72 +260,92 @@ namespace LittleGoWeb
                     horizontal space with the board.
                 -->
                 <div id="board-right-hand-side" class="col-12 col-md-4">
-                    <div class="row board-right-hand-side-section">
-                        <!--
-                            Regardless of how much horizontal space the
-                            right-hand-side elements take up, we distribute
-                            that space evenly among the black and white
-                            player information areas - both get 6 out of 12
-                            columns.
-                        -->
-                        <div class="col-6">
-                            <div id="board-player-info-black" class="board-player-info container-fluid">
-                                <div class="row">
-                                    <div id="board-player-name-black" class="col-12"></div>
+                    <div class="card board-right-hand-side-section">
+                        <div class="card-body">
+                            <div class="row">
+                                <!--
+                                    Regardless of how much horizontal space the
+                                    right-hand-side elements take up, we distribute
+                                    that space evenly among the black and white
+                                    player information areas - both get 6 out of 12
+                                    columns.
+                                -->
+                                <div class="col-6">
+                                    <div id="board-player-info-black" class="board-player-info container-fluid">
+                                        <div class="row">
+                                            <div id="board-player-name-black" class="col-12"></div>
+                                        </div>
+                                        <div class="row">
+                                            <div id="board-number-of-captures-black" class="col-12"></div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="row">
-                                    <div id="board-number-of-captures-black" class="col-12"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div id="board-player-info-white" class="board-player-info container-fluid">
-                                <div class="row">
-                                    <div id="board-player-name-white" class="col-12"></div>
-                                </div>
-                                <div class="row">
-                                    <div id="board-number-of-captures-white" class="col-8"></div>
-                                    <div id="board-komi" class="col-4"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row board-right-hand-side-section">
-                        <div class="col-12">
-                            <div id="container-board-mode-navigation" class="board-right-hand-side-subsection">
-                                <ul class="nav nav-tabs">
-                                    <li class="nav-item">
-                                        <button id="button-board-mode-play" class="nav-link btn btn-link active">Play Mode</button>
-                                    </li>
-                                    <li class="nav-item">
-                                        <button id="button-board-mode-analyze" class="nav-link btn btn-link">Analyze Mode</button>
-                                    </li>
-                                    <li class="nav-item">
-                                        <button id="button-board-mode-scoring" class="nav-link btn btn-link">Scoring Mode</button>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div id="container-board-controls" class="board-right-hand-side-subsection">
-                                <div id="container-board-controls-play-mode">
-                                    <button id="button-board-control-pass" class="btn btn-outline-dark">Pass</button>
-                                </div>
-                                <div id="container-board-controls-analyze-mode">
-                                    <button id="button-board-control-rewindtostart" class="btn btn-outline-dark" title"Go to first board position" data-toggle="modal" data-target="#notYetImplemented">First</button>
-                                    <button id="button-board-control-back" class="btn btn-outline-dark" title"Go to previousboard position" data-toggle="modal" data-target="#notYetImplemented">Previous</button>
-                                    <button id="button-board-control-forward" class="btn btn-outline-dark" title"Go to next board position" data-toggle="modal" data-target="#notYetImplemented">Next</button>
-                                    <button id="button-board-control-forwardtoend" class="btn btn-outline-dark" title"Go to lastboard position" data-toggle="modal" data-target="#notYetImplemented">Last</button>
-                                </div>
-                                <div id="container-board-controls-scoring-mode">
-                                    <button id="button-board-control-calculate-score" class="btn btn-outline-dark" title"Calculate the new score" data-toggle="modal" data-target="#notYetImplemented">Calculate</button>
-                                    <button id="button-board-control-toggle-mark-mode" class="btn btn-outline-dark" title"Start marking as seki" data-toggle="modal" data-target="#notYetImplemented">Seki</button>
+                                <div class="col-6">
+                                    <div id="board-player-info-white" class="board-player-info container-fluid">
+                                        <div class="row">
+                                            <div id="board-player-name-white" class="col-12"></div>
+                                        </div>
+                                        <div class="row">
+                                            <div id="board-number-of-captures-white" class="col-8"></div>
+                                            <div id="board-komi" class="col-4"></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="row board-right-hand-side-section">
-                        <div class="col-12">
-                           <div id="status-area" class="placeholder">
-                                <small>Status area placeholder</small>
+                    <div class="card board-right-hand-side-section">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div id="container-board-mode-navigation" class="board-right-hand-side-subsection">
+                                        <ul class="nav nav-tabs">
+                                            <li class="nav-item">
+                                                <button id="button-board-mode-play" class="nav-link btn btn-link active">Play Mode</button>
+                                            </li>
+                                            <li class="nav-item">
+                                                <button id="button-board-mode-analyze" class="nav-link btn btn-link">Analyze Mode</button>
+                                            </li>
+                                            <li class="nav-item">
+                                                <button id="button-board-mode-scoring" class="nav-link btn btn-link">Scoring Mode</button>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div id="container-board-controls" class="board-right-hand-side-subsection">
+                                        <div id="container-board-controls-play-mode">
+                                            <button id="button-board-control-pass" class="btn btn-outline-dark">Pass</button>
+                                        </div>
+                                        <div id="container-board-controls-analyze-mode">
+                                            <button id="button-board-control-rewindtostart" class="btn btn-outline-dark" title"Go to first board position" data-toggle="modal" data-target="#notYetImplemented">First</button>
+                                            <button id="button-board-control-back" class="btn btn-outline-dark" title"Go to previousboard position" data-toggle="modal" data-target="#notYetImplemented">Previous</button>
+                                            <button id="button-board-control-forward" class="btn btn-outline-dark" title"Go to next board position" data-toggle="modal" data-target="#notYetImplemented">Next</button>
+                                            <button id="button-board-control-forwardtoend" class="btn btn-outline-dark" title"Go to lastboard position" data-toggle="modal" data-target="#notYetImplemented">Last</button>
+                                        </div>
+                                        <div id="container-board-controls-scoring-mode">
+                                            <button id="button-board-control-calculate-score" class="btn btn-outline-dark" title"Calculate the new score" data-toggle="modal" data-target="#notYetImplemented">Calculate</button>
+                                            <button id="button-board-control-toggle-mark-mode" class="btn btn-outline-dark" title"Start marking as seki" data-toggle="modal" data-target="#notYetImplemented">Seki</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card board-right-hand-side-section">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5 class="card-title">Game Moves</h5>
+                                    <table class="table table-striped table-bordered table-hover table-responsive-md">
+                                    <thead class="thead-dark">
+                                        <tr><th>#</th><th>Played by</th><th>Vertex</th><th>Captured</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>1</td><td>Black</td><td>C6</td><td></td></tr>
+                                        <tr><td>2</td><td>White</td><td>G4</td><td></td></tr>
+                                        <tr><td>3</td><td>Black</td><td>B3</td><td>2</td></tr>
+                                        <!-- Content is filled in dynamically -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
