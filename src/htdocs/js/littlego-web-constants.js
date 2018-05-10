@@ -89,6 +89,8 @@ const ACTION_TYPE_DANGER = 3;
 
 const BADGE_SYMBOL = "!";
 
+const GAMEID_UNDEFINED = -1;
+
 
 // ----------------------------------------------------------------------
 // Application IDs
@@ -237,6 +239,7 @@ const WEBSOCKET_REQUEST_TYPE_GETGAMEREQUESTPAIRING = "c2sGetGameRequestPairingRe
 const WEBSOCKET_REQUEST_TYPE_CONFIRMGAMEREQUESTPAIRING = "c2sConfirmGameRequestPairingRequest";
 const WEBSOCKET_REQUEST_TYPE_GETGAMESINPROGRESS = "c2sGetGamesInProgressRequest";
 const WEBSOCKET_REQUEST_TYPE_GETGAMEINPROGRESSWITHMOVES = "c2sGetGameInProgressWithMovesRequest";
+const WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEMOVE = "c2sSubmitNewGameMove";
 
 // WebSocket responses (server outgoing/client incoming messages)
 const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
@@ -250,6 +253,7 @@ const WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTPAIRING = "s2cGetGameRequestPairingR
 const WEBSOCKET_RESPONSE_TYPE_CONFIRMGAMEREQUESTPAIRING = "s2cConfirmGameRequestPairingResponse";
 const WEBSOCKET_RESPONSE_TYPE_GETGAMESINPROGRESS = "s2cGetGamesInProgressResponse";
 const WEBSOCKET_RESPONSE_TYPE_GETGAMEINPROGRESSWITHMOVES = "s2cGetGameInProgressWithMovesResponse";
+const WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEMOVE = "s2cSubmitNewGameMove";
 
 // WebSocket messages proactively sent by the server to a client who didn't
 // request anything (server outgoing/client incoming messages)

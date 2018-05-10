@@ -32,6 +32,45 @@ var GoGame = (function ()
         return (this.firstMove !== null);
     };
 
+    // Returns the GoMove object that represents the last (i.e. most recent)
+    // move of the game, or null if no move has been played yet.
+    GoGame.prototype.getLastMove = function()
+    {
+        // TODO: Callers should get last move from GoBoardPosition.
+        // If this is implemented, remove this method.
+        //var lastMove = this.goGame.goBoardPosition.getCurrentMove;
+        var lastMove = this.firstMove;
+        while (lastMove !== null)
+        {
+            if (lastMove.nextGoMove === null)
+                break;
+            else
+                lastMove = lastMove.nextGoMove;
+        }
+        return lastMove;
+    };
+
+    // Returns either COLOR_BLACK or COLOR_WHITE, depending on which player's
+    // turn it is.
+    GoGame.prototype.getNextMoveColor = function()
+    {
+        var lastMove = this.getLastMove();
+        if (lastMove === null)
+        {
+            if (this.handicap === 0)
+                return COLOR_BLACK;
+            else
+                return COLOR_WHITE;
+        }
+        else
+        {
+            if (lastMove.goPlayer.isBlack())
+                return COLOR_WHITE;
+            else
+                return COLOR_BLACK;
+        }
+    };
+
     return GoGame;
 })();
 
@@ -1056,6 +1095,11 @@ var GoMove = (function ()
         // Is assigned soon after construction.
         this.zobristHash = 0;
     }
+
+    GoMove.prototype.setGoPoint = function(goPoint)
+    {
+        this.goPoint = goPoint;
+    };
 
     // Modifies the board to reflect the state after this GoMove was played.
     //

@@ -29,13 +29,14 @@ var DrawingController = (function ()
     "use strict";
 
     // Creates a new DrawingController object.
-    function DrawingController(jQueryObjectContainerCanvas, goGame)
+    function DrawingController(jQueryObjectContainerCanvas, goGame, callbackDidPlayStone)
     {
         this.jQueryObjectContainerCanvas = jQueryObjectContainerCanvas;
         this.goGame = goGame;
         this.boardViewMetrics = new BoardViewMetrics(goGame);
         this.paper = null;
         this.boardViewIntersectionOfPreviousMouseMoveEvent = null;
+        this.callbackDidPlayStone = callbackDidPlayStone;
     }
 
     // This is the main function that triggers drawing the Go board. The parameter
@@ -58,20 +59,12 @@ var DrawingController = (function ()
             self.onMouseMove(event);
         });
         this.boardViewIntersectionOfPreviousMouseMoveEvent = null;
+        $("#" + ID_SVG_BOARD).on("click", function(event) {
+            self.onMouseClick(event);
+        });
 
         this.boardViewMetrics.updateWithBaseSize(CGSizeMake(this.paper.width, this.paper.height));
         this.boardViewMetrics.updateWithBoardSize(this.goGame.goBoard.boardSize);
-
-        // TODO: Fake data! Remove this as soon as we have moves
-        this.goGame.goBoard.getPointAtVertex(new GoVertex(3, 4)).stoneState = COLOR_BLACK;
-        this.goGame.goBoard.getPointAtVertex(new GoVertex(4, 3)).stoneState = COLOR_BLACK;
-        this.goGame.goBoard.getPointAtVertex(new GoVertex(10, 3)).stoneState = COLOR_BLACK;
-        this.goGame.goBoard.getPointAtVertex(new GoVertex(16, 3)).stoneState = COLOR_WHITE;
-        this.goGame.goBoard.getPointAtVertex(new GoVertex(17, 4)).stoneState = COLOR_WHITE;
-        this.goGame.goBoard.getPointAtVertex(new GoVertex(17, 10)).stoneState = COLOR_WHITE;
-        var lastMove = new GoMove(GOMOVE_TYPE_PLAY, this.goGame.goPlayerWhite);
-        lastMove.goPoint = this.goGame.goBoard.getPointAtVertex(new GoVertex(17, 10));
-        this.goGame.firstMove = lastMove;
 
         // The order in which layers are drawn is important! Later layers are
         // drawn on top of earlier layers.
@@ -179,17 +172,7 @@ var DrawingController = (function ()
     // Draws the symbols (e.g. last move, move numbers)
     DrawingController.prototype.drawSymbolsLayer = function()
     {
-        // TODO: Get last move from GoBoardPosition
-        //var lastMove = this.goGame.goBoardPosition.getCurrentMove;
-        var lastMove = this.goGame.firstMove;
-        while (lastMove !== null)
-        {
-            if (lastMove.nextGoMove === null)
-                break;
-            else
-                lastMove = lastMove.nextGoMove;
-        }
-
+        var lastMove = this.goGame.getLastMove();
         if (lastMove !== null && GOMOVE_TYPE_PLAY === lastMove.moveType)
         {
             var lastMoveSymbolRect = this.getSymbolRectCenteredAtPoint(lastMove.goPoint);
@@ -230,34 +213,9 @@ var DrawingController = (function ()
             }
             else
             {
-                // TODO: Get last move from GoBoardPosition
-                //var lastMove = this.goGame.goBoardPosition.getCurrentMove;
-                var lastMove = this.goGame.firstMove;
-                while (lastMove !== null)
-                {
-                    if (lastMove.nextGoMove === null)
-                        break;
-                    else
-                        lastMove = lastMove.nextGoMove;
-                }
+                var lastMove = this.goGame.getLastMove();
 
-                // TODO Refactor this "next move color" calculation into
-                // GoGame getter function
-                var nextMoveColor;
-                if (lastMove !== null)
-                {
-                    if (this.goGame.handicap === 0)
-                        nextMoveColor = COLOR_BLACK;
-                    else
-                        nextMoveColor = COLOR_WHITE;
-                }
-                else
-                {
-                    if (lastMove.goPlayer.isBlack())
-                        nextMoveColor = COLOR_WHITE;
-                    else
-                        nextMoveColor = COLOR_BLACK;
-                }
+                var nextMoveColor = this.goGame.getNextMoveColor();
                 var nextMoveStoneColor;
                 if (nextMoveColor === COLOR_BLACK)
                     nextMoveStoneColor = FILL_COLOR_BLACK_STONE;
@@ -330,6 +288,39 @@ var DrawingController = (function ()
 
     DrawingController.prototype.onMouseMove = function(event)
     {
+        var intersection = this.getIntersectionNearMouseEvent(event);
+
+        if (this.boardViewIntersectionOfPreviousMouseMoveEvent !== null)
+        {
+            // Don't need to draw anything if the previous mouse move event
+            // was near the same intersection
+            var sameIntersectionAsPreviousMouseMoveEvent = BoardViewIntersectionEqualToIntersection(
+                intersection,
+                this.boardViewIntersectionOfPreviousMouseMoveEvent);
+            if (sameIntersectionAsPreviousMouseMoveEvent)
+                return;
+        }
+        this.boardViewIntersectionOfPreviousMouseMoveEvent = intersection;
+
+        this.clearNextMoveIndicatorIfExists();
+        this.drawNextMoveIndicatorIfStoneCanBePlacedAtIntersection(intersection);
+    };
+
+    DrawingController.prototype.onMouseClick = function(event)
+    {
+        var intersection = this.getIntersectionNearMouseEvent(event);
+
+        // TODO: Check if move is legal. If it's not display a banner with the reason why not.
+
+        this.clearNextMoveIndicatorIfExists();
+        this.callbackDidPlayStone(intersection.goPoint);
+
+        // TODO: Deactivate interaction.
+        // TODO: Possibly add an indicator that submission is taking place
+    };
+
+    DrawingController.prototype.getIntersectionNearMouseEvent = function(event)
+    {
         // We want the coordinates on the canvas. The event target is not
         // always the canvas (i.e. the main "svg" element), the event target
         // is whatever SVG construct the mouse happens to move over at the
@@ -346,21 +337,25 @@ var DrawingController = (function ()
             event.clientY - paperBoundingClientRect.top);
 
         var intersectionNearCoordinates = this.boardViewMetrics.getIntersectionNearCoordinates(coordinates);
+        return intersectionNearCoordinates;
+    };
 
-        if (this.boardViewIntersectionOfPreviousMouseMoveEvent !== null)
-        {
-            // Don't need to draw anything if the previous mouse move event
-            // was near the same intersection
-            var sameIntersectionAsPreviousMouseMoveEvent = BoardViewIntersectionEqualToIntersection(
-                intersectionNearCoordinates,
-                this.boardViewIntersectionOfPreviousMouseMoveEvent);
-            if (sameIntersectionAsPreviousMouseMoveEvent)
-                return;
-        }
-        this.boardViewIntersectionOfPreviousMouseMoveEvent = intersectionNearCoordinates;
+    DrawingController.prototype.updateBoardAfterNewGameMove = function()
+    {
+        // TODO: The controller must remove the submission indicator.
+        // TODO: The controller possibly has to reactivate interaction.
 
-        this.clearNextMoveIndicatorIfExists();
-        this.drawNextMoveIndicatorIfStoneCanBePlacedAtIntersection(intersectionNearCoordinates);
+        // TODO: We should only re-draw those layers that need it.
+        // Currently we don't know how to do this. In theory we could try
+        // to find all elements by class, then get the corresponding Raphael
+        // objects for the elements, then invoke Raphael's remove() method.
+        // This seems much too complicated! Investigate whether we can use
+        // SVG layers.
+        //this.eraseStonesLayer();
+        //this.erasedSymbolsLayer();
+        //this.drawStonesLayer();
+        //this.drawSymbolsLayer();
+        this.drawGoBoard();
     };
 
     return DrawingController;

@@ -28,6 +28,10 @@ var Board = (function ()
         });
 
         this.makeBoardControlsContainerVisible(ID_CONTAINER_BOARD_CONTROLS_PLAY_MODE, ID_BUTTON_BOARD_MODE_PLAY);
+
+        this.goGame = null;
+        this.drawingController = null;
+        this.gameID = GAMEID_UNDEFINED;
     }
 
     // Internal function. Handles incoming WebSocket messages that are
@@ -46,6 +50,12 @@ var Board = (function ()
                     webSocketMessage.data.errorMessage);
                 break;
 
+            case WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEMOVE:
+                this.onSubmitNewGameMoveComplete(
+                    webSocketMessage.data.success,
+                    webSocketMessage.data.gameMove,
+                    webSocketMessage.data.errorMessage);
+                break;
 
             default:
                 // Ignore all messages that are not board related
@@ -59,6 +69,12 @@ var Board = (function ()
     // response from the server.
     Board.prototype.setupBoardForGameInProgress = function(gameID)
     {
+        // This method can be called many times, so we have to reset
+        // some member variables on every call
+        this.goGame = null;
+        this.drawingController = null;
+        this.gameID = GAMEID_UNDEFINED;
+
         var messageData =
             {
                 gameID: gameID
@@ -85,25 +101,36 @@ var Board = (function ()
             var goGameRules = new GoGameRules(
                 gameInProgressJsonObject.koRule,
                 gameInProgressJsonObject.scoringSystem);
-            var goGame = new GoGame(
+            this.goGame = new GoGame(
                 goBoard,
                 gameInProgressJsonObject.handicap,
                 gameInProgressJsonObject.komi,
                 goGameRules);
 
-            // TODO: Create GoBoard and GoMove objects
+            gameMovesJsonObjects.forEach(function(gameMoveJsonObject) {
+                // TODO: Display progress
+
+                this.playGameMoveJsonObject(gameMoveJsonObject);
+            }, this);
 
             var blackPlayerUserInfo = new UserInfo(gameInProgressJsonObject.blackPlayer);
-            var boardPlayerInfoBlack = new BoardPlayerInfoBlack(blackPlayerUserInfo, goGame);
+            var boardPlayerInfoBlack = new BoardPlayerInfoBlack(blackPlayerUserInfo, this.goGame);
             var whitePlayerUserInfo = new UserInfo(gameInProgressJsonObject.whitePlayer);
-            var boardPlayerInfoWhite = new BoardPlayerInfoWhite(whitePlayerUserInfo, goGame);
+            var boardPlayerInfoWhite = new BoardPlayerInfoWhite(whitePlayerUserInfo, this.goGame);
             this.updateBoardPlayerInfo(boardPlayerInfoBlack, boardPlayerInfoWhite);
 
             // Start drawing the board AFTER the board container has been
             // made visible, otherwise the container has width/height 0.
             var containerBoard = $("#" + ID_CONTAINER_BOARD);
-            var drawingController = new DrawingController(containerBoard, goGame);
-            drawingController.drawGoBoard();
+            var self = this;
+            this.drawingController = new DrawingController(containerBoard, this.goGame, function(goPoint) {
+                self.onDidPlayStone(goPoint);
+            });
+            this.drawingController.drawGoBoard();
+
+            // Last but not least: Remember the game ID so that we can
+            // submit moves
+            this.gameID = gameInProgressJsonObject.gameID;
         }
         else
         {
@@ -160,6 +187,86 @@ var Board = (function ()
     Board.prototype.deactivateAllBoardModeNavigationTabs = function()
     {
         $("#" + ID_CONTAINER_BOARD_MODE_NAVIGATION +  " button").removeClass(BOOTSTRAP_CLASS_ACTIVE);
+    };
+
+    Board.prototype.onDidPlayStone = function(goPoint)
+    {
+        var nextMoveColor = this.goGame.getNextMoveColor();
+        var messageData =
+            {
+                gameID: this.gameID,
+                moveType: GOMOVE_TYPE_PLAY,
+                moveColor: nextMoveColor,
+                vertexX: goPoint.goVertex.x,
+                vertexY: goPoint.goVertex.y
+            };
+        // Triggers onSubmitNewGameMoveComplete
+        sendWebSocketMessage(this.webSocket, WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEMOVE, messageData);
+    };
+
+    Board.prototype.onSubmitNewGameMoveComplete = function(
+        success,
+        gameMoveJsonObject,
+        errorMessage)
+    {
+        if (success)
+        {
+            this.playGameMoveJsonObject(gameMoveJsonObject);
+            // TODO: The move can also be played by the other player.
+
+            this.drawingController.updateBoardAfterNewGameMove();
+        }
+        else
+        {
+            // TODO: Add error handling
+        }
+    };
+
+    Board.prototype.playGameMoveJsonObject = function(gameMoveJsonObject)
+    {
+        // TODO: A lot of the stuff that we do here should be done by GoGame.
+        //[self.game play:self.point];
+        //[self.game pass];
+
+        var expectedNextMoveColor = this.goGame.getNextMoveColor();
+        var actualNextMoveColor = gameMoveJsonObject.moveColor;
+        if (expectedNextMoveColor !== actualNextMoveColor)
+            throw new Error("Expected next move color = " + expectedNextMoveColor + ", actual next move color = " + actualNextMoveColor);
+
+        var goPlayer;
+        if (actualNextMoveColor === COLOR_BLACK)
+            goPlayer = this.goGame.goPlayerBlack;
+        else
+            goPlayer = this.goGame.goPlayerWhite;
+
+        var previousGoMove = this.goGame.getLastMove();
+
+        var goMove;
+        if (previousGoMove === null)
+            goMove = new GoMove(gameMoveJsonObject.moveType, goPlayer);
+        else
+            goMove = new GoMove(gameMoveJsonObject.moveType, goPlayer, previousGoMove);
+
+        switch (goMove.moveType)
+        {
+            case GOMOVE_TYPE_PLAY:
+                var goPoint = this.goGame.goBoard.getPointAtVertexCoordinates(
+                    gameMoveJsonObject.vertexX,
+                    gameMoveJsonObject.vertexY);
+                goMove.setGoPoint(goPoint);
+
+                // TODO: Check if move is legal
+                break;
+            case GOMOVE_TYPE_PASS:
+                break;
+            default:
+                throw new Error("Invalid move type " + gameMoveJsonObject.moveType);
+        }
+
+        goMove.doIt();
+
+        if (previousGoMove === null)
+            this.goGame.firstMove = goMove;
     };
 
     return Board;
