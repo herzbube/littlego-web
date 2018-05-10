@@ -276,6 +276,25 @@ function fractionalNumberToString(fractionalNumber)
     }
 }
 
+// Converts the specified reason why a GoMove is illegal into a string that is
+// suitable for displaying in the UI. Throws an Error object for invalid values.
+function goMoveIsIllegalReasonToString(illegalReason)
+{
+    switch (illegalReason)
+    {
+        case GOMOVEISILLEGALREASON_INTERSECTIONOCCUPIED:
+            return "Intersection is occupied";
+        case GOMOVEISILLEGALREASON_SUICIDE:
+            return "Suicide";
+        case GOMOVEISILLEGALREASON_SIMPLEKO:
+            return "Ko";
+        case GOMOVEISILLEGALREASON_SUPERKO:
+            return "Superko";
+        default:
+            throw new Error("Unsupported illegal reason: " + illegalReason);
+    }
+}
+
 function actionType2BootstrapButtonClass(actionType)
 {
     switch (actionType)

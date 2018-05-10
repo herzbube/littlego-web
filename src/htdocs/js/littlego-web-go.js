@@ -75,6 +75,346 @@ var GoGame = (function ()
         }
     };
 
+    // Updates the state of this GoGame and all associated objects in response
+    // to the @e nextMovePlayer making a #GoMoveTypePlay.
+    //
+    // Invoking this method sets the document dirty flag and, if alternating play
+    // is enabled, switches the @e nextMovePlayer.
+    //
+    // Raises an @e NSInternalInconsistencyException if this method is invoked
+    // while this GoGame object is not in state #GoGameStateGameHasStarted or
+    // #GoGameStateGameIsPaused.
+    //
+    // Throws an Error if playing on @a goPoint is not a legal move.
+    GoGame.prototype.play = function(goPoint)
+    {
+        var isLegalMoveResult = this.isLegalMove(goPoint);
+        if (! isLegalMoveResult.isLegalMove)
+            throw new Error("Playing a stone on intersection " + goPoint.goVertex + " is not a legal move: " + goMoveIsIllegalReasonToString(isLegalMoveResult.illegalReason));
+
+        // TODO: The following implementation needs to be refactored
+        // as soon as GoMoveModel and GoBoardPosition are added
+
+        var nextMoveColor = this.getNextMoveColor();
+        var goPlayer;
+        if (nextMoveColor === COLOR_BLACK)
+            goPlayer = this.goPlayerBlack;
+        else
+            goPlayer = this.goPlayerWhite;
+
+        var previousGoMove = this.getLastMove();
+        var goMove;
+        if (previousGoMove === null)
+            goMove = new GoMove(GOMOVE_TYPE_PLAY, goPlayer);
+        else
+            goMove = new GoMove(GOMOVE_TYPE_PLAY, goPlayer, previousGoMove);
+
+        goMove.setGoPoint(goPoint);
+        goMove.doIt();
+
+        if (previousGoMove === null)
+            this.firstMove = goMove;
+    };
+
+    // Checks if playing a stone on the intersection represented by
+    // @a goPoint would be legal for the @e nextMovePlayer in the current board
+    // position. This includes checking for suicide moves and Ko situations, but
+    // not for alternating play.
+    //
+    // This method returns an object that encapsulates the result of the check.
+    // The object has two properties:
+    // - isLegalMove: A boolean indicating whether the move would be legal
+    // - illegalReason: A numeric value indicating why the move is not legal.
+    //   The value of this property is undefined if isLegalMove is true. The
+    //   value of this property is one of the GOMOVEISILLEGALREASON_* constants
+    //   if isLegalMove is false.
+    //
+    // Alternating play, if it is desired, must be enforced by the application
+    // logic. This method simply assumes that the @e nextMovePlayer has the right
+    // to move in the current board position.
+    GoGame.prototype.isLegalMove = function(goPoint)
+    {
+        return this.isLegalMoveByColor(
+            goPoint,
+            this.getNextMoveColor());
+    };
+
+    // Checks if playing a stone on the intersection represented by
+    // @a goPoint would be legal for the player who plays @a color in the
+    // current board position. This includes checking for suicide moves and
+    // Ko situations, but not for alternating play.
+    //
+    // This method returns an object that encapsulates the result of the check.
+    // The object has two properties:
+    // - isLegalMove: A boolean indicating whether the move would be legal
+    // - illegalReason: A numeric value indicating why the move is not legal.
+    //   The value of this property is undefined if isLegalMove is true. The
+    //   value of this property is one of the GOMOVEISILLEGALREASON_* constants
+    //   if isLegalMove is false.
+    //
+    // Alternating play, if it is desired, must be enforced by the application
+    // logic. This method simply assumes that the @e nextMovePlayer has the right
+    // to move in the current board position.
+    GoGame.prototype.isLegalMoveByColor = function(goPoint, color)
+    {
+        var isLegalMoveResult =
+            {
+                isLegalMove: false,
+                illegalReason: GOMOVEISILLEGALREASON_UNDEFINED
+            };
+
+        if (goPoint.hasStone())
+        {
+            isLegalMoveResult.isLegalMove = false;
+            isLegalMoveResult.illegalReason = GOMOVEISILLEGALREASON_INTERSECTIONOCCUPIED;
+            return isLegalMoveResult;
+        }
+        // Point is an empty intersection, possibly with other empty intersections as
+        // neighbours
+        else if (goPoint.getLiberties() > 0)
+        {
+            // Because the point has liberties a simple ko is not possible
+            var simpleKoIsPossible = false;
+            var isKoMoveResult = this.isKoMove(
+                goPoint,
+                color,
+                simpleKoIsPossible);
+            this.convertIsKoMoveResultToIsLegalMoveResult(isKoMoveResult, isLegalMoveResult);
+            return isLegalMoveResult;
+        }
+        // Point is an empty intersection that is surrounded by stones
+        else
+        {
+            // Pass 1: Check if we can connect to a friendly colored stone group
+            // without killing it
+            // Use some() so that we can abort the loop prematurely
+            var neighbourRegionsFriendly = goPoint.getNeighbourRegionsWithColor(color);
+            var canWeConnect = neighbourRegionsFriendly.some(function(neighbourRegion) {
+                // If the friendly stone group has more than one liberty, we are sure that
+                // we are not killing it. The only thing that can still make the move
+                // illegal is a ko (but since we are connecting, a simple ko is not
+                // possible here).
+                if (neighbourRegion.getLiberties() > 1)
+                {
+                    var simpleKoIsPossible = false;
+                    var isKoMoveResult = this.isKoMove(
+                        goPoint,
+                        color,
+                        simpleKoIsPossible);
+                    this.convertIsKoMoveResultToIsLegalMoveResult(isKoMoveResult, isLegalMoveResult);
+
+                    // together with some() this simulates break in a foreach loop
+                    return true;
+                }
+
+                // some() requires that we return a value to continue with
+                // the iteration
+                return false;
+            }, this);  // <-- supply "this" value seen in the loop
+
+            if (canWeConnect)
+                return isLegalMoveResult;
+
+            // Pass 2: Check if we can capture opposing stone groups
+            // Use some() so that we can abort the loop prematurely
+            var opponentColor = (color === COLOR_BLACK ? COLOR_WHITE : COLOR_BLACK);
+            var neighbourRegionsOpponent = goPoint.getNeighbourRegionsWithColor(opponentColor);
+            var canWeCapture = neighbourRegionsOpponent.some(function(neighbourRegion) {
+                // If the opposing stone group has only one liberty left we can capture
+                // it. The only thing that can still make the move illegal is a ko.
+                if (neighbourRegion.getLiberties() === 1)
+                {
+                    // A simple Ko situation is possible only if we are NOT connecting
+                    var simpleKoIsPossible = (0 === neighbourRegionsFriendly.length);
+                    var isKoMoveResult = this.isKoMove(
+                        goPoint,
+                        color,
+                        simpleKoIsPossible);
+                    this.convertIsKoMoveResultToIsLegalMoveResult(isKoMoveResult, isLegalMoveResult);
+
+                    // together with some() this simulates break in a foreach loop
+                    return true;
+                }
+
+                // some() requires that we return a value to continue with
+                // the iteration
+                return false;
+            }, this);  // <-- supply "this" value seen in the loop
+
+            if (canWeCapture)
+                return isLegalMoveResult;
+
+            // If we arrive here, no opposing stones can be captured and there are no
+            // friendly groups with sufficient liberties to connect to
+            // -> the move is a suicide and therefore illegal
+            isLegalMoveResult.isLegalMove = false;
+            isLegalMoveResult.illegalReason = GOMOVEISILLEGALREASON_SUICIDE;
+            return isLegalMoveResult;
+        }
+    };
+
+    GoGame.prototype.convertIsKoMoveResultToIsLegalMoveResult = function(isKoMoveResult, isLegalMoveResult)
+    {
+        if (isKoMoveResult.isKoMove)
+        {
+            isLegalMoveResult.isLegalMove = false;
+            if (isKoMoveResult.isSuperko)
+                isLegalMoveResult.illegalReason = GOMOVEISILLEGALREASON_SUPERKO;
+            else
+                isLegalMoveResult.illegalReason = GOMOVEISILLEGALREASON_SIMPLEKO;
+        }
+        else
+        {
+            isLegalMoveResult.isLegalMove = true;
+        }
+    };
+
+    // Checks if placing a stone at @a goPoint by player @a moveColor
+    // would violate the current ko rule of the game.
+    //
+    // This method returns an object that encapsulates the result of the check.
+    // The object has two properties:
+    // - isKoMove: A boolean indicating whether the move would violate the
+    //   current ko rule of the game
+    // - isSuperko: A boolean distinguishing ko from superko. The value of
+    //   this property is undefined if isKoMove is false. Otherwise the value
+    //   true indicates that the ko is a superko, the value false indicates
+    //   that the ko is a simple ko. If the current ko rule is KORULE_SIMPLE_KO
+    //   this method does not check for superko at all, so isSuperko can never
+    //   become true.
+    //
+    // This ko detection routine is based on the current board position!
+    //
+    // To optimize ko detection, the caller may set @a simpleKoIsPossible to
+    // false if prior analysis has shown that placing a stone at @a goPoint
+    // by player @a moveColor is impossible to be a simple ko. If the current
+    // ko rule is KORULE_SIMPLE_KO and the caller sets @a simpleKoIsPossible
+    // to false, then this method does not have to perform any ko detection
+    // at all! If the current ko rule is not KORULE_SIMPLE_KO (i.e. the ko
+    // rule allows superko), then no optimization is possible.
+    //
+    // This is a private helper for isLegalMoveByColor().
+    GoGame.prototype.isKoMove = function(goPoint, moveColor, simpleKoIsPossible)
+    {
+        var isKoMoveResult =
+            {
+                isKoMove: false,
+                isSuperko: false
+            };
+
+        var koRule = this.goGameRules.koRule;
+        if (KORULE_SIMPLE_KO === koRule && !simpleKoIsPossible)
+            return false;
+
+        // The algorithm below for finding ko can kick in only if we have at least
+        // two moves. The earliest possible ko needs even more moves, but optimizing
+        // the algorithm is not worth the trouble.
+        //
+        // IMPORTANT: Ko detection must be based on the current board position, so
+        // we must not use this.getLastMove()!
+        // TODO: Change this when we start to support board positions
+        //GoMove* lastMove = this.boardPosition.currentMove;
+        var lastMove = this.getLastMove();
+        if (lastMove === null)
+            return false;
+        var previousToLastMove = lastMove.getPreviousGoMove();
+        if (previousToLastMove === null)
+            return false;
+
+        var zobristHashOfHypotheticalMove = this.getZobristHashOfHypotheticalMoveAtPoint(
+            goPoint,
+            moveColor,
+            lastMove);
+
+
+        // Even if we use one of the superko rules, we still want to check for simple
+        // ko first so that we can distinguish between simple ko and superko.
+        var isSimpleKo = (zobristHashOfHypotheticalMove === previousToLastMove.getZobristHash());
+        if (isSimpleKo)
+        {
+            isKoMoveResult.isKoMove = true;
+            isKoMoveResult.isSuperko = false;
+            return isKoMoveResult;
+        }
+
+        switch (koRule)
+        {
+            case KORULE_SIMPLE_KO:
+            {
+                // Simple Ko has already been checked above, so there's nothing else we
+                // need to do here
+                isKoMoveResult.isKoMove = false;
+                return isKoMoveResult;
+            }
+            case KORULE_POSITIONAL_SUPERKO:
+            case KORULE_SITUATIONAL_SUPERKO:
+            {
+                for (var move = previousToLastMove.getPreviousGoMove(); move !== null; move = move.getPreviousGoMove())
+                {
+                    // Situational superko only examines board positions that resulted from
+                    // moves made by the same color
+                    if (KORULE_SITUATIONAL_SUPERKO === koRule && move.goPlayer.getStoneColor() !== moveColor)
+                        continue;
+                    if (zobristHashOfHypotheticalMove === move.getZobristHash())
+                    {
+                        isKoMoveResult.isKoMove = true;
+                        isKoMoveResult.isSuperko = true;
+                        return isKoMoveResult;
+                    }
+                }
+                return false;
+            }
+            default:
+            {
+                throw new Error("Invalid ko rule " + koRule);
+            }
+        }
+    };
+
+    // Generates the Zobrist hash for a hypothetical move played by @a color
+    // on the intersection @a goPoint, after the previous move @a previousMove.
+    //
+    // This is a private helper for isKoMove().
+    GoGame.prototype.getZobristHashOfHypotheticalMoveAtPoint = function(goPoint, color, previousMove)
+    {
+        var opponentColor = (color === COLOR_BLACK ? COLOR_WHITE : COLOR_BLACK);
+
+        var stonesWithOneLiberty = this.getStonesWithColorAndSingleLiberty(
+            opponentColor,
+            goPoint);
+
+        var hash = this.goBoard.goZobristTable.getHashForStonePlayedByColorAtPointCapturingStonesAfterMove(
+            color,
+            goPoint,
+            stonesWithOneLiberty,
+            previousMove);
+
+        return hash;
+    };
+
+    // Determines stone groups with color @a color that have only a single
+    // liberty, and that liberty is at @a goPoint. Returns an array with all
+    // GoPoint objects that make up those regions. The array is empty if no
+    // such stone groups exist. The array has no particular order.
+    //
+    // This is a private helper for getZobristHashOfHypotheticalMoveAtPoint().
+    GoGame.prototype.getStonesWithColorAndSingleLiberty = function(color, goPoint)
+    {
+        var stonesWithSingleLiberty = [];
+
+        // The array we get is guaranteed to have no duplicates
+        var neighbourRegionsOpponent = goPoint.getNeighbourRegionsWithColor(color);
+
+        neighbourRegionsOpponent.forEach(function(neighbourRegion) {
+            if (neighbourRegion.getLiberties() === 1)
+            {
+                stonesWithSingleLiberty = stonesWithSingleLiberty.concat(neighbourRegion.getPoints())
+            }
+        }, this);  // <-- supply "this" value seen in the loop
+
+        return stonesWithSingleLiberty;
+    };
+
     return GoGame;
 })();
 
@@ -540,6 +880,31 @@ var GoPoint = (function ()
             }, this);  // <-- supply "this" value seen in the loop
             return liberties;
         }
+    };
+
+    // Collects the GoBoardRegion objects from those neighbours
+    // (see getNeighbours() method) of this GoPoint object whose
+    // stoneState matches @a color, then returns an array with those
+    // GoBoardRegion objects.
+    //
+    // The array that is returned contains no duplicates.
+    GoPoint.prototype.getNeighbourRegionsWithColor = function(color)
+    {
+        var neighbourRegions = [];
+
+        this.getNeighbours().forEach(function(neighbour) {
+            if (neighbour.stoneState !== color)
+                return;
+
+            var neighbourRegion = neighbour.goBoardRegion;
+            var index = neighbourRegions.indexOf(neighbourRegion);
+            if (-1 !== index)
+                return;
+
+            neighbourRegions.push(neighbourRegion);
+        }, this);  // <-- supply "this" value seen in the loop
+
+        return neighbourRegions;
     };
 
     return GoPoint;

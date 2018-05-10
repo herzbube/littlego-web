@@ -310,7 +310,14 @@ var DrawingController = (function ()
     {
         var intersection = this.getIntersectionNearMouseEvent(event);
 
-        // TODO: Check if move is legal. If it's not display a banner with the reason why not.
+        var isLegalMoveResult = this.goGame.isLegalMove(intersection.goPoint);
+        if (! isLegalMoveResult.isLegalMove)
+        {
+            var illegalReasonString = goMoveIsIllegalReasonToString(isLegalMoveResult.illegalReason);
+            // TODO: Display a banner with the reason why not.
+            console.log("move is illegal, reason = " + illegalReasonString);
+            return;
+        }
 
         this.clearNextMoveIndicatorIfExists();
         this.callbackDidPlayStone(intersection.goPoint);

@@ -235,49 +235,25 @@ var Board = (function ()
 
     Board.prototype.playGameMoveJsonObject = function(gameMoveJsonObject)
     {
-        // TODO: A lot of the stuff that we do here should be done by GoGame.
-        //[self.game play:self.point];
-        //[self.game pass];
-
         var expectedNextMoveColor = this.goGame.getNextMoveColor();
         var actualNextMoveColor = gameMoveJsonObject.moveColor;
         if (expectedNextMoveColor !== actualNextMoveColor)
             throw new Error("Expected next move color = " + expectedNextMoveColor + ", actual next move color = " + actualNextMoveColor);
 
-        var goPlayer;
-        if (actualNextMoveColor === COLOR_BLACK)
-            goPlayer = this.goGame.goPlayerBlack;
-        else
-            goPlayer = this.goGame.goPlayerWhite;
-
-        var previousGoMove = this.goGame.getLastMove();
-
-        var goMove;
-        if (previousGoMove === null)
-            goMove = new GoMove(gameMoveJsonObject.moveType, goPlayer);
-        else
-            goMove = new GoMove(gameMoveJsonObject.moveType, goPlayer, previousGoMove);
-
-        switch (goMove.moveType)
+        switch (gameMoveJsonObject.moveType)
         {
             case GOMOVE_TYPE_PLAY:
                 var goPoint = this.goGame.goBoard.getPointAtVertexCoordinates(
                     gameMoveJsonObject.vertexX,
                     gameMoveJsonObject.vertexY);
-                goMove.setGoPoint(goPoint);
-
-                // TODO: Check if move is legal
+                this.goGame.play(goPoint);
                 break;
             case GOMOVE_TYPE_PASS:
+                //[self.game pass];
                 break;
             default:
                 throw new Error("Invalid move type " + gameMoveJsonObject.moveType);
         }
-
-        goMove.doIt();
-
-        if (previousGoMove === null)
-            this.goGame.getFirstMove() = goMove;
     };
 
     return Board;
