@@ -42,13 +42,6 @@
         text-align: right;
     }
 
-    /* TODO: Remove when placeholders are removed */
-    .placeholder {
-        background-color: white;
-        border: solid black thin;
-        padding: 0.5em;
-    }
-
     #container-login-form, #container-registration-form
     {
         /* Vertically offset from browser window top */
