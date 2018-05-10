@@ -321,8 +321,12 @@ var DrawingController = (function ()
         if (! isLegalMoveResult.isLegalMove)
         {
             var illegalReasonString = goMoveIsIllegalReasonToString(isLegalMoveResult.illegalReason);
-            // TODO: Display a banner with the reason why not.
-            console.log("move is illegal, reason = " + illegalReasonString);
+
+            $("#" + ID_MOVE_IS_ILLEGAL_MODAL_INTERSECTION).html(intersection.goPoint.goVertex.toString());
+            $("#" + ID_MOVE_IS_ILLEGAL_MODAL_REASON).html(illegalReasonString);
+            $("#" + ID_MOVE_IS_ILLEGAL_MODAL).modal();
+
+            this.clearNextMoveIndicatorIfExists();
             return;
         }
 
