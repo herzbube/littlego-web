@@ -118,8 +118,10 @@ var GoBoard = (function ()
             for (var y = 1; y <= this.boardSize; y++)
             {
                 var goVertex = new GoVertex(x, y);
-                var goPoint = new GoPoint(goVertex, this, goBoardRegion);
+                var goPoint = new GoPoint(goVertex, this);
                 pointsXAxis.push(goPoint);
+
+                goBoardRegion.addPoint(goPoint);
             }
         }
 
@@ -134,6 +136,7 @@ var GoBoard = (function ()
             if (x >= CHAR_CODE_LETTER_I)
                 x--;
             x -= CHAR_CODE_LETTER_A;
+            x++;  // vertex coordinates are 1-based
             var y = parseInt(starPointVertex.substring(1));
 
             var starPoint = this.getPointAtVertexCoordinates(x, y);
@@ -304,11 +307,11 @@ var GoPoint = (function ()
 {
     "use strict";
 
-    function GoPoint(goVertex, goBoard, goBoardRegion)
+    function GoPoint(goVertex, goBoard)
     {
         this.goVertex = goVertex;
         this.goBoard = goBoard;
-        this.goBoardRegion = goBoardRegion;
+        this.goBoardRegion = null;
 
         this.isStarPoint = false;
         this.stoneState = COLOR_NONE;
@@ -666,11 +669,17 @@ var GoBoardRegion = (function ()
                 throw new Error("GoPoint's stoneState (" + otherGoPoint.stoneState + ") does not match stoneState of points already in this GoBoardRegion (" + otherGoPoint.stoneState + ")");
         }
 
-        // Side-effect: sets goPoint.goBoardRegion to null. This is the
-        // only moment during which a GoPoint can exist outside of a
-        // GoBoardRegion. We immediately set the new reference a few lines
-        // of code down.
-        previousGoBoardRegion.removePoint(goPoint);
+        // The previous GoBoardRegion can be null only when the GoBoard
+        // initially constructs GoPoint objects and adds them to the
+        // initial single GoBoardRegion
+        if (previousGoBoardRegion !== null)
+        {
+            // Side-effect: sets goPoint.goBoardRegion to null. This is the
+            // only moment during which a GoPoint can exist outside of a
+            // GoBoardRegion. We immediately set the new reference a few lines
+            // of code down.
+            previousGoBoardRegion.removePoint(goPoint);
+        }
 
         this.points.push(goPoint);
         goPoint.goBoardRegion = this;
@@ -977,7 +986,6 @@ var GoPlayer = (function ()
 //
 // Playing/undoing a move
 // ----------------------
-//
 // For a GoMove object that is of type GOMOVE_TYPE_PLAY, invoking the doIt()
 // method triggers the mechanism for placing a stone. This is a comparatively
 // expensive operation, as doIt() manipulates the entire board to reflect the
@@ -1099,7 +1107,7 @@ var GoMove = (function ()
         // If the captured stones array already contains entries we assume
         // that this invocation of doIt() is actually a "redo", i.e. undo()
         // has previously been invoked for this GoMove
-        var redo = (self.capturedStones.length > 0);
+        var redo = (this.capturedStones.length > 0);
 
         // Check neighbours for captures
         this.goPoint.getNeighbours().forEach(function(neighbour) {

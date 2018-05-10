@@ -41,7 +41,7 @@ const GOBOARD_DIRECTION_NEXT = 4;
 const GOBOARD_DIRECTION_PREVIOUS = 5;
 
 const GOMOVE_TYPE_PLAY = 0;
-const GOMOVE_TYPE_PASS = 0;
+const GOMOVE_TYPE_PASS = 1;
 
 const DEFAULT_BOARDSIZE = BOARDSIZE_19;
 const DEFAULT_STONECOLOR = COLOR_BLACK;
@@ -180,8 +180,8 @@ const ID_CONTAINER_BOARD_CONTROLS_SCORING_MODE = PREFIX_ID_CONTAINER + "board-co
 
 // SVG
 const ID_SVG_BOARD = "board";
-const ID_SVG_STARPOINT_PREFIX = "starpoint-"
-const ID_SVG_STONE_PREFIX = "starpoint-"
+const ID_SVG_STARPOINT_PREFIX = "starpoint-";
+const ID_SVG_STONE_PREFIX = "stone-";
 const ID_SVG_NEXTMOVEINDICATOR = "next-move-indicator";
 
 // Modals
