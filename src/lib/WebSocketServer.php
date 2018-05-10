@@ -35,14 +35,17 @@ namespace LittleGoWeb
                 return null;
         }
 
-        private function getWebSocketClientByUserID(int $userID) : ?WebSocketClient
+        private function getWebSocketClientsByUserID(int $userID) : array
         {
+            $webSocketClients = [];
+
             foreach ($this->clients as $webSocketClient)
             {
                 if ($webSocketClient->getSession()->getUserID() === $userID)
-                    return $webSocketClient;
+                    array_push($webSocketClients, $webSocketClient);
             }
-            return null;
+
+            return $webSocketClients;
         }
 
         public function onOpen(ConnectionInterface $conn): void
@@ -807,7 +810,22 @@ namespace LittleGoWeb
                     WEBSOCKET_MESSAGEDATA_KEY_GAMEMOVE => $gameMove->toJsonObject()
                 ];
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
-            $webSocketClient->send($webSocketMessage);
+
+            // Send the response not only to the client who sent the request,
+            // but also to clients where the other user is logged in
+            $users = $dbAccess->findUsersByGameID($gameID);
+            if ($users === null)
+            {
+                $errorMessage = "Failed to retrieve users for game in progress from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+            foreach ($users as $user)
+            {
+                $webSocketClients = $this->getWebSocketClientsByUserID($user->getUserID());
+                foreach ($webSocketClients as $loopWebSocketClient)
+                    $loopWebSocketClient->send($webSocketMessage);
+            }
         }
 
         private function getGameInProgressWithoutAdditionalData(
