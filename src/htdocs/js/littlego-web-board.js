@@ -30,6 +30,8 @@ var Board = (function ()
         this.makeBoardControlsContainerVisible(ID_CONTAINER_BOARD_CONTROLS_PLAY_MODE, ID_BUTTON_BOARD_MODE_PLAY);
 
         this.goGame = null;
+        this.boardPlayerInfoBlack = null;
+        this.boardPlayerInfoWhite = null;
         this.drawingController = null;
         this.gameID = GAMEID_UNDEFINED;
     }
@@ -72,6 +74,8 @@ var Board = (function ()
         // This method can be called many times, so we have to reset
         // some member variables on every call
         this.goGame = null;
+        this.boardPlayerInfoBlack = null;
+        this.boardPlayerInfoWhite = null;
         this.drawingController = null;
         this.gameID = GAMEID_UNDEFINED;
 
@@ -114,10 +118,10 @@ var Board = (function ()
             }, this);
 
             var blackPlayerUserInfo = new UserInfo(gameInProgressJsonObject.blackPlayer);
-            var boardPlayerInfoBlack = new BoardPlayerInfoBlack(blackPlayerUserInfo, this.goGame);
+            this.boardPlayerInfoBlack = new BoardPlayerInfoBlack(blackPlayerUserInfo, this.goGame);
             var whitePlayerUserInfo = new UserInfo(gameInProgressJsonObject.whitePlayer);
-            var boardPlayerInfoWhite = new BoardPlayerInfoWhite(whitePlayerUserInfo, this.goGame);
-            this.updateBoardPlayerInfo(boardPlayerInfoBlack, boardPlayerInfoWhite);
+            this.boardPlayerInfoWhite = new BoardPlayerInfoWhite(whitePlayerUserInfo, this.goGame);
+            this.updateBoardPlayerInfo();
 
             // Start drawing the board AFTER the board container has been
             // made visible, otherwise the container has width/height 0.
@@ -138,20 +142,20 @@ var Board = (function ()
         }
     };
 
-    Board.prototype.updateBoardPlayerInfo = function(boardPlayerInfoBlack, boardPlayerInfoWhite)
+    Board.prototype.updateBoardPlayerInfo = function()
     {
         $("#" + ID_BOARD_PLAYER_NAME_BLACK).html(
-            boardPlayerInfoBlack.userInfo.displayName);
+            this.boardPlayerInfoBlack.userInfo.displayName);
         $("#" + ID_BOARD_NUMBER_OF_CAPTURES_BLACK).html(
-            numberOfCapturedStonesToString(boardPlayerInfoBlack.numberOfCapturedStones));
+            numberOfCapturedStonesToString(this.boardPlayerInfoBlack.numberOfCapturedStones));
 
         $("#" + ID_BOARD_PLAYER_NAME_WHITE).html(
-            boardPlayerInfoWhite.userInfo.displayName);
+            this.boardPlayerInfoWhite.userInfo.displayName);
         $("#" + ID_BOARD_NUMBER_OF_CAPTURES_WHITE).html(
-            numberOfCapturedStonesToString(boardPlayerInfoWhite.numberOfCapturedStones));
+            numberOfCapturedStonesToString(this.boardPlayerInfoWhite.numberOfCapturedStones));
 
         $("#" + ID_BOARD_KOMI).html(
-            komiToString(boardPlayerInfoWhite.komi));
+            komiToString(this.boardPlayerInfoWhite.komi));
     };
 
     Board.prototype.onBoardModePlay = function(event)
@@ -212,9 +216,16 @@ var Board = (function ()
         if (success)
         {
             this.playGameMoveJsonObject(gameMoveJsonObject);
+
+            if (this.goGame.getLastMove().goPlayer.isBlack())
+                this.boardPlayerInfoBlack.updateAfterGameMoveWasPlayed(this.goGame);
+            else
+                this.boardPlayerInfoWhite.updateAfterGameMoveWasPlayed(this.goGame);
+            this.updateBoardPlayerInfo();
+
             // TODO: The move can also be played by the other player.
 
-            this.drawingController.updateBoardAfterNewGameMove();
+            this.drawingController.updateAfterGameMoveWasPlayed();
         }
         else
         {
@@ -266,7 +277,7 @@ var Board = (function ()
         goMove.doIt();
 
         if (previousGoMove === null)
-            this.goGame.firstMove = goMove;
+            this.goGame.getFirstMove() = goMove;
     };
 
     return Board;
@@ -290,7 +301,7 @@ var BoardPlayerInfoBlack = (function ()
 
         if (goGame.hasMoves())
         {
-            var goMove = goGame.firstMove;
+            var goMove = goGame.getFirstMove();
             while (goMove !== null)
             {
                 if (goMove.goPlayer.isBlack())
@@ -299,6 +310,14 @@ var BoardPlayerInfoBlack = (function ()
             }
         }
     }
+
+    BoardPlayerInfoBlack.prototype.updateAfterGameMoveWasPlayed = function(goGame)
+    {
+        var lastMove = goGame.getLastMove();
+
+        if (goMove.goPlayer.isBlack())
+            this.numberOfCapturedStones += goMove.capturedStones.length;
+    };
 
     return BoardPlayerInfoBlack;
 })();
@@ -322,7 +341,7 @@ var BoardPlayerInfoWhite = (function ()
 
         if (goGame.hasMoves())
         {
-            var goMove = goGame.firstMove;
+            var goMove = goGame.getFirstMove();
             while (goMove !== null)
             {
                 if (!goMove.goPlayer.isBlack())
@@ -331,6 +350,14 @@ var BoardPlayerInfoWhite = (function ()
             }
         }
     }
+
+    BoardPlayerInfoWhite.prototype.updateAfterGameMoveWasPlayed = function(goGame)
+    {
+        var lastMove = goGame.getLastMove();
+
+        if (!goMove.goPlayer.isBlack())
+            this.numberOfCapturedStones += goMove.capturedStones.length;
+    };
 
     return BoardPlayerInfoWhite;
 })();

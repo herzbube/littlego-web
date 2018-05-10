@@ -340,7 +340,7 @@ var DrawingController = (function ()
         return intersectionNearCoordinates;
     };
 
-    DrawingController.prototype.updateBoardAfterNewGameMove = function()
+    DrawingController.prototype.updateAfterGameMoveWasPlayed = function()
     {
         // TODO: The controller must remove the submission indicator.
         // TODO: The controller possibly has to reactivate interaction.

@@ -32,13 +32,17 @@ var GoGame = (function ()
         return (this.firstMove !== null);
     };
 
+    // Returns the GoMove object that represents the first move of the game,
+    // or null if no move has been played yet.
+    GoGame.prototype.getFirstMove = function()
+    {
+        return this.firstMove;
+    };
+
     // Returns the GoMove object that represents the last (i.e. most recent)
     // move of the game, or null if no move has been played yet.
     GoGame.prototype.getLastMove = function()
     {
-        // TODO: Callers should get last move from GoBoardPosition.
-        // If this is implemented, remove this method.
-        //var lastMove = this.goGame.goBoardPosition.getCurrentMove;
         var lastMove = this.firstMove;
         while (lastMove !== null)
         {
