@@ -1176,7 +1176,7 @@ var GoBoardRegion = (function ()
         // Iterate over a copy of the array to be safe from modifications of
         // the array. Such modifications occur because addPoint() below causes
         // the GoPoint to be removed from the other region.
-        var pointsCopy = this.points.slice();
+        var pointsCopy = goBoardRegion.points.slice();
         pointsCopy.forEach(function(goPoint) {
             this.addPoint(goPoint);
         }, this);  // <-- supply "this" value seen in the loop
