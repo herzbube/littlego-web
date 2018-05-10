@@ -9,6 +9,9 @@
     // Declare a few global variables
     var theBoard = null;
     var theSession = null;
+    var gameRequestsDataTableController = null;
+    var gamesInProgressDataTableController = null;
+    var finishedGamesDataTableController = null;
 
     var websocketUrl =
         "ws://"
@@ -42,6 +45,19 @@
 
         $("#" + ID_BUTTON_NEW_GAME_REQUEST_MODAL_SUBMIT).on("click", onSubmitNewGameRequest);
         $("#" + ID_BUTTON_CONFIRM_GAME_REQUEST_PAIRING_MODAL_START_GAME).on("click", onConfirmGameRequestPairing);
+
+        gameRequestsDataTableController = new DataTableController(
+            ID_CONTAINER_GAME_REQUESTS,
+            NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE,
+            eventHandlerForOperationType);
+        gamesInProgressDataTableController = new DataTableController(
+            ID_CONTAINER_GAMES_IN_PROGRESS,
+            NUMBER_OF_COLUMNS_GAMES_IN_PROGRESS_TABLE,
+            eventHandlerForOperationType);
+        finishedGamesDataTableController = new DataTableController(
+            ID_CONTAINER_FINISHED_GAMES,
+            NUMBER_OF_COLUMNS_FINISHED_GAMES_TABLE,
+            eventHandlerForOperationType);
 
         theWebSocket.addEventListener("message", function(event) {
             handleWebSocketMessage(event);
@@ -102,9 +118,9 @@
             // area. If the user has no games in progress then show the game
             // requests section - even if that section is empty, because then
             // at least the user can immediately submit a new game request.
-            makeAppContainerVisible(ID_CONTAINER_GAME_REQUESTS);
-            makeNavItemActive(ID_BUTTON_GAME_REQUESTS);
-            updateGameRequestsData();
+            makeAppContainerVisible(ID_CONTAINER_GAMES_IN_PROGRESS);
+            makeNavItemActive(ID_BUTTON_GAMES_IN_PROGRESS);
+            updateGamesInProgressData();
         }
         else
         {
@@ -364,9 +380,7 @@
 
     function updateGameRequestsData()
     {
-        var appContainerID = ID_CONTAINER_GAME_REQUESTS;
-        var numberOfColumns = NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE;
-        clearDataTableAndAddDataRetrievalPlaceholderMessage(appContainerID, numberOfColumns);
+        gameRequestsDataTableController.clearDataTableAndAddDataRetrievalPlaceholderMessage();
 
         var messageData = { };
         // Triggers onGetGameRequestsComplete
@@ -393,17 +407,13 @@
             gameRequests.push(gameRequest);
         });
 
-        var appContainerID = ID_CONTAINER_GAME_REQUESTS;
-        var numberOfColumns = NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE;
         var noDataPlaceholderMessage = "You have no game requests.";
-        updateDataTable(appContainerID, gameRequests, numberOfColumns, noDataPlaceholderMessage);
+        gameRequestsDataTableController.updateDataTable(gameRequests, noDataPlaceholderMessage);
     }
 
     function updateGamesInProgressData()
     {
-        var appContainerID = ID_CONTAINER_GAMES_IN_PROGRESS;
-        var numberOfColumns = NUMBER_OF_COLUMNS_GAMES_IN_PROGRESS_TABLE;
-        clearDataTableAndAddDataRetrievalPlaceholderMessage(appContainerID, numberOfColumns);
+        gamesInProgressDataTableController.clearDataTableAndAddDataRetrievalPlaceholderMessage();
 
         var messageData = { };
         // Triggers onGetGamesInProgressComplete
@@ -430,219 +440,14 @@
             gamesInProgress.push(gameInProgress);
         });
 
-        var appContainerID = ID_CONTAINER_GAMES_IN_PROGRESS;
-        var numberOfColumns = NUMBER_OF_COLUMNS_GAMES_IN_PROGRESS_TABLE;
         var noDataPlaceholderMessage = "You have no games in progress.";
-        updateDataTable(appContainerID, gamesInProgress, numberOfColumns, noDataPlaceholderMessage);
+        gamesInProgressDataTableController.updateDataTable(gamesInProgress, noDataPlaceholderMessage);
     }
 
     function updateFinishedGamesData()
     {
-        var appContainerID = ID_CONTAINER_FINISHED_GAMES;
-        var numberOfColumns = NUMBER_OF_COLUMNS_FINISHED_GAMES_TABLE;
         var dataRetrievalFunction = createFinishedGames;
-        updateDataTableWithFakeData(appContainerID, numberOfColumns, dataRetrievalFunction);
-    }
-
-    // TODO Remove if no longer needed
-    function updateDataTableWithFakeData(appContainerID, numberOfColumns, dataRetrievalFunction)
-    {
-        clearDataTableAndAddDataRetrievalPlaceholderMessage(appContainerID, numberOfColumns);
-
-        // We fake the asynchronous data retrieval process by generating an
-        // artificial delay. Then we generate static fake data.
-        var timeoutInMilliseconds = 1000;
-        setTimeout(function() {
-            var dataItems = dataRetrievalFunction();
-            updateDataTable(appContainerID, dataItems, numberOfColumns);
-        }, timeoutInMilliseconds);
-    }
-
-    function updateDataTable(appContainerID, dataItems, numberOfColumns, noDataPlaceholderMessage)
-    {
-        removePlaceholderMessageFromDataTable(appContainerID);
-
-        if (dataItems.length === 0)
-        {
-            addPlaceholderMessageToDataTable(appContainerID, numberOfColumns, noDataPlaceholderMessage);
-            return;
-        }
-
-        // Rebuild the table with the supplied data
-        var tableBody = $("#" + appContainerID + " tbody");
-        dataItems.forEach(function(dataItem) {
-            var dataRow = createNewRow(tableBody);
-
-            dataItem.getDataTableValues().forEach(function(dataValue) {
-                var dataCell = createNewCell(dataRow);
-                fillCell(dataCell, dataValue);
-            });
-
-            var actionsCell = createNewCell(dataRow);
-            dataItem.getDataItemActions ().forEach(function(dataItemAction) {
-                var dataItemActionEventHandler = eventHandlerForOperationType(dataItemAction.operationType);
-                if (undefined === dataItemActionEventHandler)
-                {
-                    addActionToCell(actionsCell, dataItemAction.actionTitle, dataItemAction.actionType);
-                }
-                else
-                {
-                    addActionToCell(actionsCell, dataItemAction.actionTitle, dataItemAction.actionType, function() {
-                        dataItemActionEventHandler(dataItemAction);
-                    });
-                }
-            });
-        })
-    }
-
-    function clearDataTableAndAddDataRetrievalPlaceholderMessage(appContainerID, numberOfColumns)
-    {
-        clearDataTable(appContainerID);
-        addPlaceholderMessageToDataTable(appContainerID, numberOfColumns, "Retrieving data ...");
-    }
-
-    // Removes all rows from the data table that is located inside the
-    // app container with the specified ID.
-    function clearDataTable(appContainerID)
-    {
-        var tableBody = $("#" + appContainerID + " tbody");
-        tableBody.empty();
-    }
-
-    // Adds the specified placeholder message to the data table that is
-    // located inside the app container with the specified ID.
-    //
-    // This function expects that the data table contains no other data.
-    function addPlaceholderMessageToDataTable(appContainerID, numberOfColumns, placeholderMessage)
-    {
-        var tableBody = $("#" + appContainerID + " tbody");
-
-        var placerHolderRow = createNewRow(tableBody);
-        var placeHolderCell = createNewCell(placerHolderRow);
-
-        placeHolderCell.addClass(CLASS_DATA_PLACEHOLDER);
-        placeHolderCell.attr("colspan", numberOfColumns);
-        fillCell(placeHolderCell, placeholderMessage);
-    }
-
-    // Removes a placeholder message previously added by
-    // addPlaceholderMessageToDataTable() from the data table that is located
-    // inside the app container with the specified ID.
-    //
-    // This function expects that the data table contains no other data
-    // except for the placer holder message.
-    function removePlaceholderMessageFromDataTable(appContainerID)
-    {
-        clearDataTable(appContainerID);
-    }
-
-    // Creates a new table row and adds it as the last row to the
-    // specified table body.
-    //
-    // The specified table body must be a jQuery object representing
-    // a "tbody" element.
-    //
-    // Returns a jQuery object that represents the newly created
-    // "tr" element.
-    function createNewRow(tableBody)
-    {
-        var newRowElement = document.createElement("tr");
-
-        // append() returns the container, not the new child, so the
-        // return value is useless to us
-        tableBody.append(newRowElement);
-
-        // We need a jQuery object, so we can't return newRowElement
-        return tableBody.children().last();
-    }
-
-    // Creates a new table cell and adds it as the last cell to the
-    // specified table row.
-    //
-    // The specified table row must be a jQuery object representing
-    // a "tr" element.
-    //
-    // Returns a jQuery object that represents the newly created
-    // "td" element.
-    function createNewCell(parentRow)
-    {
-        var newCellElement = document.createElement("td");
-
-        // append() returns the container, not the new child, so the
-        // return value is useless to us
-        parentRow.append(newCellElement);
-
-        // We need a jQuery object, so we can't return newCellElement
-        return parentRow.children().last();
-    }
-
-    // Fills the specified cell with the specified value.
-    //
-    // The specified table cell must be a jQuery object representing
-    // a "td" element.
-    function fillCell(tableCell, cellValue)
-    {
-        // Use html(), not text(), to make sure that HTML entities
-        // are rendered
-        tableCell.html(cellValue);
-    }
-
-    // Adds the specified action to the specified cell.
-    //
-    // The specified table cell must be a jQuery object representing
-    // a "td" element.
-    function addActionToCell(tableCell, actionText, actionType, eventHandler)
-    {
-        var newActionElement = document.createElement("button");
-
-        // append() returns the container, not the new child, so the
-        // return value is useless to us
-        tableCell.append(newActionElement);
-
-        // We need a jQuery object
-        var newAction = tableCell.children().last()
-
-        newAction.html(actionText);
-
-        newAction.addClass(BOOTSTRAP_CLASS_BUTTON);
-        newAction.addClass(BOOTSTRAP_CLASS_BUTTON_SMALL);
-        newAction.addClass(BOOTSTRAP_CLASS_BUTTON_BLOCKLEVEL);
-        var bootstrapButtonStyleClass = actionType2BootstrapButtonClass(actionType);
-        newAction.addClass(bootstrapButtonStyleClass);
-
-        if (eventHandler === undefined)
-        {
-            newAction.attr(BOOTSTRAP_ATTRIBUTE_DATA_TOGGLE, BOOTSTRAP_ATTRIBUTE_VALUE_MODAL);
-            newAction.attr(BOOTSTRAP_ATTRIBUTE_DATA_TARGET, "#" + ID_MODAL_NOT_YET_IMPLEMENTED);
-        }
-        else
-        {
-            newAction.on("click", eventHandler);
-        }
-
-        return newAction;
-    }
-
-    function eventHandlerForOperationType(operationType)
-    {
-        switch (operationType)
-        {
-            case OPERATION_TYPE_GAME_REQUEST_CANCEL:
-                return onCancelGameRequest;
-            case OPERATION_TYPE_GAME_REQUEST_CONFIRM:
-                return onConfirmGameRequest;
-            case OPERATION_TYPE_GAME_IN_PROGRESS_RESUME:
-                return onResumeGameInProgress;
-            case OPERATION_TYPE_GAME_IN_PROGRESS_RESIGN:
-            case OPERATION_TYPE_FINISHED_GAME_VIEW:
-            case OPERATION_TYPE_FINISHED_GAME_EMAIL_RESULT:
-            case OPERATION_TYPE_FINISHED_GAME_DELETE:
-                // Returning undefined causes the "not yet implemented" dialog
-                // to pop up when the user attempts the operation.
-                return undefined;
-            default:
-                throw new Error("Unsupported operation type: " + operationType);
-        }
+        finishedGamesDataTableController.updateDataTableWithFakeData(dataRetrievalFunction);
     }
 
     function onSubmitNewGameRequest(event)
@@ -657,9 +462,7 @@
         $("#" + ID_NEW_GAME_REQUEST_MODAL_FORM)[0].reset();
         $("#" + ID_NEW_GAME_REQUEST_MODAL).modal('hide');
 
-        var appContainerID = ID_CONTAINER_GAME_REQUESTS;
-        var numberOfColumns = NUMBER_OF_COLUMNS_GAME_REQUEST_TABLE;
-        clearDataTableAndAddDataRetrievalPlaceholderMessage(appContainerID, numberOfColumns);
+        gameRequestsDataTableController.clearDataTableAndAddDataRetrievalPlaceholderMessage();
 
         var messageData =
             {
@@ -844,4 +647,224 @@
                 break;
         }
     }
+
+    function eventHandlerForOperationType(operationType)
+    {
+        switch (operationType)
+        {
+            case OPERATION_TYPE_GAME_REQUEST_CANCEL:
+                return onCancelGameRequest;
+            case OPERATION_TYPE_GAME_REQUEST_CONFIRM:
+                return onConfirmGameRequest;
+            case OPERATION_TYPE_GAME_IN_PROGRESS_RESUME:
+                return onResumeGameInProgress;
+            case OPERATION_TYPE_GAME_IN_PROGRESS_RESIGN:
+            case OPERATION_TYPE_FINISHED_GAME_VIEW:
+            case OPERATION_TYPE_FINISHED_GAME_EMAIL_RESULT:
+            case OPERATION_TYPE_FINISHED_GAME_DELETE:
+                // Returning undefined causes the "not yet implemented" dialog
+                // to pop up when the user attempts the operation.
+                return undefined;
+            default:
+                throw new Error("Unsupported operation type: " + operationType);
+        }
+    };
+})();
+
+var DataTableController = (function ()
+{
+    "use strict";
+
+    // Creates a new DataTableController object.
+    function DataTableController(dataTableContainerID, numberOfColumns, eventHandlerForOperationType)
+    {
+        this.dataTableContainerID = dataTableContainerID;
+        this.numberOfColumns = numberOfColumns;
+        this.eventHandlerForOperationType = eventHandlerForOperationType;
+    }
+
+    // TODO Remove if no longer needed
+    DataTableController.prototype.updateDataTableWithFakeData = function(dataRetrievalFunction)
+    {
+        this.clearDataTableAndAddDataRetrievalPlaceholderMessage();
+
+        // We fake the asynchronous data retrieval process by generating an
+        // artificial delay. Then we generate static fake data.
+        var self = this;
+        var timeoutInMilliseconds = 1000;
+        setTimeout(function() {
+            var dataItems = dataRetrievalFunction();
+            self.updateDataTable(dataItems);
+        }, timeoutInMilliseconds);
+    };
+
+    DataTableController.prototype.updateDataTable = function(dataItems, noDataPlaceholderMessage)
+    {
+        this.removePlaceholderMessageFromDataTable();
+
+        if (dataItems.length === 0)
+        {
+            this.addPlaceholderMessageToDataTable(noDataPlaceholderMessage);
+            return;
+        }
+
+        // Rebuild the table with the supplied data
+        var tableBody = $("#" + this.dataTableContainerID + " tbody");
+        dataItems.forEach(function(dataItem) {
+            var dataRow = this.createNewRow(tableBody);
+
+            dataItem.getDataTableValues().forEach(function(dataValue) {
+                var dataCell = this.createNewCell(dataRow);
+                this.fillCell(dataCell, dataValue);
+            }, this);  // <-- supply "this" value seen in the loop
+
+            var dataItemActions = dataItem.getDataItemActions();
+            if (dataItemActions.length === 0)
+                return;
+            var actionsCell = this.createNewCell(dataRow);
+            dataItemActions.forEach(function(dataItemAction) {
+                var dataItemActionEventHandler = this.eventHandlerForOperationType(dataItemAction.operationType);
+                if (undefined === dataItemActionEventHandler)
+                {
+                    this.addActionToCell(actionsCell, dataItemAction.actionTitle, dataItemAction.actionType);
+                }
+                else
+                {
+                    this.addActionToCell(actionsCell, dataItemAction.actionTitle, dataItemAction.actionType, function() {
+                        dataItemActionEventHandler(dataItemAction);
+                    });
+                }
+            }, this);  // <-- supply "this" value seen in the loop
+        }, this);  // <-- supply "this" value seen in the loop
+    };
+
+    DataTableController.prototype.clearDataTableAndAddDataRetrievalPlaceholderMessage = function()
+    {
+        this.clearDataTable();
+        this.addPlaceholderMessageToDataTable("Retrieving data ...");
+    };
+
+    // Removes all rows from the data table that is located inside the
+    // app container with the specified ID.
+    DataTableController.prototype.clearDataTable = function()
+    {
+        var tableBody = $("#" + this.dataTableContainerID + " tbody");
+        tableBody.empty();
+    };
+
+    // Adds the specified placeholder message to the data table that is
+    // located inside the app container with the specified ID.
+    //
+    // This function expects that the data table contains no other data.
+    DataTableController.prototype.addPlaceholderMessageToDataTable = function(placeholderMessage)
+    {
+        var tableBody = $("#" + this.dataTableContainerID + " tbody");
+
+        var placerHolderRow = this.createNewRow(tableBody);
+        var placeHolderCell = this.createNewCell(placerHolderRow);
+
+        placeHolderCell.addClass(CLASS_DATA_PLACEHOLDER);
+        placeHolderCell.attr("colspan", this.numberOfColumns);
+        this.fillCell(placeHolderCell, placeholderMessage);
+    };
+
+    // Removes a placeholder message previously added by
+    // addPlaceholderMessageToDataTable() from the data table that is located
+    // inside the app container with the specified ID.
+    //
+    // This function expects that the data table contains no other data
+    // except for the placer holder message.
+    DataTableController.prototype.removePlaceholderMessageFromDataTable = function()
+    {
+        this.clearDataTable();
+    };
+
+    // Creates a new table row and adds it as the last row to the
+    // specified table body.
+    //
+    // The specified table body must be a jQuery object representing
+    // a "tbody" element.
+    //
+    // Returns a jQuery object that represents the newly created
+    // "tr" element.
+    DataTableController.prototype.createNewRow = function(tableBody)
+    {
+        var newRowElement = document.createElement("tr");
+
+        // append() returns the container, not the new child, so the
+        // return value is useless to us
+        tableBody.append(newRowElement);
+
+        // We need a jQuery object, so we can't return newRowElement
+        return tableBody.children().last();
+    };
+
+    // Creates a new table cell and adds it as the last cell to the
+    // specified table row.
+    //
+    // The specified table row must be a jQuery object representing
+    // a "tr" element.
+    //
+    // Returns a jQuery object that represents the newly created
+    // "td" element.
+    DataTableController.prototype.createNewCell = function(parentRow)
+    {
+        var newCellElement = document.createElement("td");
+
+        // append() returns the container, not the new child, so the
+        // return value is useless to us
+        parentRow.append(newCellElement);
+
+        // We need a jQuery object, so we can't return newCellElement
+        return parentRow.children().last();
+    };
+
+    // Fills the specified cell with the specified value.
+    //
+    // The specified table cell must be a jQuery object representing
+    // a "td" element.
+    DataTableController.prototype.fillCell = function(tableCell, cellValue)
+    {
+        // Use html(), not text(), to make sure that HTML entities
+        // are rendered
+        tableCell.html(cellValue);
+    };
+
+    // Adds the specified action to the specified cell.
+    //
+    // The specified table cell must be a jQuery object representing
+    // a "td" element.
+    DataTableController.prototype.addActionToCell = function(tableCell, actionText, actionType, eventHandler)
+    {
+        var newActionElement = document.createElement("button");
+
+        // append() returns the container, not the new child, so the
+        // return value is useless to us
+        tableCell.append(newActionElement);
+
+        // We need a jQuery object
+        var newAction = tableCell.children().last();
+
+        newAction.html(actionText);
+
+        newAction.addClass(BOOTSTRAP_CLASS_BUTTON);
+        newAction.addClass(BOOTSTRAP_CLASS_BUTTON_SMALL);
+        newAction.addClass(BOOTSTRAP_CLASS_BUTTON_BLOCKLEVEL);
+        var bootstrapButtonStyleClass = actionType2BootstrapButtonClass(actionType);
+        newAction.addClass(bootstrapButtonStyleClass);
+
+        if (eventHandler === undefined)
+        {
+            newAction.attr(BOOTSTRAP_ATTRIBUTE_DATA_TOGGLE, BOOTSTRAP_ATTRIBUTE_VALUE_MODAL);
+            newAction.attr(BOOTSTRAP_ATTRIBUTE_DATA_TARGET, "#" + ID_MODAL_NOT_YET_IMPLEMENTED);
+        }
+        else
+        {
+            newAction.on("click", eventHandler);
+        }
+
+        return newAction;
+    };
+
+    return DataTableController;
 })();
