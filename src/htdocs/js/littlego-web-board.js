@@ -29,6 +29,9 @@ var Board = (function ()
         $("#" + ID_BUTTON_BOARD_CONTROL_PASS).on("click", function(event) {
             self.onPass(event);
         });
+        $("#" + ID_BUTTON_BOARD_CONTROL_RESIGN).on("click", function(event) {
+            self.onResign(event);
+        });
 
         this.makeBoardControlsContainerVisible(ID_CONTAINER_BOARD_CONTROLS_PLAY_MODE, ID_BUTTON_BOARD_MODE_PLAY);
 
@@ -270,6 +273,11 @@ var Board = (function ()
             default:
                 throw new Error("Invalid move type " + gameMoveJsonObject.moveType);
         }
+    };
+
+    Board.prototype.onResign = function(event)
+    {
+        $("#" + ID_MODAL_NOT_YET_IMPLEMENTED).modal()
     };
 
     return Board;
