@@ -142,7 +142,7 @@ var GoBoard = (function ()
     {
         this.boardSize = boardSize;
 
-        // TODO: Add GoZobristTable
+        this.goZobristTable = new GoZobristTable(this.boardSize);
 
         // This is going to be an array of arrays.
         // - Dimension 1 = x-axis position on the board
@@ -1187,8 +1187,7 @@ var GoMove = (function ()
             }, this);  // <-- supply "this" value seen in the loop
         }, this);  // <-- supply "this" value seen in the loop
 
-        // TODO: Uncomment when GoZobristTable is implemented
-        //this.zobristHash = this.goPoint.goBoard.goZobristTable.getHashForMove(this);
+        this.zobristHash = this.goPoint.goBoard.goZobristTable.getHashForMove(this);
     };
 
     // Reverts the board to the state it had before this GoMove was played.
@@ -1298,3 +1297,214 @@ var GoMove = (function ()
 
     return GoMove;
 })();
+
+// ----------------------------------------------------------------------
+// The GoZobristTable class encapsulates a table with random values.
+// When requested by clients, it uses those values co calculate Zobrist hashes.
+// (Zobrist hashes are used to find superko). It is the responsibiility of
+// clients to store the calculated hashes for later use.
+//
+// Read the Wikipedia article [1] to find out more about Zobrist hashing.
+//
+// TODO: JavaScript does not have 64-bit integer support, for this reason
+// the following comment is inaccurate - the current GoZobristTable
+// implementation works with 53-bit integers only (Number.MAX_SAFE_INTEGER).
+// We need to add 64-bit support by way of a high-precision library. The
+// library must be able to generate random numbers and to XOR two numbers.
+//
+// GoZobristTable uses 64 bit random values to initialize the table. Why 64 bit
+// and not, for instance, 32 bit, or 128 bit? I am not a computer scientist, so
+// I do not know the real reason. I am simply using the same number of bits
+// as everybody else (e.g. Fuego, but also [2]). It appears that it is
+// universally accepted that the chance for a hash collision is extremely (!)
+// small when 64 bit values are used (e.g. [3]).
+//
+// [1] http://en.wikipedia.org/wiki/Zobrist_hashing
+// [2] http://www.cwi.nl/~tromp/java/go/GoGame.java
+// [3] http://osdir.com/ml/games.devel.go/2002-09/msg00006.html
+// ----------------------------------------------------------------------
+var GoZobristTable = (function ()
+{
+    "use strict";
+
+    function GoZobristTable(boardSize)
+    {
+        this.boardSize = boardSize;
+        // This will end up with the following number of elements:
+        //   boardSize * boardSize * 2
+        //   ^           ^           ^
+        //   x-axis      y-axis      two colors (black and white)
+        this.zobristTable = [];
+        this.fillZobristTableWithRandomNumbers();
+    }
+
+    GoZobristTable.prototype.fillZobristTableWithRandomNumbers = function()
+    {
+        // Unlike other runtime environments it appears that in JavaScript
+        // we don't have to seed the random number generator.
+
+        for (var vertexX = 0; vertexX < this.boardSize; ++vertexX)
+        {
+            for (var vertexY = 0; vertexY < this.boardSize; ++vertexY)
+            {
+                for (var color = 0; color < 2; ++color)
+                {
+                    var random53BitNumber = this.generateRandom53BitNumber();
+                    this.zobristTable.push(random53BitNumber);
+                }
+            }
+        }
+    };
+
+    GoZobristTable.prototype.generateRandom53BitNumber = function()
+    {
+        // Number.MAX_SAFE_INTEGER is 2^53 - 1
+        return Math.random() * Number.MAX_SAFE_INTEGER;
+    };
+
+    // Generates the Zobrist hash for the current board position represented
+    // by @a goBoard.
+    GoZobristTable.prototype.getHashForBoard = function(goBoard)
+    {
+        this.throwIfTableSizeDoesNotMatchSizeOfBoard(goBoard);
+
+        var hash = 0;
+        var goPoint = goBoard.getPointAtCorner(GOBOARDCORNER_BOTTOMLEFT);
+        while (goPoint !== null)
+        {
+            if (goPoint.hasStone())
+            {
+                var index = this.getIndexOfPoint(goPoint);
+                hash ^= this.zobristTable[index];
+            }
+            goPoint = goPoint.getNext();
+        }
+        return hash;
+    };
+
+    // Generates the Zobrist hash for @a goMove.
+    //
+    // The hash is calculated incrementally from the previous move:
+    // - Any stones that are captured by @a goMove are removed from the hash of the
+    //   previous move
+    // - The stone that was added by @a goMove is added to the hash of the previous
+    //   move
+    //
+    // If there is no previous move the calculation starts with 0.
+    //
+    // If @a goMove is a pass move, the resulting hash is the same as for the
+    // previous move.
+    GoZobristTable.prototype.getHashForMove = function(goMove)
+    {
+        var hash;
+        if (GOMOVE_TYPE_PLAY === goMove.moveType)
+        {
+            hash = this.getHashForStonePlayedByColorAtPointCapturingStonesAfterMove(
+                goMove.goPlayer.getStoneColor(),
+                goMove.goPoint,
+                goMove.capturedStones,
+                goMove.getPreviousGoMove());
+        }
+        else
+        {
+            var previousGoMove = goMove.getPreviousGoMove();
+            if (previousGoMove !== null)
+                hash = previousGoMove.getZobristHash();
+            else
+                hash = 0;
+        }
+        return hash;
+    };
+
+    // Generates the Zobrist hash for a hypothetical move played by @a color
+    // on the intersection @a goPoint, after the previous move
+    // @a previousGoMove. The move would capture the stones in
+    // @a capturedStones (array of GoPoint objects).
+    //
+    // The hash is calculated incrementally from the Zobrist hash of the previous
+    // move @a previousGoMove:
+    // - Stones that are captured are removed from the hash
+    // - The stone that was added is added to the hash
+    //
+    // If @a previousGoMove is null the calculation starts with 0.
+    //
+    // @a capturedStones can be null if the move does not capture any stones.
+    GoZobristTable.prototype.getHashForStonePlayedByColorAtPointCapturingStonesAfterMove = function(
+        color,
+        goPoint,
+        capturedStones,
+        previousGoMove)
+    {
+        var hash;
+        if (previousGoMove !== null)
+            hash = previousGoMove.getZobristHash();
+        else
+            hash = 0;
+
+        this.throwIfTableSizeDoesNotMatchSizeOfBoard(goPoint.goBoard);
+
+        if (capturedStones !== null)
+        {
+            capturedStones.forEach(function(capturedStone) {
+                var indexCaptured = this.getIndexForStoneAtPointCapturedByColor(capturedStone, color);
+                hash ^= this.zobristTable[indexCaptured];
+            }, this);  // <-- supply "this" value seen in the loop
+        }
+
+        var indexPlayed = this.getIndexForStoneAtPointPlayedByColor(goPoint, color);
+        hash ^= this.zobristTable[indexPlayed];
+
+        return hash;
+    };
+
+    GoZobristTable.prototype.getIndexOfPoint = function(goPoint)
+    {
+        var color = this.getColorOfStoneAtPoint(goPoint);
+        return this.getIndexForVertexColorBoardSize(goPoint.goVertex, color, this.boardSize);
+    };
+
+    GoZobristTable.prototype.getColorOfStoneAtPoint = function(goPoint)
+    {
+        var color = goPoint.hasBlackStone() ? COLOR_BLACK : COLOR_WHITE;
+        return color;
+    };
+
+    GoZobristTable.prototype.getIndexForStoneAtPointPlayedByColor = function(goPoint, color)
+    {
+        var colorOfPlayedStone = this.getColorOfStonePlayedByColor(color);
+        return this.getIndexForVertexColorBoardSize(goPoint.goVertex, colorOfPlayedStone, this.boardSize);
+    };
+
+    GoZobristTable.prototype.getColorOfStonePlayedByColor = function(color)
+    {
+        // The inverse of getColorOfStoneCapturedByColor()
+        return (COLOR_BLACK === color ? COLOR_BLACK : COLOR_WHITE);
+    };
+
+    GoZobristTable.prototype.getIndexForStoneAtPointCapturedByColor = function(goPoint, color)
+    {
+        var colorOfCapturedStone = this.getColorOfStoneCapturedByColor(color);
+        return this.getIndexForVertexColorBoardSize(goPoint.goVertex, colorOfCapturedStone, this.boardSize);
+    };
+
+    GoZobristTable.prototype.getColorOfStoneCapturedByColor = function(color)
+    {
+        // The inverse of getColorOfStonePlayedByColor()
+        return (COLOR_BLACK === color ? COLOR_WHITE : COLOR_BLACK);
+    };
+
+    GoZobristTable.prototype.getIndexForVertexColorBoardSize = function(goVertex, color, boardSize)
+    {
+        var index = (color * boardSize * boardSize) + ((goVertex.y - 1) * boardSize) + (goVertex.x - 1);
+        return index;
+    };
+
+    GoZobristTable.prototype.throwIfTableSizeDoesNotMatchSizeOfBoard = function(goBoard)
+    {
+        if (goBoard.boardSize !== this.boardSize)
+            throw new Error("Board size " + goBoard.boardSize + " does not match Zobrist table size " + this.boardSize);
+    };
+
+    return GoZobristTable;
+})();
+
