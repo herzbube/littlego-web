@@ -295,6 +295,26 @@ function goMoveIsIllegalReasonToString(illegalReason)
     }
 }
 
+function moveIntersectionToString(goMove)
+{
+    if (goMove.moveType === GOMOVE_TYPE_PLAY)
+        return goMove.goPoint.goVertex.toString();
+    else
+        return "Pass";
+}
+
+function moveNumberOfCapturedStonesToString(goMove)
+{
+    if (goMove.moveType === GOMOVE_TYPE_PASS)
+        return "";
+
+    var numberOfCapturedStones = goMove.capturedStones.length;
+    if (numberOfCapturedStones === 0)
+        return "";
+    else
+        return "" + numberOfCapturedStones;
+}
+
 function actionType2BootstrapButtonClass(actionType)
 {
     switch (actionType)

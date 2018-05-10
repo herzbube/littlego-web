@@ -41,6 +41,11 @@ var Board = (function ()
         this.drawingController = null;
         this.gameID = GAMEID_UNDEFINED;
         this.userInfo = null;
+
+        this.gameMovesDataTableController = new DataTableController(
+            ID_CONTAINER_BOARD_GAME_MOVES,
+            NUMBER_OF_COLUMNS_GAME_MOVES_TABLE);
+        this.gameMoves = [];
     }
 
     // Internal function. Handles incoming WebSocket messages that are
@@ -134,6 +139,20 @@ var Board = (function ()
             this.boardPlayerInfoWhite = new BoardPlayerInfoWhite(whitePlayerUserInfo, this.goGame);
             this.updateBoardPlayerInfo();
 
+            this.gameMoves = [];
+            var moveNumber = 0;
+            var goMove = this.goGame.getFirstMove();
+            while (goMove !== null)
+            {
+                moveNumber++;
+                var gameMove = new GameMove(goMove, moveNumber);
+                // unshift() adds to the beginning of the array. We want the
+                // last move to appear first in the data table
+                this.gameMoves.unshift(gameMove);
+                goMove = goMove.getNextGoMove();
+            }
+            this.updateBoardGameMoveTable();
+
             var thisPlayerColor;
             if (gameInProgressJsonObject.blackPlayer.userID === this.userInfo.userID)
                 thisPlayerColor = COLOR_BLACK;
@@ -173,6 +192,11 @@ var Board = (function ()
 
         $("#" + ID_BOARD_KOMI).html(
             komiToString(this.boardPlayerInfoWhite.komi));
+    };
+
+    Board.prototype.updateBoardGameMoveTable = function()
+    {
+        this.gameMovesDataTableController.updateDataTable(this.gameMoves, "No game moves");
     };
 
     Board.prototype.onBoardModePlay = function(event)
@@ -253,7 +277,11 @@ var Board = (function ()
                 this.boardPlayerInfoWhite.updateAfterGameMoveWasPlayed(this.goGame);
             this.updateBoardPlayerInfo();
 
-            // TODO: The move can also be played by the other player.
+            var goMove = this.goGame.getLastMove();
+            var moveNumber = this.gameMoves.length + 1;
+            var gameMove = new GameMove(goMove, moveNumber);
+            this.gameMoves.unshift(gameMove);
+            this.updateBoardGameMoveTable();
 
             this.drawingController.updateAfterGameMoveWasPlayed();
         }

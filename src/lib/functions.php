@@ -331,19 +331,16 @@ namespace LittleGoWeb
                             </div>
                         </div>
                     </div>
-                    <div class="card board-right-hand-side-section">
+                    <div id="container-board-game-moves" class="card board-right-hand-side-section">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-12">
                                     <h5 class="card-title">Game Moves</h5>
                                     <table class="table table-striped table-bordered table-hover table-responsive-md">
                                     <thead class="thead-dark">
-                                        <tr><th>#</th><th>Played by</th><th>Vertex</th><th>Captured</th></tr>
+                                        <tr><th>#</th><th>Played by</th><th>Intersection</th><th>Captured</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>1</td><td>Black</td><td>C6</td><td></td></tr>
-                                        <tr><td>2</td><td>White</td><td>G4</td><td></td></tr>
-                                        <tr><td>3</td><td>Black</td><td>B3</td><td>2</td></tr>
                                         <!-- Content is filled in dynamically -->
                                     </tbody>
                                 </table>

@@ -289,3 +289,46 @@ var DataItemAction = (function ()
 
     return DataItemAction;
 })();
+
+// ----------------------------------------------------------------------
+// The GameMove class represents a game move. GameMove objects are view model
+// objects whose values are suitable for displaying in the UI. GameMove objects
+// are created from GoMove objects that were created locally from data
+// transmitted by the server.
+// ----------------------------------------------------------------------
+var GameMove = (function ()
+{
+    "use strict";
+
+    // Creates a new GameMove object from the data in the specified
+    // JSON object.
+    function GameMove(goMove, moveNumber)
+    {
+        this.moveNumber = moveNumber;
+        this.playedBy = colorToString(goMove.goPlayer.stoneColor);
+        this.intersection = moveIntersectionToString(goMove);
+        this.captured = moveNumberOfCapturedStonesToString(goMove);
+    }
+
+    // Returns an array that contains the values that make up the GameMove
+    // object. The values are suitable for display in a data table in the UI.
+    //
+    // The order of the array elements matches the columns of the data table.
+    GameMove.prototype.getDataTableValues = function()
+    {
+        return [
+            this.moveNumber,
+            this.playedBy,
+            this.intersection,
+            this.captured
+        ];
+    };
+
+    // Returns an array of DataItemAction objects.
+    GameMove.prototype.getDataItemActions = function()
+    {
+        return [];
+    };
+
+    return GameMove;
+})();
