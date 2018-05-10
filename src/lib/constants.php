@@ -265,6 +265,16 @@ namespace LittleGoWeb
     const DB_COLUMN_NAME_GAMESUSERSMAPPING_GAMEID = "gameID";
     const DB_COLUMN_NAME_GAMESUSERSMAPPING_USERID = "userID";
     const DB_COLUMN_NAME_GAMESUSERSMAPPING_STONECOLOR = "stoneColor";
+
+    // Database table gamemove
+    const DB_TABLE_NAME_GAMEMOVE = "gamemove";
+    const DB_COLUMN_NAME_GAMEMOVE_GAMEMOVEID = "gameMoveID";
+    const DB_COLUMN_NAME_GAMEMOVE_CREATETIME = "createTime";
+    const DB_COLUMN_NAME_GAMEMOVE_GAMEID = "gameID";
+    const DB_COLUMN_NAME_GAMEMOVE_MOVETYPE = "moveType";
+    const DB_COLUMN_NAME_GAMEMOVE_MOVECOLOR = "moveColor";
+    const DB_COLUMN_NAME_GAMEMOVE_VERTEXX = "vertexX";
+    const DB_COLUMN_NAME_GAMEMOVE_VERTEXY = "vertexY";
 }
 
 ?>

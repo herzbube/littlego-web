@@ -254,7 +254,6 @@ namespace LittleGoWeb
             return $this->executePdoStatementFindUser($selectStatement);
         }
 
-
         // Obtains the user data for the specified game ID from the database
         // and returns the data as an associative array consisting of two User
         // objects. The keys are the constants COLOR_BLACK and COLOR_WHITE to
@@ -1202,7 +1201,7 @@ namespace LittleGoWeb
 
         // Obtains the game move data for the last move of the specified game
         // ID from the database and returns the data as a GameMove object.
-        // Returns null if the database has game move data for the specified
+        // Returns null if the database has no game move data for the specified
         // game ID.
         public function findLastGameMove(int $gameID) : ?GameMove
         {
@@ -1237,38 +1236,97 @@ namespace LittleGoWeb
                 $gameID,
                 PDO::PARAM_STR);
 
+            $gameMoves = $this->executePdoStatementFindGameMoves($selectStatement);
+            if ($gameMoves === null)
+                return null;
+            else if (count($gameMoves) === 0)
+                return null;
+            else
+                return $gameMoves[0];
+        }
+
+        // Obtains the game moves data for the specified game ID from the
+        // database and returns the data as an array object. Returns an
+        // empty array if the database has no game moves data for the
+        // specified game ID.
+        //
+        // The array is ordered ascending by game move ID to retain the
+        // order in which moves were played.
+        //
+        // On failure, returns null.
+        public function findGameMovesByGameID(int $gameID) : ?array
+        {
+            $tableName = DB_TABLE_NAME_GAMEMOVE;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAMEMOVE_GAMEMOVEID,
+                DB_COLUMN_NAME_GAMEMOVE_CREATETIME,
+                DB_COLUMN_NAME_GAMEMOVE_GAMEID,
+                DB_COLUMN_NAME_GAMEMOVE_MOVETYPE,
+                DB_COLUMN_NAME_GAMEMOVE_MOVECOLOR,
+                DB_COLUMN_NAME_GAMEMOVE_VERTEXX,
+                DB_COLUMN_NAME_GAMEMOVE_VERTEXY);
+            $whereColumnNames = array(DB_COLUMN_NAME_GAMEMOVE_GAMEID);
+            $orderByColumnNames = array(
+                DB_COLUMN_NAME_GAMEMOVE_GAMEMOVEID);
+            $orderings = array(
+                true);
+
+            $selectQueryString = $this->sqlGenerator->getSelectStatementWithOrderByAndWhereClause(
+                $tableName,
+                $columnNames,
+                $whereColumnNames,
+                $orderByColumnNames,
+                $orderings);
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEMOVE_GAMEID),
+                $gameID,
+                PDO::PARAM_STR);
+
+            return $this->executePdoStatementFindGameMoves($selectStatement);
+        }
+
+        // Executes the prepared PDOStatement that represents a query to
+        // find multiple rows of game moves data in the database. Returns
+        // an array whose elements are GameMove objects. Returns null
+        // on failure.
+        private function executePdoStatementFindGameMoves(\PDOStatement $selectStatement): ?array
+        {
             try
             {
                 $selectStatement->execute();
+
+                $gameMoves = [];
+
+                while ($row = $selectStatement->fetch(PDO::FETCH_ASSOC))
+                {
+                    $gameMoveID = intval($row[DB_COLUMN_NAME_GAMEMOVE_GAMEMOVEID]);
+                    $createTime = intval($row[DB_COLUMN_NAME_GAMEMOVE_CREATETIME]);
+                    $gameID = intval($row[DB_COLUMN_NAME_GAMEMOVE_GAMEID]);
+                    $moveType = intval($row[DB_COLUMN_NAME_GAMEMOVE_MOVETYPE]);
+                    $moveColor = intval($row[DB_COLUMN_NAME_GAMEMOVE_MOVECOLOR]);
+                    $vertexX = intval($row[DB_COLUMN_NAME_GAMEMOVE_VERTEXX]);
+                    $vertexY = intval($row[DB_COLUMN_NAME_GAMEMOVE_VERTEXY]);
+
+                    $gameMove = new GameMove(
+                        $gameMoveID,
+                        $createTime,
+                        $gameID,
+                        $moveType,
+                        $moveColor,
+                        $vertexX,
+                        $vertexY);
+
+                    array_push($gameMoves, $gameMove);
+                }
+
+                return $gameMoves;
             }
             catch (\PDOException $exception)
             {
                 echo "PDOException: {$exception->getMessage()}\n";
-                return null;
-            }
-
-            $row = $selectStatement->fetch(PDO::FETCH_ASSOC);
-            if ($row)
-            {
-                $gameMoveID = intval($row[DB_COLUMN_NAME_GAMEMOVE_GAMEMOVEID]);
-                $createTeim = $row[DB_COLUMN_NAME_GAMEMOVE_CREATETIME];
-                $gameID = intval($row[DB_COLUMN_NAME_GAMEMOVE_GAMEID]);
-                $moveType = intval($row[DB_COLUMN_NAME_GAMEMOVE_MOVETYPE]);
-                $moveColor = intval($row[DB_COLUMN_NAME_GAMEMOVE_MOVECOLOR]);
-                $vertexX = intval($row[DB_COLUMN_NAME_GAMEMOVE_VERTEXX]);
-                $vertexY = intval($row[DB_COLUMN_NAME_GAMEMOVE_VERTEXY]);
-
-                return new GameMove(
-                    $gameMoveID,
-                    $createTeim,
-                    $gameID,
-                    $moveType,
-                    $moveColor,
-                    $vertexX,
-                    $vertexY);
-            }
-            else
-            {
                 return null;
             }
         }
@@ -1413,6 +1471,65 @@ namespace LittleGoWeb
             }
 
             return $gameID;
+        }
+
+        // Inserts a new row into the database that contains the data in the
+        // specified GameMove object, with the exception of the game move ID.
+        // On success, returns the game move ID auto-generated by the database.
+        // On failure, returns -1.
+        public function insertGameMove(GameMove $gameMove): int
+        {
+            $tableName = DB_TABLE_NAME_GAMEMOVE;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAMEMOVE_CREATETIME,
+                DB_COLUMN_NAME_GAMEMOVE_GAMEID,
+                DB_COLUMN_NAME_GAMEMOVE_MOVETYPE,
+                DB_COLUMN_NAME_GAMEMOVE_MOVECOLOR,
+                DB_COLUMN_NAME_GAMEMOVE_VERTEXX,
+                DB_COLUMN_NAME_GAMEMOVE_VERTEXY);
+
+            $insertQueryString = $this->sqlGenerator->getInsertStatement(
+                $tableName,
+                $columnNames);
+
+            $insertStatement = $this->pdo->prepare($insertQueryString);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEMOVE_CREATETIME),
+                $gameMove->getCreateTime(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEMOVE_GAMEID),
+                $gameMove->getGameID(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEMOVE_MOVETYPE),
+                $gameMove->getMoveType(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEMOVE_MOVECOLOR),
+                strval($gameMove->getMoveColor()),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEMOVE_VERTEXX),
+                $gameMove->getVertexX(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEMOVE_VERTEXY),
+                $gameMove->getVertexY(),
+                PDO::PARAM_INT);
+
+            try
+            {
+                $insertStatement->execute();
+
+                $gamveMoveID = intval($this->pdo->lastInsertId());
+                return $gamveMoveID;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return -1;
+            }
         }
     }
 }
