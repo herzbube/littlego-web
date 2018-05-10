@@ -308,7 +308,14 @@ var DrawingController = (function ()
 
     DrawingController.prototype.onMouseClick = function(event)
     {
+        // TODO: Abort if it's not this player's turn.
+
         var intersection = this.getIntersectionNearMouseEvent(event);
+        if (BoardViewIntersectionIsNullIntersection(intersection))
+            return;
+
+        if (intersection.goPoint.hasStone())
+            return;
 
         var isLegalMoveResult = this.goGame.isLegalMove(intersection.goPoint);
         if (! isLegalMoveResult.isLegalMove)
