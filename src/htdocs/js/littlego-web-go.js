@@ -850,14 +850,6 @@ var GoPoint = (function ()
         return (COLOR_BLACK === this.stoneState);
     };
 
-    // Returns true if the intersection represented by this GoPoint is
-    // occupied by a black stone. Otherwise returns false (i.e. also returns
-    // false if the intersection is not occupied by a stone.
-    GoPoint.prototype.getPrevious = function()
-    {
-        return (COLOR_BLACK === this.stoneState);
-    };
-
     // Returns the number of liberties that the intersection represented by
     // this GoPoint has. The way how liberties are counted depends on whether the
     // intersection is occupied by a stone.
