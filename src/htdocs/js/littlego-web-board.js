@@ -291,8 +291,8 @@ var BoardPlayerInfoBlack = (function ()
     {
         var lastMove = goGame.getLastMove();
 
-        if (goMove.goPlayer.isBlack())
-            this.numberOfCapturedStones += goMove.capturedStones.length;
+        if (lastMove.goPlayer.isBlack())
+            this.numberOfCapturedStones += lastMove.capturedStones.length;
     };
 
     return BoardPlayerInfoBlack;
@@ -331,8 +331,8 @@ var BoardPlayerInfoWhite = (function ()
     {
         var lastMove = goGame.getLastMove();
 
-        if (!goMove.goPlayer.isBlack())
-            this.numberOfCapturedStones += goMove.capturedStones.length;
+        if (!lastMove.goPlayer.isBlack())
+            this.numberOfCapturedStones += lastMove.capturedStones.length;
     };
 
     return BoardPlayerInfoWhite;
