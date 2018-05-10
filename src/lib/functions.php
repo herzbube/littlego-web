@@ -314,6 +314,7 @@ namespace LittleGoWeb
                                     <div id="container-board-controls" class="board-right-hand-side-subsection">
                                         <div id="container-board-controls-play-mode">
                                             <button id="button-board-control-pass" class="btn btn-outline-dark">Pass</button>
+                                            <button id="button-board-control-resign" class="btn btn-outline-danger">Resign</button>
                                         </div>
                                         <div id="container-board-controls-analyze-mode">
                                             <button id="button-board-control-rewindtostart" class="btn btn-outline-dark" title"Go to first board position" data-toggle="modal" data-target="#notYetImplemented">First</button>
