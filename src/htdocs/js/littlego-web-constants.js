@@ -185,6 +185,7 @@ const ID_CONTAINER_BOARD_CONTROLS = PREFIX_ID_CONTAINER + "board-controls";
 const ID_CONTAINER_BOARD_CONTROLS_PLAY_MODE = PREFIX_ID_CONTAINER + "board-controls-play-mode";
 const ID_CONTAINER_BOARD_CONTROLS_ANALYZE_MODE = PREFIX_ID_CONTAINER + "board-controls-analyze-mode";
 const ID_CONTAINER_BOARD_CONTROLS_SCORING_MODE = PREFIX_ID_CONTAINER + "board-controls-scoring-mode";
+const ID_BUTTON_BOARD_CONTROL_PASS = PREFIX_ID_BUTTON + "board-control-pass";
 
 // SVG
 const ID_SVG_BOARD = "board";

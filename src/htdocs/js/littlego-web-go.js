@@ -116,6 +116,40 @@ var GoGame = (function ()
             this.firstMove = goMove;
     };
 
+    // Updates the state of this GoGame and all associated objects in
+    // response to the @e nextMovePlayer making a #GoMoveTypePass.
+    //
+    // Invoking this method sets the document dirty flag and, if alternating play
+    // is enabled, switches the @e nextMovePlayer.
+    //
+    // Raises an @e NSInternalInconsistencyException if this method is invoked
+    // while this GoGame object is not in state #GoGameStateGameHasStarted or
+    // #GoGameStateGameIsPaused.
+    GoGame.prototype.pass = function()
+    {
+        // TODO: The following implementation needs to be refactored
+        // as soon as GoMoveModel and GoBoardPosition are added
+
+        var nextMoveColor = this.getNextMoveColor();
+        var goPlayer;
+        if (nextMoveColor === COLOR_BLACK)
+            goPlayer = this.goPlayerBlack;
+        else
+            goPlayer = this.goPlayerWhite;
+
+        var previousGoMove = this.getLastMove();
+        var goMove;
+        if (previousGoMove === null)
+            goMove = new GoMove(GOMOVE_TYPE_PASS, goPlayer);
+        else
+            goMove = new GoMove(GOMOVE_TYPE_PASS, goPlayer, previousGoMove);
+
+        goMove.doIt();
+
+        if (previousGoMove === null)
+            this.firstMove = goMove;
+    };
+
     // Checks if playing a stone on the intersection represented by
     // @a goPoint would be legal for the @e nextMovePlayer in the current board
     // position. This includes checking for suicide moves and Ko situations, but
@@ -1530,7 +1564,7 @@ var GoMove = (function ()
     GoMove.prototype.doIt = function()
     {
         // Nothing to do for pass moves
-        if (this.type === GOMOVE_TYPE_PASS)
+        if (this.moveType === GOMOVE_TYPE_PASS)
         {
             if (this.previousGoMove !== null)
                 this.zobristHash = this.previousGoMove.zobristHash;
@@ -1602,7 +1636,7 @@ var GoMove = (function ()
     GoMove.prototype.undo = function()
     {
         // Nothing to do for pass moves
-        if (this.type === GOMOVE_TYPE_PASS)
+        if (this.moveType === GOMOVE_TYPE_PASS)
             return;
 
         if (this.goPoint === null)

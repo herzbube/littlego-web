@@ -26,6 +26,9 @@ var Board = (function ()
         $("#" + ID_BUTTON_BOARD_MODE_SCORING).on("click", function(event) {
             self.onBoardModeScoring(event);
         });
+        $("#" + ID_BUTTON_BOARD_CONTROL_PASS).on("click", function(event) {
+            self.onPass(event);
+        });
 
         this.makeBoardControlsContainerVisible(ID_CONTAINER_BOARD_CONTROLS_PLAY_MODE, ID_BUTTON_BOARD_MODE_PLAY);
 
@@ -208,6 +211,19 @@ var Board = (function ()
         sendWebSocketMessage(this.webSocket, WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEMOVE, messageData);
     };
 
+    Board.prototype.onPass = function(event)
+    {
+        var nextMoveColor = this.goGame.getNextMoveColor();
+        var messageData =
+            {
+                gameID: this.gameID,
+                moveType: GOMOVE_TYPE_PASS,
+                moveColor: nextMoveColor,
+            };
+        // Triggers onSubmitNewGameMoveComplete
+        sendWebSocketMessage(this.webSocket, WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEMOVE, messageData);
+    };
+
     Board.prototype.onSubmitNewGameMoveComplete = function(
         success,
         gameMoveJsonObject,
@@ -249,7 +265,7 @@ var Board = (function ()
                 this.goGame.play(goPoint);
                 break;
             case GOMOVE_TYPE_PASS:
-                //[self.game pass];
+                this.goGame.pass();
                 break;
             default:
                 throw new Error("Invalid move type " + gameMoveJsonObject.moveType);
