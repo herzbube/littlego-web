@@ -99,6 +99,26 @@ const GAMEID_UNDEFINED = -1;
 
 
 // ----------------------------------------------------------------------
+// Drawing constants
+// ----------------------------------------------------------------------
+
+// Line widths remain always the same, regardless of the canvas size.
+// Bounding line must be thicker than the normal line. Normal line
+// should be a very thin, crisp line.
+const STROKE_WIDTH_BOUNDING_GRID_LINE = 2;
+const STROKE_WIDTH_NORMAL_GRID_LINE = 1;
+const STROKE_COLOR_GRID_LINE = "black";
+const STROKE_COLOR_BLACK_LAST_MOVE_SYMBOL = "white";
+const STROKE_COLOR_WHITE_LAST_MOVE_SYMBOL = "black";
+const FILL_COLOR_STAR_POINT = "black";
+const FILL_COLOR_BLACK_STONE = "black";
+const FILL_COLOR_WHITE_STONE = "white";
+const FILL_OPACITY_STARPOINT = 1.0;
+const FILL_OPACITY_STONE = 1.0;
+const FILL_OPACITY_NEXTMOVEINDICATOR = 0.6;
+
+
+// ----------------------------------------------------------------------
 // Application IDs
 // ----------------------------------------------------------------------
 const PREFIX_ID_CONTAINER = "container-";
