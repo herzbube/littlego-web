@@ -144,7 +144,7 @@ var DrawingController = (function ()
     // Draws the black and white stones
     DrawingController.prototype.drawStonesLayer = function()
     {
-        this.goGame.goBoard.points.forEach(function(pointsXAxis) {
+        this.goGame.goBoard.getPoints().forEach(function(pointsXAxis) {
             pointsXAxis.forEach(function(goPoint) {
                 if (! goPoint.hasStone())
                     return;

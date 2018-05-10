@@ -144,11 +144,8 @@ var GoBoard = (function ()
 
         this.goZobristTable = new GoZobristTable(this.boardSize);
 
-        // This is going to be an array of arrays.
-        // - Dimension 1 = x-axis position on the board
-        // - Dimension 2 = y-axis position on the board
-        // Important: Array indices are 0-based, but GoVertex uses 1-based
-        // numeric values !!!
+        // See getPoints() documentation for details about the structure
+        // of this member variable.
         this.points = [];
         // Initially all GoPoint objects belong to the single GoBoardRegion
         // that we create here
@@ -186,6 +183,22 @@ var GoBoard = (function ()
             this.starPoints.push(starPoint);
         }, this);  // <-- supply "this" value seen in the loop
     }
+
+    // Returns an array of arrays with all GoPoint objects on the board.
+    //
+    // The structure is this:
+    // - Dimension 1 = x-axis position on the board
+    // - Dimension 2 = y-axis position on the board
+    //
+    // Important: Array indices are 0-based, but GoVertex uses 1-based
+    // numeric values !!!
+    //
+    // TODO: Return a flat array. Add a separate getter for those clients
+    // that really, really want an array of arrays.
+    GoBoard.prototype.getPoints = function()
+    {
+        return this.points;
+    };
 
     // Returns the GoPoint object located at the specified GoVertex.
     GoBoard.prototype.getPointAtVertex = function(goVertex)
@@ -621,6 +634,14 @@ var GoBoardRegion = (function ()
         return this.points.length;
     };
 
+    // Returns an array with GoPoint objects in the GoBoardRegion.
+    // The array is empty if the GoBoardRegion contains no GoPoint
+    // objects. The array has no particular order.
+    GoBoardRegion.prototype.getPoints = function()
+    {
+        return this.points;
+    };
+
     // Returns true if the GoBoardRegion represents a stone group.
     GoBoardRegion.prototype.isStoneGroup = function()
     {
@@ -1009,6 +1030,12 @@ var GoPlayer = (function ()
         return (this.stoneColor === COLOR_BLACK);
     };
 
+    // Returns the color that the GoPlayer plays with.
+    GoPlayer.prototype.getStoneColor = function()
+    {
+        return this.stoneColor;
+    };
+
     return GoPlayer;
 })();
 
@@ -1023,9 +1050,9 @@ var GoPlayer = (function ()
 // If a GoMove object is of type GOMOVE_TYPE_PLAY it also has an associated
 // GoPoint object which registers where the stone was placed.
 //
-// GoMove objects are interlinked with their predecessor (getPrevious()) and
-// successor (getNext()) GoMove object. This represents the fact that a game
-// can be seen as a series of moves.
+// GoMove objects are interlinked with their predecessor (getPreviousGoMove())
+// and successor (getNextGoMove()) GoMove object. This represents the fact
+// that a game can be seen as a series of moves.
 //
 // Playing/undoing a move
 // ----------------------
@@ -1100,6 +1127,21 @@ var GoMove = (function ()
         this.zobristHash = 0;
     }
 
+    GoMove.prototype.getPreviousGoMove = function()
+    {
+        return this.previousGoMove;
+    };
+
+    GoMove.prototype.getNextGoMove = function()
+    {
+        return this.nextGoMove;
+    };
+
+    GoMove.prototype.getZobristHash = function()
+    {
+        return this.zobristHash;
+    };
+
     GoMove.prototype.setGoPoint = function(goPoint)
     {
         this.goPoint = goPoint;
@@ -1167,7 +1209,7 @@ var GoMove = (function ()
                 return;
 
             // The stone made a capture!!!
-            neighbour.goBoardRegion.points.forEach(function(goPointCapture) {
+            neighbour.goBoardRegion.getPoints().forEach(function(goPointCapture) {
                 // If in the next iteration of the outer loop we find a
                 // neighbour in the same captured group, the neighbour will
                 // already have its state reset, and we will skip it
