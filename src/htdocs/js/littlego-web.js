@@ -322,7 +322,7 @@
     {
         var gameInProgress = dataItemAction.dataItem;
 
-        theBoard.setupBoardForGameInProgress(gameInProgress.gameID);
+        theBoard.setupBoardForGameInProgress(gameInProgress.gameID, theSession.userInfo);
 
         makeAppContainerVisible(ID_CONTAINER_PLAY_PLACEHOLDER);
         makeNavItemActive(ID_BUTTON_GAMES_IN_PROGRESS);

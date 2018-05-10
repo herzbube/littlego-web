@@ -29,13 +29,15 @@ var DrawingController = (function ()
     "use strict";
 
     // Creates a new DrawingController object.
-    function DrawingController(jQueryObjectContainerCanvas, goGame, callbackDidPlayStone)
+    function DrawingController(jQueryObjectContainerCanvas, goGame, thisPlayerColor, callbackDidPlayStone)
     {
         this.jQueryObjectContainerCanvas = jQueryObjectContainerCanvas;
         this.goGame = goGame;
         this.boardViewMetrics = new BoardViewMetrics(goGame);
         this.paper = null;
         this.boardViewIntersectionOfPreviousMouseMoveEvent = null;
+        this.thisPlayerColor = thisPlayerColor;
+        this.isThisPlayersTurn = false;
         this.callbackDidPlayStone = callbackDidPlayStone;
     }
 
@@ -53,7 +55,6 @@ var DrawingController = (function ()
 
         this.paper = this.createPaper(this.jQueryObjectContainerCanvas);
 
-        // TODO: Add this event handler only if it's the user's turn to play
         var self = this;
         $("#" + ID_SVG_BOARD).on("mousemove", function(event) {
             self.onMouseMove(event);
@@ -65,6 +66,8 @@ var DrawingController = (function ()
 
         this.boardViewMetrics.updateWithBaseSize(CGSizeMake(this.paper.width, this.paper.height));
         this.boardViewMetrics.updateWithBoardSize(this.goGame.goBoard.boardSize);
+
+        this.updateIsThisPlayersTurn();
 
         // The order in which layers are drawn is important! Later layers are
         // drawn on top of earlier layers.
@@ -286,8 +289,19 @@ var DrawingController = (function ()
         return CGRectMake(symbolOrigin, symbolSize);
     };
 
+    DrawingController.prototype.updateIsThisPlayersTurn = function ()
+    {
+        if (this.goGame.getNextMoveColor() === this.thisPlayerColor)
+            this.isThisPlayersTurn = true;
+        else
+            this.isThisPlayersTurn = false;
+    };
+
     DrawingController.prototype.onMouseMove = function(event)
     {
+        if (! this.isThisPlayersTurn)
+            return;
+
         var intersection = this.getIntersectionNearMouseEvent(event);
 
         if (this.boardViewIntersectionOfPreviousMouseMoveEvent !== null)
@@ -308,7 +322,8 @@ var DrawingController = (function ()
 
     DrawingController.prototype.onMouseClick = function(event)
     {
-        // TODO: Abort if it's not this player's turn.
+        if (! this.isThisPlayersTurn)
+            return;
 
         var intersection = this.getIntersectionNearMouseEvent(event);
         if (BoardViewIntersectionIsNullIntersection(intersection))
@@ -333,7 +348,6 @@ var DrawingController = (function ()
         this.clearNextMoveIndicatorIfExists();
         this.callbackDidPlayStone(intersection.goPoint);
 
-        // TODO: Deactivate interaction.
         // TODO: Possibly add an indicator that submission is taking place
     };
 
@@ -361,7 +375,6 @@ var DrawingController = (function ()
     DrawingController.prototype.updateAfterGameMoveWasPlayed = function()
     {
         // TODO: The controller must remove the submission indicator.
-        // TODO: The controller possibly has to reactivate interaction.
 
         // TODO: We should only re-draw those layers that need it.
         // Currently we don't know how to do this. In theory we could try
@@ -374,6 +387,9 @@ var DrawingController = (function ()
         //this.drawStonesLayer();
         //this.drawSymbolsLayer();
         this.drawGoBoard();
+
+        // Re-enable interaction
+        this.updateIsThisPlayersTurn();
     };
 
     return DrawingController;

@@ -40,6 +40,7 @@ var Board = (function ()
         this.boardPlayerInfoWhite = null;
         this.drawingController = null;
         this.gameID = GAMEID_UNDEFINED;
+        this.userInfo = null;
     }
 
     // Internal function. Handles incoming WebSocket messages that are
@@ -75,7 +76,10 @@ var Board = (function ()
     // the game in progress with the specified ID on the game board. Shows a
     // placeholder message while we are still waiting for the WebSocket
     // response from the server.
-    Board.prototype.setupBoardForGameInProgress = function(gameID)
+    //
+    // The specified UserInfo object refers to the currently logged in user,
+    // i.e. the user who will make moves on this client.
+    Board.prototype.setupBoardForGameInProgress = function(gameID, userInfo)
     {
         // This method can be called many times, so we have to reset
         // some member variables on every call
@@ -84,6 +88,7 @@ var Board = (function ()
         this.boardPlayerInfoWhite = null;
         this.drawingController = null;
         this.gameID = GAMEID_UNDEFINED;
+        this.userInfo = userInfo;
 
         var messageData =
             {
@@ -129,11 +134,17 @@ var Board = (function ()
             this.boardPlayerInfoWhite = new BoardPlayerInfoWhite(whitePlayerUserInfo, this.goGame);
             this.updateBoardPlayerInfo();
 
+            var thisPlayerColor;
+            if (gameInProgressJsonObject.blackPlayer.userID === this.userInfo.userID)
+                thisPlayerColor = COLOR_BLACK;
+            else
+                thisPlayerColor = COLOR_WHITE;
+
             // Start drawing the board AFTER the board container has been
             // made visible, otherwise the container has width/height 0.
             var containerBoard = $("#" + ID_CONTAINER_BOARD);
             var self = this;
-            this.drawingController = new DrawingController(containerBoard, this.goGame, function(goPoint) {
+            this.drawingController = new DrawingController(containerBoard, this.goGame, thisPlayerColor, function(goPoint) {
                 self.onDidPlayStone(goPoint);
             });
             this.drawingController.drawGoBoard();
