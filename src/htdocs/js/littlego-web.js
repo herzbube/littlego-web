@@ -3,6 +3,9 @@
 // performs site navigation.
 // ----------------------------------------------------------------------
 
+if (false)
+{
+
 (function () {
     "use strict";
 
@@ -670,6 +673,8 @@
         }
     };
 })();
+
+}
 
 var DataTableController = (function ()
 {

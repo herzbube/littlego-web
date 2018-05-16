@@ -42,7 +42,7 @@
         text-align: right;
     }
 
-    #container-login-form, #container-registration-form
+    #container-login-form, #container-registration-form, #container-logout-message
     {
         /* Vertically offset from browser window top */
         margin-top: 5%;

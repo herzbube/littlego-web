@@ -2,6 +2,12 @@
 // This file contains constants.
 // ----------------------------------------------------------------------
 
+const ANGULARNAME_CONSTANT_WEBSOCKETCONFIG = "webSocketConfig";
+const ANGULARNAME_SERVICE_WEBSOCKET = "WebSocketService";
+const ANGULARNAME_SERVICE_SESSION = "SessionService";
+
+const STORAGEKEY_SESSIONKEY = "sessionKey";
+
 const BOARDSIZE_7 = 7;
 const BOARDSIZE_9 = 9;
 const BOARDSIZE_11 = 11;
@@ -98,6 +104,16 @@ const BADGE_SYMBOL = "!";
 
 const GAMEID_UNDEFINED = -1;
 
+const ANGULARROUTE_PATH_ROOT = "/";
+const ANGULARROUTE_PATH_LOGIN = "/login";
+const ANGULARROUTE_PATH_REGISTER = "/register";
+const ANGULARROUTE_PATH_GAMEREQUESTS = "/gamerequests";
+const ANGULARROUTE_PATH_GAMESINPROGRESS = "/gamesinprogress";
+const ANGULARROUTE_PATH_FINISHEDGAMES = "/finishedgames";
+const ANGULARROUTE_PATH_HIGHSCORES = "/highscores";
+const ANGULARROUTE_PATH_LOGOUT = "/logout";
+const ANGULARROUTE_PATH_BOARD = "/board";
+const LOGOUT_MESSAGE_DELAY_IN_MILLISECONDS = 3 * MILLISECONDS_1_SECOND;
 
 // ----------------------------------------------------------------------
 // Drawing constants

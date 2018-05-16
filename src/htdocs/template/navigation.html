@@ -1,0 +1,21 @@
+<!--
+    Navigation is expanded in medium and larger breakpoints. Also important:
+    Toggler requires a color scheme class, otherwise it's not shown.
+-->
+<nav class="navbar navbar-expand-md navbar-dark bg-dark">
+    <span class="navbar-brand">Little Go for the web</span>
+    <span class="navbar-text mr-5"><small id="session-display-name"></small></span>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-items" aria-controls="navbar-items" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div id="navbar-items" class="collapse navbar-collapse nav-pills justify-content-end">
+        <div class="navbar-nav">
+            <!-- No clunky list element necessary in Bootstrap -->
+            <a id="button-game-requests" class="nav-item nav-link" href="/gamerequests">Game requests <span id="badge-game-request-pairings-found" class="badge badge-danger"></span></a>
+            <a id="button-games-in-progress" class="nav-item nav-link" href="/gamesinprogress">Games in progress</a>
+            <a id="button-finished-games" class="nav-item nav-link" href="/finishedgames">Finished games</a>
+            <a id="button-high-scores" class="nav-item nav-link" href="/highscores">High Scores</a>
+            <a id="button-logout" class="nav-item nav-link" href="/logout">Logout</a>
+        </div>
+    </div>
+</nav>
