@@ -100,6 +100,7 @@ namespace LittleGoWeb
     <script src="js/lg4w-registration-form.js"></script>
     <script src="js/lg4w-navigation.js"></script>
     <script src="js/lg4w-logout.js"></script>
+    <script src="js/lg4w-games-in-progress.js"></script>
 
     <!--
         TODO: The PHP script that serves this page should read all local
