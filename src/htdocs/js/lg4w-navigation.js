@@ -15,7 +15,7 @@ lg4wApp.directive("lg4wNavigation", function() {
     return directiveObject;
 });
 
-lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", function($scope, $location) {
+lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNAME_SERVICE_SESSION, function($scope, $location, sessionService) {
 
     $scope.$on('$routeChangeSuccess', function(angularEvent, currentRoute, previousRoute) {
 
@@ -60,5 +60,31 @@ lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", function(
             $("#" + navItemID).addClass(BOOTSTRAP_CLASS_ACTIVE);
         }
     });
+
+    // At the time this controller is initialized the session service may
+    // already have a valid session (it does on a dev machine where everything
+    // is local and comms is fast). If that's the case, the validationComplete
+    // event listener will not be invoked, so initially we must actively obtain
+    // the display name from the service.
+    updateUserDisplayName();
+
+    function updateUserDisplayName()
+    {
+        if (sessionService.hasValidSession())
+            $scope.userDisplayName = sessionService.getUserInfo().displayName;
+        else
+            $scope.userDisplayName = "";
+    }
+
+    sessionService.addValidationCompleteListener(handleValidationComplete);
+    function handleValidationComplete(errorMessage) {
+        $scope.$apply(function() {
+            updateUserDisplayName();
+        });
+    }
+
+    $scope.$on('$destroy', function() {
+        sessionService.removeValidationCompleteListener(handleValidationComplete);
+    })
 
 }]);
