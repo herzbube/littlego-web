@@ -98,6 +98,7 @@ namespace LittleGoWeb
     <script src="js/lg4w-session-service.js"></script>
     <script src="js/lg4w-login-form.js"></script>
     <script src="js/lg4w-registration-form.js"></script>
+    <script src="js/lg4w-navigation.js"></script>
     <script src="js/lg4w-logout.js"></script>
 
     <!--

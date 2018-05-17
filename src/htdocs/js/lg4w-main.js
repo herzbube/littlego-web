@@ -75,15 +75,6 @@ lg4wApp.controller("lg4wHighscoresController", ["$scope", function($scope) {
 lg4wApp.controller("lg4wBoardController", ["$scope", function($scope) {
 }]);
 
-lg4wApp.directive("lg4wNavigation", function() {
-    var directiveObject = {
-        restrict : "E",
-        templateUrl : "template/navigation.html"
-    };
-
-    return directiveObject;
-});
-
 lg4wApp.directive("lg4wModals", function() {
     var directiveObject = {
         restrict : "E",

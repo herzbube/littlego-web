@@ -147,6 +147,7 @@ const TAB_NAME_GAME_REQUESTS = "game-requests";
 const TAB_NAME_GAMES_IN_PROGRESS = "games-in-progress";
 const TAB_NAME_FINISHED_GAMES = "finished-games";
 const TAB_NAME_HIGH_SCORES = "high-scores";
+const TAB_NAME_LOGOUT = "logout";
 
 // Login form
 const ID_CONTAINER_LOGIN_FORM = PREFIX_ID_CONTAINER + "login-form";
