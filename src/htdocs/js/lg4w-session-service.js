@@ -44,7 +44,7 @@
 // Note that it is not possible to check if a validation operation is currently
 // in progress. This is by design: Service consumers should rely on event
 // handlers, not poll the service!
-lg4wApp.service(ANGULARNAME_SERVICE_SESSION, [ANGULARNAME_SERVICE_WEBSOCKET, function(webSocketService) {
+lg4wApp.service(ANGULARNAME_SERVICE_SESSION, [ANGULARNAME_SERVICE_WEBSOCKET, "$log", function(webSocketService, $log) {
 
     // ----------------------------------------------------------------------
     // Initialize the service
@@ -87,7 +87,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_SESSION, [ANGULARNAME_SERVICE_WEBSOCKET, fun
 
         if (sessionKey !== undefined)
         {
-            console.log(ANGULARNAME_SERVICE_SESSION + ": Begin validating stored session...");
+            $log.debug(ANGULARNAME_SERVICE_SESSION + ": Begin validating stored session...");
 
             // Check with the server whether the stored session key is still
             // valid. If it's not, the message handler will remove the
@@ -96,7 +96,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_SESSION, [ANGULARNAME_SERVICE_WEBSOCKET, fun
         }
         else
         {
-            console.log(ANGULARNAME_SERVICE_SESSION + ": No stored session available");
+            $log.debug(ANGULARNAME_SERVICE_SESSION + ": No stored session available");
 
             // Immediately notify event listeners
             handleServiceIsReady();
@@ -119,7 +119,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_SESSION, [ANGULARNAME_SERVICE_WEBSOCKET, fun
     {
         isServiceReady = true;
 
-        console.log(ANGULARNAME_SERVICE_SESSION + ": Service is ready");
+        $log.debug(ANGULARNAME_SERVICE_SESSION + ": Service is ready");
 
         eventListeners.serviceIsReady.forEach(function(listener) {
             listener();
@@ -128,7 +128,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_SESSION, [ANGULARNAME_SERVICE_WEBSOCKET, fun
 
     function handleServiceIsNotReady()
     {
-        console.log(ANGULARNAME_SERVICE_SESSION + ": Service is NOT ready");
+        $log.debug(ANGULARNAME_SERVICE_SESSION + ": Service is NOT ready");
 
         isServiceReady = false;
     }
@@ -343,7 +343,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_SESSION, [ANGULARNAME_SERVICE_WEBSOCKET, fun
         userInfoFromServer,
         errorMessage)
     {
-        console.log(ANGULARNAME_SERVICE_SESSION + ": Stored session was " + (success ? "valid" : "invalid"));
+        $log.debug(ANGULARNAME_SERVICE_SESSION + ": Stored session was " + (success ? "valid" : "invalid"));
 
         if (success)
         {

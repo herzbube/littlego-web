@@ -171,3 +171,11 @@ The WebSocket server configuration is located in the subfolder `src/config`. Thi
 1. Save your changes.
 
 The WebSocket server is now ready for start. On startup, the Websocket server immediately performs a test connection to the database so that configuration problems are detected without delay. If there is a connection problem, the WebSocket server immediately aborts with an exception.
+
+## Debugging the client
+
+Search the client-side JavaScript code for the following line:
+
+        $logProvider.debugEnabled(false);
+
+Set this to true if you want to see some logging in the JavaScript console of your browser.

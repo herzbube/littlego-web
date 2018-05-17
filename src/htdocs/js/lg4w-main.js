@@ -14,8 +14,11 @@
 var lg4wApp = angular.module("lg4wApp", ["ngRoute"]);
 lg4wApp.constant(ANGULARNAME_CONSTANT_WEBSOCKETCONFIG, webSocketConfig);
 
-lg4wApp.config(["$routeProvider", "$locationProvider", function($routeProvider, $locationProvider) {
-    $locationProvider.html5Mode( true ) ;
+lg4wApp.config(["$routeProvider", "$locationProvider", "$logProvider", function($routeProvider, $locationProvider, $logProvider) {
+    $locationProvider.html5Mode(true);
+
+    // Set this to true if you want to see some debug output in the console
+    $logProvider.debugEnabled(false);
 
     $routeProvider
         .when(ANGULARROUTE_PATH_ROOT, {

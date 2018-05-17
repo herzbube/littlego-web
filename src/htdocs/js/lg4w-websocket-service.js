@@ -40,7 +40,7 @@
 // handler is invoked if any WebSocket communication error occurs. If no
 // error handler is registered the service provides its own default error
 // handler which displays the error message using a standard alert().
-lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCONFIG, function(webSocketConfig) {
+lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCONFIG, "$log", function(webSocketConfig, $log) {
 
     // ----------------------------------------------------------------------
     // Set up the WebSocket
@@ -69,7 +69,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
 
         // TODO: Add better error message. The current error message
         // only makes sense to a developer.
-        var errorMessage = "WebSocket error! Please check if the server is running. Reload the page after restarting the server.";
+        var errorMessage = ANGULARNAME_SERVICE_WEBSOCKET + ": WebSocket error! Please check if the server is running. Reload the page after restarting the server.";
+        $log.error(errorMessage)
+
         handleError(errorMessage);
     });
 
@@ -88,7 +90,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
     {
         isServiceReady = true;
 
-        console.log(ANGULARNAME_SERVICE_WEBSOCKET + ": Service is ready");
+        $log.debug(ANGULARNAME_SERVICE_WEBSOCKET + ": Service is ready");
 
         eventListeners.serviceIsReady.forEach(function(listener) {
             listener();
@@ -97,7 +99,10 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
 
     function handleServiceIsNotReady()
     {
-        console.log(ANGULARNAME_SERVICE_WEBSOCKET + ": Service is NOT ready");
+        // This is not necessarily an error - this function is also called
+        // when the user reloads the page and the WebSocket shuts down as
+        // the last action before the JavaScript code is discarded.
+        $log.debug(ANGULARNAME_SERVICE_WEBSOCKET + ": Service is NOT ready");
 
         isServiceReady = false;
     }
