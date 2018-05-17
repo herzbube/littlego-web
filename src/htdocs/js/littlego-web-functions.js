@@ -15,7 +15,12 @@ function boardSizeToString(boardSize)
         case BOARDSIZE_15:
         case BOARDSIZE_17:
         case BOARDSIZE_19:
-            return "" + boardSize + "&nbsp;x&nbsp;" + boardSize;
+            // Can't use the entity character &nbsp; because it won't be
+            // rendered when an AngularJS expression adds it to the DOM.
+            // Instead use the equivalent Unicode escape sequence \u00a0.
+            var unicodeCharacterNonBreakingSpace = "\u00a0";
+
+            return "" + boardSize + unicodeCharacterNonBreakingSpace + "x" + unicodeCharacterNonBreakingSpace + boardSize;
         default:
             throw new Error("Unsupported board size value: " + boardSize);
     }
@@ -267,12 +272,15 @@ function fractionalNumberToString(fractionalNumber)
     }
     else
     {
-        var entityFractionOneHalf = "&frac12;";
+        // Can't use the entity character &frac12; because it won't be
+        // rendered when an AngularJS expression adds it to the DOM.
+        // Instead use the equivalent Unicode escape sequence \u00bd.
+        var unicodeCharacterFractionOneHalf = "\u00bd";
 
         if (fractionalNumber === 0.5)
-            return entityFractionOneHalf;
+            return unicodeCharacterFractionOneHalf;
         else
-            return "" + flooredNumber + entityFractionOneHalf;
+            return "" + flooredNumber + unicodeCharacterFractionOneHalf;
     }
 }
 
