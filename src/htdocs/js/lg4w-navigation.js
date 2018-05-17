@@ -17,8 +17,16 @@ lg4wApp.directive("lg4wNavigation", function() {
 
 lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNAME_SERVICE_SESSION, function($scope, $location, sessionService) {
 
-    $scope.$on('$routeChangeSuccess', function(angularEvent, currentRoute, previousRoute) {
+    // Sometimes we don't receive the $routeChangeSuccess event when we
+    // reload the page. For this reason we actively update the nav items
+    // when this controller initializes.
+    updateNavItems();
 
+    $scope.$on('$routeChangeSuccess', function(angularEvent, currentRoute, previousRoute) {
+        updateNavItems();
+    });
+
+    function updateNavItems() {
         var tabName;
         switch ($location.path())
         {
@@ -59,7 +67,7 @@ lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNA
             var navItemID = PREFIX_ID_BUTTON + tabName;
             $("#" + navItemID).addClass(BOOTSTRAP_CLASS_ACTIVE);
         }
-    });
+    }
 
     // At the time this controller is initialized the session service may
     // already have a valid session (it does on a dev machine where everything
@@ -68,8 +76,7 @@ lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNA
     // the display name from the service.
     updateUserDisplayName();
 
-    function updateUserDisplayName()
-    {
+    function updateUserDisplayName() {
         if (sessionService.hasValidSession())
             $scope.userDisplayName = sessionService.getUserInfo().displayName;
         else
