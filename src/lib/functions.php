@@ -100,6 +100,7 @@ namespace LittleGoWeb
     <script src="js/lg4w-registration-form.js"></script>
     <script src="js/lg4w-navigation.js"></script>
     <script src="js/lg4w-logout.js"></script>
+    <script src="js/lg4w-game-requests.js"></script>
     <script src="js/lg4w-games-in-progress.js"></script>
     <script src="js/lg4w-finished-games.js"></script>
 

@@ -60,9 +60,6 @@ lg4wApp.config(["$routeProvider", "$locationProvider", "$logProvider", function(
         .otherwise( { redirectTo: ANGULARROUTE_PATH_GAMESINPROGRESS } ) ;
 }]);
 
-lg4wApp.controller("lg4wGameRequestsController", ["$scope", function($scope) {
-}]);
-
 lg4wApp.controller("lg4wHighscoresController", ["$scope", function($scope) {
 }]);
 
