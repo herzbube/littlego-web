@@ -63,9 +63,6 @@ lg4wApp.config(["$routeProvider", "$locationProvider", "$logProvider", function(
 lg4wApp.controller("lg4wGameRequestsController", ["$scope", function($scope) {
 }]);
 
-lg4wApp.controller("lg4wFinishedGamesController", ["$scope", function($scope) {
-}]);
-
 lg4wApp.controller("lg4wHighscoresController", ["$scope", function($scope) {
 }]);
 
