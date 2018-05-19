@@ -5,6 +5,7 @@
 const ANGULARNAME_CONSTANT_WEBSOCKETCONFIG = "webSocketConfig";
 const ANGULARNAME_SERVICE_WEBSOCKET = "WebSocketService";
 const ANGULARNAME_SERVICE_SESSION = "SessionService";
+const ANGULARNAME_SERVICE_ERRORHANDLING = "ErrorHandlingService";
 
 const STORAGEKEY_SESSIONKEY = "sessionKey";
 
@@ -182,6 +183,9 @@ const ID_BUTTON_GAMES_IN_PROGRESS = PREFIX_ID_BUTTON + TAB_NAME_GAMES_IN_PROGRES
 const ID_BUTTON_FINISHED_GAMES = PREFIX_ID_BUTTON + TAB_NAME_FINISHED_GAMES;
 const ID_BUTTON_HGIH_SCORES = PREFIX_ID_BUTTON + TAB_NAME_HIGH_SCORES ;
 const ID_BUTTON_LOGOUT = PREFIX_ID_BUTTON + "logout";
+
+// Server error modal
+const ID_SERVER_ERROR_MODAL = "server-error-modal";
 
 // New game request modal
 const ID_NEW_GAME_REQUEST_MODAL = "new-game-request-modal";

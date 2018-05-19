@@ -17,7 +17,28 @@
     </div>
 </div>
 
-<div id="new-game-request-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="new-game-request-modal-label" aria-hidden="true">
+<div id="server-error-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="server-error-modal-label" aria-hidden="true" ng-controller="lg4wServerErrorController">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="server-error-modal-label">Oops!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>There was an error communicating with the server. The server gave us this error message:</p>
+                <div class="alert alert-danger" role="alert">{{ serverErrorMessage }}</div>
+                <p>Please try again, or contact the server administrator.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-warning" data-dismiss="modal">Argh!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="new-game-request-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="new-game-request-modal-label" aria-hidden="true" ng-controller="lg4wNewGameRequestController">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
