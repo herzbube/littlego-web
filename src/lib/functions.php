@@ -104,6 +104,8 @@ namespace LittleGoWeb
     <script src="js/lg4w-game-requests.js"></script>
     <script src="js/lg4w-games-in-progress.js"></script>
     <script src="js/lg4w-finished-games.js"></script>
+    <script src="js/lg4w-new-game-request.js"></script>
+    <script src="js/lg4w-confirm-game-request-pairing.js"></script>
 
     <!--
         TODO: The PHP script that serves this page should read all local

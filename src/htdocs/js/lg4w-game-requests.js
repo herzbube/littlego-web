@@ -4,7 +4,7 @@
 
 "use strict";
 
-lg4wApp.controller("lg4wGameRequestsController", ["$scope", "$location", ANGULARNAME_SERVICE_WEBSOCKET, function($scope, $location, webSocketService) {
+lg4wApp.controller("lg4wGameRequestsController", ["$scope", "$rootScope", "$location", ANGULARNAME_SERVICE_WEBSOCKET, ANGULARNAME_SERVICE_ERRORHANDLING, function($scope, $rootScope, $location, webSocketService, errorHandlingService) {
 
     $scope.placeHolderMessage = "Waiting for server connection ...";
     $scope.placeHolderMessageIsErrorMessage = false;
@@ -59,15 +59,77 @@ lg4wApp.controller("lg4wGameRequestsController", ["$scope", "$location", ANGULAR
     };
 
     $scope.cancel = function(gameRequest) {
-        // TODO: Don't use jQuery
-        $("#" + ID_MODAL_NOT_YET_IMPLEMENTED).modal()
+        webSocketService.cancelGameRequest(gameRequest.gameRequestID);
     };
+
+    webSocketService.addCancelGameRequestListener(handleCancelGameRequest);
+    function handleCancelGameRequest(success, gameRequestsJsonObjects, errorMessage) {
+        if (success)
+        {
+            // The server already included an updated list of game requests in
+            // its reponse, so we just need to update the model
+            handleGetGameRequests(true, gameRequestsJsonObjects, undefined);
+        }
+        else
+        {
+            errorHandlingService.showServerError(errorMessage);
+        }
+    }
 
     $scope.confirm = function(gameRequest) {
-        // TODO: Don't use jQuery
-        $("#" + ID_MODAL_NOT_YET_IMPLEMENTED).modal()
+        webSocketService.getGameRequestPairing(gameRequest.gameRequestID);
     };
 
+    webSocketService.addGetGameRequestPairingListener(handleGetGameRequestPairing);
+    function handleGetGameRequestPairing(success, gameRequestPairing, errorMessage) {
+        if (success)
+        {
+            $rootScope.$broadcast(ANGULARNAME_EVENT_SHOWCONFIRMGAMEREQUESTPAIRINGMODAL, gameRequestPairing);
+        }
+        else
+        {
+            errorHandlingService.showServerError(errorMessage);
+        }
+    }
+
+    // If a new game request was submitted we need to update our list of
+    // game requests >>> The new game request will be part of the list.
+    webSocketService.addSubmitNewGameRequestListener(handleSubmitNewGameRequest);
+    function handleSubmitNewGameRequest(success, gameRequestPairing, errorMessage) {
+        if (success)
+        {
+            // The server did not include an updated list of game requests in
+            // its reponse, so we need to fetch the data from the server
+            $scope.$apply(function() {
+                getGameRequests();
+            });
+        }
+        else
+        {
+            // We ignore all errors. It's the responsibility of the actor
+            // who requested the data to handle errors.
+        }
+    }
+
+    // If a game request pairing was confirmed we need to update our list of
+    // game requests >>> The game request involved in the pairing on our side
+    // will disappear from the list.
+    webSocketService.addConfirmGameRequestPairingListener(handleConfirmGameRequestPairing);
+    function handleConfirmGameRequestPairing(success, gameRequestsJsonObjects, errorMessage) {
+        if (success)
+        {
+            // The server already included an updated list of game requests in
+            // its reponse, so we just need to update the model
+            handleGetGameRequests(true, gameRequestsJsonObjects, undefined);
+        }
+        else
+        {
+            // We ignore all errors. It's the responsibility of the actor
+            // who requested the data to handle errors.
+        }
+    }
+
+    // TODO: Disable "New game request" button if web socket service is not ready
     if (webSocketService.isReady())
         getGameRequests();
     else
@@ -82,5 +144,9 @@ lg4wApp.controller("lg4wGameRequestsController", ["$scope", "$location", ANGULAR
     $scope.$on('$destroy', function() {
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
         webSocketService.removeGetGameRequestsListener(handleGetGameRequests);
+        webSocketService.removeCancelGameRequestListener(handleCancelGameRequest);
+        webSocketService.removeGetGameRequestPairingListener(handleGetGameRequestPairing);
+        webSocketService.removeSubmitNewGameRequestListener(handleSubmitNewGameRequest);
+        webSocketService.removeConfirmGameRequestPairingListener(handleConfirmGameRequestPairing);
     })
 }]);
