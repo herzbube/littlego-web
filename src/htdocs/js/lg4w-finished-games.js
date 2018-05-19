@@ -6,17 +6,27 @@
 
 lg4wApp.controller("lg4wFinishedGamesController", ["$scope", "$location", ANGULARNAME_SERVICE_WEBSOCKET, function($scope, $location, webSocketService) {
 
-    $scope.placeHolderMessage = "Retrieving data ...";
+    $scope.placeHolderMessage = "Waiting for server connection ...";
     $scope.placeHolderMessageIsErrorMessage = false;
     $scope.finishedGames = [];
 
-    // We fake the asynchronous data retrieval process by generating an
-    // artificial delay. Then we generate static fake data.
-    var timeoutInMilliseconds = 1000;
-    setTimeout(function() {
-        var finishedGamesJsonObjects = createFinishedGamesJsonObjects();
-        handleGetFinishedGames(true, finishedGamesJsonObjects, undefined);
-    }, timeoutInMilliseconds);
+    function getFinishedGames()
+    {
+        $scope.placeHolderMessage = "Retrieving data ...";
+        $scope.placeHolderMessageIsErrorMessage = false;
+        $scope.finishedGames = [];
+
+        // TODO: Uncomment when web socket request is implemented
+        //webSocketService.getFinishedGames();
+
+        // We fake the asynchronous data retrieval process by generating an
+        // artificial delay. Then we generate static fake data.
+        var timeoutInMilliseconds = 1000;
+        setTimeout(function() {
+            var finishedGamesJsonObjects = createFinishedGamesJsonObjects();
+            handleGetFinishedGames(true, finishedGamesJsonObjects, undefined);
+        }, timeoutInMilliseconds);
+    }
 
     // TODO: Uncomment when web socket request is implemented
     //webSocketService.addGetFinishedGamesListener(handleGetFinishedGames);
@@ -65,18 +75,20 @@ lg4wApp.controller("lg4wFinishedGamesController", ["$scope", "$location", ANGULA
         $("#" + ID_MODAL_NOT_YET_IMPLEMENTED).modal()
     };
 
-    // TODO: Uncomment when web socket request is implemented
-    // if (webSocketService.isReady())
-    //     webSocketService.getFinishedGames();
-    // else
-    //     webSocketService.addServiceIsReadyListener(handleWebSocketServiceIsReady);
-    //
-    // function handleWebSocketServiceIsReady() {
-    //     webSocketService.getFinishedGames();
-    // }
-    //
-    // $scope.$on('$destroy', function() {
-    //     webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
-    //     webSocketService.removeGetFinishedGamesListener(handleGetFinishedGames);
-    // })
+    if (webSocketService.isReady())
+        getFinishedGames();
+    else
+        webSocketService.addServiceIsReadyListener(handleWebSocketServiceIsReady);
+
+    function handleWebSocketServiceIsReady() {
+        $scope.$apply(function() {
+            getFinishedGames();
+        });
+    }
+
+    $scope.$on('$destroy', function() {
+        webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
+        // TODO: Uncomment when web socket request is implemented
+        //webSocketService.removeGetFinishedGamesListener(handleGetFinishedGames);
+    })
 }]);

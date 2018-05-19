@@ -6,9 +6,18 @@
 
 lg4wApp.controller("lg4wGamesInProgressController", ["$scope", "$location", ANGULARNAME_SERVICE_WEBSOCKET, function($scope, $location, webSocketService) {
 
-    $scope.placeHolderMessage = "Retrieving data ...";
+    $scope.placeHolderMessage = "Waiting for server connection ...";
     $scope.placeHolderMessageIsErrorMessage = false;
     $scope.gamesInProgress = [];
+
+    function getGamesInProgress()
+    {
+        $scope.placeHolderMessage = "Retrieving data ...";
+        $scope.placeHolderMessageIsErrorMessage = false;
+        $scope.gamesInProgress = [];
+
+        webSocketService.getGamesInProgress();
+    }
 
     webSocketService.addGetGamesInProgressListener(handleGetGamesInProgress);
     function handleGetGamesInProgress(success, gamesInProgressJsonObjects, errorMessage) {
@@ -54,12 +63,14 @@ lg4wApp.controller("lg4wGamesInProgressController", ["$scope", "$location", ANGU
     };
 
     if (webSocketService.isReady())
-        webSocketService.getGamesInProgress();
+        getGamesInProgress();
     else
         webSocketService.addServiceIsReadyListener(handleWebSocketServiceIsReady);
 
     function handleWebSocketServiceIsReady() {
-        webSocketService.getGamesInProgress();
+        $scope.$apply(function() {
+            getGamesInProgress();
+        });
     }
 
     $scope.$on('$destroy', function() {
