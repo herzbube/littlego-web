@@ -15,7 +15,7 @@ lg4wApp.directive("lg4wNavigation", function() {
     return directiveObject;
 });
 
-lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNAME_SERVICE_SESSION, function($scope, $location, sessionService) {
+lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNAME_SERVICE_WEBSOCKET, ANGULARNAME_SERVICE_SESSION, function($scope, $location, webSocketService, sessionService) {
 
     // Sometimes we don't receive the $routeChangeSuccess event when we
     // reload the page. For this reason we actively update the nav items
@@ -32,6 +32,7 @@ lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNA
         {
             case ANGULARROUTE_PATH_GAMEREQUESTS:
                 tabName = TAB_NAME_GAME_REQUESTS;
+                clearBadgeContentGameRequests();
                 break;
 
             case ANGULARROUTE_PATH_GAMESINPROGRESS:
@@ -90,8 +91,38 @@ lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNA
         });
     }
 
+    $scope.badgeContentGameRequests = "";
+    function setBadgeContentGameRequests()
+    {
+        $scope.badgeContentGameRequests = "!";
+    }
+    function clearBadgeContentGameRequests()
+    {
+        $scope.badgeContentGameRequests = "";
+    }
+
+    // This is triggered not as a response to this client requesting
+    // data, instead it is triggered because the server notifies us
+    // about a pairing that was found because some other client
+    // submitted a game request.
+    webSocketService.addGameRequestPairingFoundListener(handleGameRequestPairingFound);
+    function handleGameRequestPairingFound(success, gameRequestsJsonObjects, errorMessage) {
+        if (success)
+        {
+            $scope.$apply(function() {
+                setBadgeContentGameRequests();
+            });
+        }
+        else
+        {
+            // We ignore all errors. Because this client didn't request the
+            // data the server shouldn't send us error messages.
+        }
+    }
+
     $scope.$on('$destroy', function() {
         sessionService.removeValidationCompleteListener(handleValidationComplete);
+        webSocketService.removeGameRequestPairingFoundListener(handleGameRequestPairingFound);
     })
 
 }]);

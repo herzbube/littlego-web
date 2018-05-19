@@ -129,6 +129,25 @@ lg4wApp.controller("lg4wGameRequestsController", ["$scope", "$rootScope", "$loca
         }
     }
 
+    // This is triggered not as a response to this client requesting
+    // data, instead it is triggered because the server notifies us
+    // about a pairing that was found because some other client
+    // submitted a game request.
+    webSocketService.addGameRequestPairingFoundListener(handleGameRequestPairingFound);
+    function handleGameRequestPairingFound(success, gameRequestsJsonObjects, errorMessage) {
+        if (success)
+        {
+            // The server already included an updated list of game requests in
+            // its reponse, so we just need to update the model
+            handleGetGameRequests(true, gameRequestsJsonObjects, undefined);
+        }
+        else
+        {
+            // We ignore all errors. Because this client didn't request the
+            // data the server shouldn't send us error messages.
+        }
+    }
+
     // TODO: Disable "New game request" button if web socket service is not ready
     if (webSocketService.isReady())
         getGameRequests();
@@ -148,5 +167,6 @@ lg4wApp.controller("lg4wGameRequestsController", ["$scope", "$rootScope", "$loca
         webSocketService.removeGetGameRequestPairingListener(handleGetGameRequestPairing);
         webSocketService.removeSubmitNewGameRequestListener(handleSubmitNewGameRequest);
         webSocketService.removeConfirmGameRequestPairingListener(handleConfirmGameRequestPairing);
+        webSocketService.removeGameRequestPairingFoundListener(handleGameRequestPairingFound);
     })
 }]);
