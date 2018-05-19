@@ -568,7 +568,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_GETGAMEINPROGRESSWITHMOVES:
-                eventListeners.registerAccount.forEach(function(listener) {
+                eventListeners.getGameInProgressWithMoves.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.gameInProgress,
@@ -578,7 +578,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEMOVE:
-                eventListeners.registerAccount.forEach(function(listener) {
+                eventListeners.submitNewGameMove.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.gameMove,
