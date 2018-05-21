@@ -116,7 +116,6 @@ const BADGE_SYMBOL = "!";
 const GAMEREQUESTID_UNDEFINED = -1;
 const GAMEID_UNDEFINED = -1;
 
-const ANGULARROUTE_PATH_ROOT = urlBasePath + "/";
 const ANGULARROUTE_PATH_LOGIN = urlBasePath + "/login";
 const ANGULARROUTE_PATH_REGISTER = urlBasePath + "/register";
 const ANGULARROUTE_PATH_GAMEREQUESTS = urlBasePath + "/gamerequests";
@@ -125,6 +124,7 @@ const ANGULARROUTE_PATH_FINISHEDGAMES = urlBasePath + "/finishedgames";
 const ANGULARROUTE_PATH_HIGHSCORES = urlBasePath + "/highscores";
 const ANGULARROUTE_PATH_LOGOUT = urlBasePath + "/logout";
 const ANGULARROUTE_PATH_BOARD = urlBasePath + "/board";
+const ANGULARROUTE_PATH_DEFAULT_IF_VALID_SESSION = ANGULARROUTE_PATH_GAMESINPROGRESS;
 const LOGOUT_MESSAGE_DELAY_IN_MILLISECONDS = 3 * MILLISECONDS_1_SECOND;
 
 // ----------------------------------------------------------------------
