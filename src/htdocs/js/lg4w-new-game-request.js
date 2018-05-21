@@ -109,7 +109,7 @@ lg4wApp.controller("lg4wNewGameRequestController", ["$scope", "$rootScope", ANGU
         }
     }
 
-    $scope.$on('$destroy', function() {
+    $scope.$on("$destroy", function() {
         webSocketService.removeSubmitNewGameRequestListener(handleSubmitNewGameRequest);
     })
 }]);

@@ -41,7 +41,7 @@ lg4wApp.controller("lg4wLoginFormController", ["$scope", "$location", ANGULARNAM
         });
     }
 
-    $scope.$on('$destroy', function() {
+    $scope.$on("$destroy", function() {
         sessionService.removeValidationCompleteListener(handleValidationComplete);
     })
 }]);

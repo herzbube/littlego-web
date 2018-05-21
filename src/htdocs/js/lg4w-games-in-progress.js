@@ -70,7 +70,7 @@ lg4wApp.controller("lg4wGamesInProgressController", ["$scope", "$location", ANGU
         });
     }
 
-    $scope.$on('$destroy', function() {
+    $scope.$on("$destroy", function() {
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
         webSocketService.removeGetGamesInProgressListener(handleGetGamesInProgress);
     })

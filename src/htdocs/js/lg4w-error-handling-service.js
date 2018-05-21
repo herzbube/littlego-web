@@ -51,7 +51,7 @@ lg4wApp.controller("lg4wServerErrorController", ["$scope", ANGULARNAME_SERVICE_E
         $("#" + ID_SERVER_ERROR_MODAL).modal()
     }
 
-    $scope.$on('$destroy', function() {
+    $scope.$on("$destroy", function() {
         errorHandlingService.removeShowServerErrorHandler();
     })
 }]);

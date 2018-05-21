@@ -160,7 +160,7 @@ lg4wApp.controller("lg4wGameRequestsController", ["$scope", "$rootScope", "$loca
         });
     }
 
-    $scope.$on('$destroy', function() {
+    $scope.$on("$destroy", function() {
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
         webSocketService.removeGetGameRequestsListener(handleGetGameRequests);
         webSocketService.removeCancelGameRequestListener(handleCancelGameRequest);

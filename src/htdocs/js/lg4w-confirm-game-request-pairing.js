@@ -69,7 +69,7 @@ lg4wApp.controller("lg4wConfirmGameRequestPairingController", ["$scope", "$rootS
         }
     }
 
-    $scope.$on('$destroy', function() {
+    $scope.$on("$destroy", function() {
         webSocketService.removeConfirmGameRequestPairingListener(handleConfirmGameRequestPairing);
 
         // If we had registered on our own $scope we wouldn't need to

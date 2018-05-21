@@ -309,7 +309,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         });
     }
 
-    $scope.$on('$destroy', function() {
+    $scope.$on("$destroy", function() {
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
         webSocketService.removeGetGameInProgressWithMovesListener(handleGetGameInProgressWithMoves);
         webSocketService.removeSubmitNewGameMoveListener(handleSubmitNewGameMove);

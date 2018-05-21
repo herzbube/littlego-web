@@ -86,7 +86,7 @@ lg4wApp.controller("lg4wFinishedGamesController", ["$scope", "$location", ANGULA
         });
     }
 
-    $scope.$on('$destroy', function() {
+    $scope.$on("$destroy", function() {
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
         // TODO: Uncomment when web socket request is implemented
         //webSocketService.removeGetFinishedGamesListener(handleGetFinishedGames);
