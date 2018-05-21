@@ -5,7 +5,7 @@
 
 "use strict";
 
-lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME_SERVICE_WEBSOCKET, ANGULARNAME_SERVICE_SESSION, ANGULARNAME_SERVICE_ERRORHANDLING, function($scope, $routeParams, webSocketService, sessionService, errorHandlingService) {
+lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME_SERVICE_WEBSOCKET, ANGULARNAME_SERVICE_SESSION, ANGULARNAME_SERVICE_DRAWING, ANGULARNAME_SERVICE_ERRORHANDLING, function($scope, $routeParams, webSocketService, sessionService, drawingService, errorHandlingService) {
 
     // ----------------------------------------------------------------------
     // Private data not available via the $scope
@@ -13,7 +13,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     var gameID = GAMEID_UNDEFINED;
     var thisPlayerColor = COLOR_NONE;
     var goGame = undefined;
-    var drawingController = undefined;
 
     // ----------------------------------------------------------------------
     // Placeholder handling for the entire play area
@@ -121,6 +120,8 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 else
                     thisPlayerColor = COLOR_WHITE;
 
+                drawingService.configure(goGame, thisPlayerColor);
+
                 $scope.playPlaceHolderMessage = "";
                 $scope.playPlaceHolderMessageIsErrorMessage = false;
                 $scope.gameMovesPlaceHolderMessage = false;
@@ -147,15 +148,14 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         if ($scope.isBoardShown)
         {
             // Start drawing the board AFTER the play area has been made
-            // visible, otherwise the container has width/height 0.
-            // TODO: Don't use jQuery
-            var containerBoard = $("#" + ID_CONTAINER_BOARD);
-            drawingController = new DrawingController(
-                containerBoard,
-                goGame,
-                thisPlayerColor,
-                handleDidPlayStone);
-            drawingController.drawGoBoard();
+            // visible, as per requirement of the drawing service.
+            //
+            // Why don't we invoke this method further up in the if(success)
+            // branch? Because we don't want to do this inside $scope.$apply(),
+            // because drawing the entire board is quite an expensive
+            // operation, and we're not sure if this would negatively
+            // affect the performance of $scope.$apply().
+            drawingService.drawGoBoard();
         }
     }
 
@@ -215,8 +215,9 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
     // Playing a stone is not handled via AngularJS "ngClick" directive,
     // therefore the following function is not attached to the $scope.
-    // The click is detected by DrawingController, which is why the
-    // following function is a handle...() callback.
+    // The click is detected by the drawing service, which is why the
+    // following function is an event listener.
+    drawingService.addDidPlayStoneListener(handleDidPlayStone);
     function handleDidPlayStone(goPoint) {
         webSocketService.submitNewGameMovePlay(
             gameID,
@@ -254,7 +255,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 $scope.gameMoves.unshift(gameMove);
             });
 
-            drawingController.updateAfterGameMoveWasPlayed();
+            drawingService.drawGoBoardAfterNewGameMoveWasPlayed();
         }
         else
         {
@@ -313,5 +314,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
         webSocketService.removeGetGameInProgressWithMovesListener(handleGetGameInProgressWithMoves);
         webSocketService.removeSubmitNewGameMoveListener(handleSubmitNewGameMove);
+        drawingService.removeDidPlayStoneListener(handleDidPlayStone);
     })
 }]);
