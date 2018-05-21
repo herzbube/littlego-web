@@ -291,6 +291,85 @@ var DataItemAction = (function ()
 })();
 
 // ----------------------------------------------------------------------
+// The BoardPlayerInfoBlack class is a view model class that stores the
+// values for displaying information about the black player on the Go
+// board.
+// ----------------------------------------------------------------------
+var BoardPlayerInfoBlack = (function ()
+{
+    "use strict";
+
+    // Creates a new BoardPlayerInfoBlack object from the data in the
+    // specified UserInfo and GoGame objects.
+    function BoardPlayerInfoBlack(userInfo, goGame)
+    {
+        this.userInfo = userInfo;
+        this.numberOfCapturedStones = 0;
+
+        if (goGame.hasMoves())
+        {
+            var goMove = goGame.getFirstMove();
+            while (goMove !== null)
+            {
+                if (goMove.goPlayer.isBlack())
+                    this.numberOfCapturedStones += goMove.capturedStones.length;
+                goMove = goMove.nextGoMove;
+            }
+        }
+    }
+
+    BoardPlayerInfoBlack.prototype.updateAfterGameMoveWasPlayed = function(goGame)
+    {
+        var lastMove = goGame.getLastMove();
+
+        if (lastMove.goPlayer.isBlack())
+            this.numberOfCapturedStones += lastMove.capturedStones.length;
+    };
+
+    return BoardPlayerInfoBlack;
+})();
+
+// ----------------------------------------------------------------------
+// The BoardPlayerInfoWhite class is a view model class that stores the
+// values for displaying information about the white player on the Go
+// board.
+// ----------------------------------------------------------------------
+var BoardPlayerInfoWhite = (function ()
+{
+    "use strict";
+
+    // Creates a new BoardPlayerInfoWhite object from the data in the
+    // specified UserInfo and GoGame objects.
+    function BoardPlayerInfoWhite(userInfo, goGame)
+    {
+        this.userInfo = userInfo;
+        this.komi = goGame.komi;
+        this.numberOfCapturedStones = 0;
+
+        if (goGame.hasMoves())
+        {
+            var goMove = goGame.getFirstMove();
+            while (goMove !== null)
+            {
+                if (!goMove.goPlayer.isBlack())
+                    this.numberOfCapturedStones += goMove.capturedStones.length;
+                goMove = goMove.nextGoMove;
+            }
+        }
+    }
+
+    BoardPlayerInfoWhite.prototype.updateAfterGameMoveWasPlayed = function(goGame)
+    {
+        var lastMove = goGame.getLastMove();
+
+        if (!lastMove.goPlayer.isBlack())
+            this.numberOfCapturedStones += lastMove.capturedStones.length;
+    };
+
+    return BoardPlayerInfoWhite;
+})();
+
+// ----------------------------------------------------------------------
 // The GameMove class represents a game move. GameMove objects are view model
 // objects whose values are suitable for displaying in the UI. GameMove objects
 // are created from GoMove objects that were created locally from data

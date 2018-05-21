@@ -71,9 +71,6 @@ lg4wApp.config(["$routeProvider", "$locationProvider", "$logProvider", ANGULARNA
 lg4wApp.controller("lg4wHighscoresController", ["$scope", function($scope) {
 }]);
 
-lg4wApp.controller("lg4wBoardController", ["$scope", function($scope) {
-}]);
-
 lg4wApp.directive("lg4wModals", [ANGULARNAME_CONSTANT_URLBASEPATH, function(urlBasePath) {
     var directiveObject = {
         restrict : "E",

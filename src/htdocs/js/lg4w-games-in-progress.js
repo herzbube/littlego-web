@@ -51,10 +51,7 @@ lg4wApp.controller("lg4wGamesInProgressController", ["$scope", "$location", ANGU
     };
 
     $scope.resume = function(gameInProgress) {
-        // TODO: Setup board
-        //theBoard.setupBoardForGameInProgress(gameInProgress.gameID, theSession.userInfo);
-
-        $location.path(ANGULARROUTE_PATH_BOARD);
+        $location.path(ANGULARROUTE_PATH_BOARD + "/" + gameInProgress.gameID);
     };
 
     $scope.resign = function(gameInProgress) {
