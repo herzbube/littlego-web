@@ -1,6 +1,6 @@
 <div id="container-registration-form" class="container-fluid">
     <div class="row justify-content-center">
-        <form class="col-sm-10 col-md-8 col-lg-6">
+        <form name="registrationform" class="col-sm-10 col-md-8 col-lg-6">
             <div class="form-group">
                 <h1>Registration</h1>
             </div>
@@ -19,7 +19,7 @@
                 <input id="registration-password" class="form-control" name="password" type="password" placeholder="Enter your password" ng-model="password" required/>
             </div>
             <div class="form-group">
-                <button class="btn btn-primary" type="submit" ng-click="onRegisterClicked()">Register</button>
+                <button class="btn btn-primary" type="submit" ng-click="onRegisterClicked()" ng-disabled="registrationform.$invalid">Register</button>
                 <a class="btn btn-secondary" href="{{urlBasePath}}/login">Cancel</a>
                 <!-- TODO: Remove when email address verification is implemented -->
                 <p><small>DEV MODE: Email address verification has not been implemented yet. You can enter any email address you like as long as the address format is correct. If the registration data you entered is acceptable (i.e. email address and display name are both unique), registration will immediately succeed and the system will log you in instantly.</small></p>
