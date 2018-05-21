@@ -20,11 +20,11 @@ lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNA
     $scope.urlBasePath = urlBasePath;
 
     // Sometimes we don't receive the $routeChangeSuccess event when we
-    // reload the page. For this reason we actively update the nav items
+    // reload the page. Because of this we actively update the nav items
     // when this controller initializes.
     updateNavItems();
 
-    $scope.$on('$routeChangeSuccess', function(angularEvent, currentRoute, previousRoute) {
+    $scope.$on("$routeChangeSuccess", function(angularEvent, currentRoute, previousRoute) {
         updateNavItems();
     });
 
@@ -98,7 +98,7 @@ lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNA
     $scope.badgeContentGameRequests = "";
     function setBadgeContentGameRequests()
     {
-        $scope.badgeContentGameRequests = "!";
+        $scope.badgeContentGameRequests = BADGE_SYMBOL;
     }
     function clearBadgeContentGameRequests()
     {

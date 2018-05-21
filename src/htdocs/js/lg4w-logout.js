@@ -6,7 +6,7 @@
 
 lg4wApp.controller("lg4wLogoutController", ["$scope", "$location", ANGULARNAME_SERVICE_SESSION, function($scope, $location, sessionService) {
 
-    // Perform logout only if there actually is in invalid session. This
+    // Perform logout only if there actually is an invalid session. This
     // check is necessary in case the user directly navigates to the
     // logout URL.
     if (sessionService.hasValidSession())

@@ -26,6 +26,13 @@ lg4wApp.controller("lg4wLoginFormController", ["$scope", "$location", ANGULARNAM
             if (errorMessage === undefined)
             {
                 $scope.validationErrorMessage = "";
+
+                // TODO Make the initial selection dynamic: If the user has games
+                // in progress then show this section. In addition, if the user
+                // has only one game in progress, then immediately show the play
+                // area. If the user has no games in progress then show the game
+                // requests section - even if that section is empty, because then
+                // at least the user can immediately submit a new game request.
                 $location.path(ANGULARROUTE_PATH_GAMESINPROGRESS);
             }
             else

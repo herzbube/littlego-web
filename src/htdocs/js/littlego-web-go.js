@@ -495,7 +495,7 @@ var GoBoard = (function ()
     // impact because they need to be parsed into numeric form, but a numeric
     // representation would be difficult to maintain.
     //
-    // Star points definitions are by convention in the Go world, therefore
+    // Star point definitions are by convention in the Go world, therefore
     // we should be safe to hardcode them here.
     const STAR_POINT_VERTEXES = [
         [],  // board size 7
