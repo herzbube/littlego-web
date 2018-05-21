@@ -44,6 +44,59 @@ namespace LittleGoWeb
     // ----------------------------------------------------------------------
     function printLoginForm(Config $config) : void
     {
+        // Why do we need a base path? The problem is that in the initial
+        // request that causes this function to execute the user can
+        // specify any URL path she likes.
+        //
+        // Some examples:
+        //
+        //   /login          Legal. Shows login form if not logged in, redirects to /gamesinprogress if logged in.
+        //   /gamerequests   Legal. Retrieves game requests if logged in, redirects to /login if not logged in.
+        //   /board/42       Legal. Shows board for game with ID 42 if logged in, redirects to /login if not logged in.
+        //   /               Legal. Redirects to /login if not logged in, redirects to /gamesinprogress if logged in.
+        //   /board          Illegal. Redirects to /login if not logged in, redirects to /gamesinprogress if logged in.
+        //   /board/         Illegal. Ditto.
+        //   /foo            Illegal. Ditto.
+        //   /foo/bar/baz    Illegal. Ditto.
+        //
+        // More important here than the distinction between legal and illegal
+        // paths is the fact that the user can specify URL paths of any depth.
+        // If the document is output with "script" and "link" elements that use
+        // a relative path then the browser will try to load those scripts and
+        // CSS stylesheets  relative to the URL path specified by the user. For
+        // instance, if the document is output with "js/lg4w-main.js" then the
+        // browser tries to load that script from these URLs (taken from the
+        // example list above):
+        //
+        //   /login         /js/lg4-main.js
+        //   /board/42      /board/js/lg4-main.js
+        //   /foo/bar/baz   /foo/bar/js/lg4-main.js
+        //
+        // This does not work, of course. If we have a full-featured web server
+        // we can try to mitigate some of the issues (notably illegal paths) by
+        // redirecting the browser or rewriting the URL. These measures take
+        // effect before this function is executed, so we don't have to deal
+        // with the cases handled there. The remaining issues are with legal
+        // paths of varying depth, specifically
+        //
+        //   /login         Path with depth 1
+        //   /board/42      Path with depth 2
+        //
+        // This function could try to recognize the initial path depth and
+        // output the document with relative links amended accordingly.
+        // Examples:
+        //
+        //   /login         js/lg4-main.js
+        //   /board/42      ../js/lg4-main.js
+        //
+        // This is much too complicated, though. Instead we want to output
+        // absolute paths. To achieve this we need an absolute base path,
+        // and we delegate the responsibility to specify that path to the
+        // configuration level and the server admin.
+
+        $urlBasePath = $config->urlBasePath;
+        $urlBasePath = preg_replace("/\/$/", "", $urlBasePath);
+
         $output = <<<"ENDOFOUTPUT"
 <!DOCTYPE html>
 <html lang="en" ng-app="lg4wApp">
@@ -55,7 +108,7 @@ namespace LittleGoWeb
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <!-- App-specific CSS -->
-    <link rel="stylesheet" href="css/littlego-web.css" />
+    <link rel="stylesheet" href="${urlBasePath}/css/littlego-web.css" />
 
     <!-- jQuery, as required by Bootstrap (but we also use it ourselves) -->
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
@@ -70,42 +123,45 @@ namespace LittleGoWeb
           hostname : "$config->webSocketHost",
           port : "$config->webSocketPort"
       };
+      
+      var urlBasePath = "$urlBasePath";
     </script>
 
     <!-- Raphaël library for drawing with SVG -->
-    <script src="js/raphael-2.2.1.min.js"></script>
+    <script src="${urlBasePath}/js/raphael-2.2.1.min.js"></script>
 
     <!-- AngularJS -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-route.js"></script>
 
     <!-- Library scripts -->
-    <script src="js/littlego-web-constants.js"></script>
-    <script src="js/littlego-web-functions.js"></script>
-    <script src="js/littlego-web-data-generator.js"></script>
-    <script src="js/littlego-web-viewmodel.js"></script>
-    <script src="js/littlego-web-session.js"></script>
-    <script src="js/littlego-web-go.js"></script>
-    <script src="js/littlego-web-drawing.js"></script>
-    <script src="js/littlego-web-board.js"></script>
+    <script src="${urlBasePath}/js/littlego-web-constants.js"></script>
+    <script src="${urlBasePath}/js/littlego-web-functions.js"></script>
+    <script src="${urlBasePath}/js/littlego-web-data-generator.js"></script>
+    <script src="${urlBasePath}/js/littlego-web-viewmodel.js"></script>
+    <script src="${urlBasePath}/js/littlego-web-session.js"></script>
+    <script src="${urlBasePath}/js/littlego-web-go.js"></script>
+    <script src="${urlBasePath}/js/littlego-web-drawing.js"></script>
+    <script src="${urlBasePath}/js/littlego-web-board.js"></script>
 
     <!-- Main script that starts the application -->
-    <script src="js/littlego-web.js"></script>
-    <script src="js/lg4w-main.js"></script>
+    <script src="${urlBasePath}/js/littlego-web.js"></script>
+    <script src="${urlBasePath}/js/lg4w-main.js"></script>
 
     <!-- AngularJS services, directives and controllers -->
-    <script src="js/lg4w-websocket-service.js"></script>
-    <script src="js/lg4w-session-service.js"></script>
-    <script src="js/lg4w-error-handling-service.js"></script>
-    <script src="js/lg4w-login-form.js"></script>
-    <script src="js/lg4w-registration-form.js"></script>
-    <script src="js/lg4w-navigation.js"></script>
-    <script src="js/lg4w-logout.js"></script>
-    <script src="js/lg4w-game-requests.js"></script>
-    <script src="js/lg4w-games-in-progress.js"></script>
-    <script src="js/lg4w-finished-games.js"></script>
-    <script src="js/lg4w-new-game-request.js"></script>
-    <script src="js/lg4w-confirm-game-request-pairing.js"></script>
+    <script src="${urlBasePath}/js/lg4w-websocket-service.js"></script>
+    <script src="${urlBasePath}/js/lg4w-session-service.js"></script>
+    <script src="${urlBasePath}/js/lg4w-error-handling-service.js"></script>
+    <script src="${urlBasePath}/js/lg4w-login-form.js"></script>
+    <script src="${urlBasePath}/js/lg4w-registration-form.js"></script>
+    <script src="${urlBasePath}/js/lg4w-navigation.js"></script>
+    <script src="${urlBasePath}/js/lg4w-logout.js"></script>
+    <script src="${urlBasePath}/js/lg4w-game-requests.js"></script>
+    <script src="${urlBasePath}/js/lg4w-games-in-progress.js"></script>
+    <script src="${urlBasePath}/js/lg4w-finished-games.js"></script>
+    <script src="${urlBasePath}/js/lg4w-new-game-request.js"></script>
+    <script src="${urlBasePath}/js/lg4w-confirm-game-request-pairing.js"></script>
+    <script src="${urlBasePath}/js/lg4w-board.js"></script>
 
     <!--
         TODO: The PHP script that serves this page should read all local

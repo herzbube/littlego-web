@@ -12,9 +12,17 @@
 "use strict";
 
 var lg4wApp = angular.module("lg4wApp", ["ngRoute"]);
-lg4wApp.constant(ANGULARNAME_CONSTANT_WEBSOCKETCONFIG, webSocketConfig);
 
-lg4wApp.config(["$routeProvider", "$locationProvider", "$logProvider", function($routeProvider, $locationProvider, $logProvider) {
+// When the HTML document is generated on the server, the PHP code that
+// generates the document injects a literal script snippet into the
+// document that sets some global variables with values that only the
+// server can provide. Here we transform these global variables into
+// AngularJS constants.
+lg4wApp.constant(ANGULARNAME_CONSTANT_WEBSOCKETCONFIG, webSocketConfig);
+lg4wApp.constant(ANGULARNAME_CONSTANT_URLBASEPATH, urlBasePath);
+
+
+lg4wApp.config(["$routeProvider", "$locationProvider", "$logProvider", ANGULARNAME_CONSTANT_URLBASEPATH, function($routeProvider, $locationProvider, $logProvider, urlBasePath) {
     $locationProvider.html5Mode(true);
 
     // Set this to true if you want to see some debug output in the console
@@ -22,39 +30,39 @@ lg4wApp.config(["$routeProvider", "$locationProvider", "$logProvider", function(
 
     $routeProvider
         .when(ANGULARROUTE_PATH_ROOT, {
-            templateUrl : "template/login-form.html",
+            templateUrl : urlBasePath + "/template/login-form.html",
             controller  : "lg4wLoginFormController"
         })
         .when(ANGULARROUTE_PATH_LOGIN, {
-            templateUrl : "template/login-form.html",
+            templateUrl : urlBasePath + "/template/login-form.html",
             controller  : "lg4wLoginFormController"
         })
         .when(ANGULARROUTE_PATH_REGISTER, {
-            templateUrl : "template/registration-form.html",
+            templateUrl : urlBasePath + "/template/registration-form.html",
             controller  : "lg4wRegistrationFormController"
         })
         .when(ANGULARROUTE_PATH_GAMEREQUESTS, {
-            templateUrl : "template/game-requests.html",
+            templateUrl : urlBasePath + "/template/game-requests.html",
             controller  : "lg4wGameRequestsController"
         })
         .when(ANGULARROUTE_PATH_GAMESINPROGRESS, {
-            templateUrl : "template/games-in-progress.html",
+            templateUrl : urlBasePath + "/template/games-in-progress.html",
             controller  : "lg4wGamesInProgressController"
         })
         .when(ANGULARROUTE_PATH_FINISHEDGAMES, {
-            templateUrl : "template/finished-games.html",
+            templateUrl : urlBasePath + "/template/finished-games.html",
             controller  : "lg4wFinishedGamesController"
         })
         .when(ANGULARROUTE_PATH_HIGHSCORES, {
-            templateUrl : "template/highscores.html",
+            templateUrl : urlBasePath + "/template/highscores.html",
             controller  : "lg4wHighscoresController"
         })
         .when(ANGULARROUTE_PATH_LOGOUT, {
-            templateUrl : "template/logout.html",
+            templateUrl : urlBasePath + "/template/logout.html",
             controller  : "lg4wLogoutController"
         })
-        .when(ANGULARROUTE_PATH_BOARD, {
-            templateUrl : "template/board.html",
+        .when(ANGULARROUTE_PATH_BOARD + "/:gameID", {
+            templateUrl : urlBasePath + "/template/board.html",
             controller  : "lg4wBoardController"
         })
         .otherwise( { redirectTo: ANGULARROUTE_PATH_GAMESINPROGRESS } ) ;
@@ -66,14 +74,14 @@ lg4wApp.controller("lg4wHighscoresController", ["$scope", function($scope) {
 lg4wApp.controller("lg4wBoardController", ["$scope", function($scope) {
 }]);
 
-lg4wApp.directive("lg4wModals", function() {
+lg4wApp.directive("lg4wModals", [ANGULARNAME_CONSTANT_URLBASEPATH, function(urlBasePath) {
     var directiveObject = {
         restrict : "E",
-        templateUrl : "template/modals.html"
+        templateUrl : urlBasePath + "/template/modals.html"
     };
 
     return directiveObject;
-});
+}]);
 
 lg4wApp.controller("lg4wMainController", ["$scope", ANGULARNAME_SERVICE_SESSION, function($scope, sessionService) {
 

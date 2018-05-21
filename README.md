@@ -172,6 +172,16 @@ The WebSocket server configuration is located in the subfolder `src/config`. Thi
 
 The WebSocket server is now ready for start. On startup, the Websocket server immediately performs a test connection to the database so that configuration problems are detected without delay. If there is a connection problem, the WebSocket server immediately aborts with an exception.
 
+## Configuring the URL base path
+
+An important aspect of the web server configuration is the location where the user can access the application. The project's default configuration assumes that the application is accessible from the document root, i.e. from the base path
+
+    /
+
+This typically is the case if you run Little Go for the Web in its own virtual host, or from the PHP built-in web server in a dev/test environment.
+ 
+If you want to make Little Go for the Web accessible from a different base path than `/`, then you have to specify that URL base path in the config file `config.php`.
+
 ## Debugging the client
 
 Search the client-side JavaScript code for the following line:

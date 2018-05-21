@@ -5,17 +5,19 @@
 
 "use strict";
 
-lg4wApp.directive("lg4wNavigation", function() {
+lg4wApp.directive("lg4wNavigation", [ANGULARNAME_CONSTANT_URLBASEPATH, function(urlBasePath) {
     var directiveObject = {
         restrict : "E",
-        templateUrl : "template/navigation.html",
+        templateUrl : urlBasePath + "/template/navigation.html",
         controller : "lg4wNavigationController"
     };
 
     return directiveObject;
-});
+}]);
 
-lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNAME_SERVICE_WEBSOCKET, ANGULARNAME_SERVICE_SESSION, function($scope, $location, webSocketService, sessionService) {
+lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNAME_CONSTANT_URLBASEPATH, ANGULARNAME_SERVICE_WEBSOCKET, ANGULARNAME_SERVICE_SESSION, function($scope, $location, urlBasePath, webSocketService, sessionService) {
+
+    $scope.urlBasePath = urlBasePath;
 
     // Sometimes we don't receive the $routeChangeSuccess event when we
     // reload the page. For this reason we actively update the nav items

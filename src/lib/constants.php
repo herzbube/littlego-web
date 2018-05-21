@@ -92,6 +92,9 @@ namespace LittleGoWeb
     const WEBSOCKET_MESSAGEDATA_KEY_SUCCESS = "success";
     const WEBSOCKET_MESSAGEDATA_KEY_ERRORMESSAGE = "errorMessage";
 
+    // Web server configuration
+    const URL_BASE_PATH_DEFAULT = "/";
+
     // Session configuration
     const SESSION_VALIDITIY_DURATION_DEFAULT = 86400 * 30;
 

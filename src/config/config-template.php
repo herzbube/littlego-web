@@ -41,6 +41,16 @@ declare(strict_types=1);
 // $config->webSocketPort = "8001";
 
 // ----------------------------------------------------------------------
+// Web server configuration
+// ----------------------------------------------------------------------
+
+// Specify the URL base path that matches the location from where you want
+// browsers to access the application. The default assumes that the
+// application has its own virtual host. The default also works, for instance,
+// if you use the PHP built-in web server in a dev or test environment.
+// $config->urlBasePath = "/";
+
+// ----------------------------------------------------------------------
 // Session configuration
 // ----------------------------------------------------------------------
 // Specify the number of seconds that a persistent session should be valid.
