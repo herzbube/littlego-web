@@ -4,7 +4,9 @@
 
 "use strict";
 
-lg4wApp.controller("lg4wRegistrationFormController", ["$scope", "$location", ANGULARNAME_SERVICE_WEBSOCKET, ANGULARNAME_SERVICE_SESSION, function($scope, $location, webSocketService, sessionService) {
+lg4wApp.controller("lg4wRegistrationFormController", ["$scope", "$location", ANGULARNAME_CONSTANT_URLBASEPATH, ANGULARNAME_SERVICE_WEBSOCKET, ANGULARNAME_SERVICE_SESSION, function($scope, $location, urlBasePath, webSocketService, sessionService) {
+
+    $scope.urlBasePath = urlBasePath;
 
     $scope.emailAddress = "";
     $scope.displayName = "";
