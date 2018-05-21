@@ -1,6 +1,6 @@
 <div id="container-login-form" class="container-fluid">
     <div class="row justify-content-center">
-        <form id="login-form" class="col-sm-10 col-md-8 col-lg-6">
+        <form class="col-sm-10 col-md-8 col-lg-6">
             <div class="form-group">
                 <h1>Login</h1>
             </div>
@@ -13,13 +13,13 @@
                 <input id="login-password" class="form-control" name="password" type="password" placeholder="Enter your password" ng-model="password" required/>
             </div>
             <div class="form-group">
-                <button id="button-login" class="btn btn-primary" type="submit" ng-click="onLoginClicked()">Login</button>
+                <button class="btn btn-primary" type="submit" ng-click="onLoginClicked()">Login</button>
             </div>
             <div class="form-group">
-                <p>Not registered yet? <a id="button-goto-registration" class="btn btn-dark btn-sm" href="/register">Register</a></p>
+                <p>Not registered yet? <a class="btn btn-dark btn-sm" href="/register">Register</a></p>
             </div>
             <div class="form-group">
-                <div id="alert-login" class="alert alert-danger" role="alert" ng-show="hasValidationError()">{{ validationErrorMessage }}</div>
+                <div class="alert alert-danger" role="alert" ng-show="hasValidationError()">{{ validationErrorMessage }}</div>
             </div>
         </form>
     </div>

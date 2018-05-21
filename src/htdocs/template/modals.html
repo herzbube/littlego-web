@@ -48,7 +48,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="new-game-request-modal-form">
+                <form>
                     <div class="form-group">
                         <label for="new-game-request-modal-board-size" class="col-form-label">Preferred board size:</label>
                         <select size="1" class="form-control" id="new-game-request-modal-board-size" ng-model="requestedBoardSize">
@@ -89,7 +89,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="button-new-game-request-modal-submit" ng-click="submit()">Submit</button>
+                <button type="button" class="btn btn-primary" ng-click="submit()">Submit</button>
             </div>
         </div>
     </div>
@@ -105,21 +105,21 @@
                 </button>
             </div>
             <div class="modal-body">
-                <p id="confirm-game-request-pairing-modal-game-request-id">Hooray, a match for your game request has been found!</p>
-                <p>Your opponent for this game is <span id="confirm-game-request-pairing-modal-opponent-name">{{ opponentDisplayName }}</span>.</p>
-                <p>You will play <span id="confirm-game-request-pairing-modal-stone-color">{{ stoneColor }}</span>.</p>
+                <p>Hooray, a match for your game request has been found!</p>
+                <p>Your opponent for this game is <span>{{ opponentDisplayName }}</span>.</p>
+                <p>You will play <span>{{ stoneColor }}</span>.</p>
                 <p>The game has the following characteristics:</p>
                 <ul>
-                    <li>Board size: <span id="confirm-game-request-pairing-modal-board-size">{{ boardSize }}</span></li>
-                    <li>Handicap: <span id="confirm-game-request-pairing-modal-handicap">{{ handicap }}</span></li>
-                    <li>Komi: <span id="confirm-game-request-pairing-modal-komi">{{ komi }}</span></li>
-                    <li>Ko rule: <span id="confirm-game-request-pairing-modal-ko-rule">{{ koRule }}</span></li>
-                    <li>Scoring system: <span id="confirm-game-request-pairing-modal-scoring-system">{{ scoringSystem }}</span></li>
+                    <li>Board size: <span>{{ boardSize }}</span></li>
+                    <li>Handicap: <span>{{ handicap }}</span></li>
+                    <li>Komi: <span>{{ komi }}</span></li>
+                    <li>Ko rule: <span>{{ koRule }}</span></li>
+                    <li>Scoring system: <span>{{ scoringSystem }}</span></li>
                 </ul>
                 <p>After you close this popup you will find the new game waiting for you on the "Games in progress" tab.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="button-confirm-game-request-pairing-modal-start-game" ng-click="startGame()">Start game</button>
+                <button type="button" class="btn btn-primary" ng-click="startGame()">Start game</button>
             </div>
         </div>
     </div>

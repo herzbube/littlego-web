@@ -74,42 +74,6 @@ var GameRequest = (function ()
         this.state = jsonObject.state;
     }
 
-    // Returns an array that contains the values that make up the GameRequest
-    // object. The values are suitable for display in a data table in the UI.
-    //
-    // The order of the array elements matches the columns of the data table.
-    GameRequest.prototype.getDataTableValues = function()
-    {
-        return [
-            this.createTime,
-            this.gameRequestID,
-            this.requestedBoardSize,
-            this.requestedStoneColor,
-            this.requestedHandicap,
-            this.requestedKomi,
-            this.requestedKoRule,
-            this.requestedScoringSystem
-        ];
-    };
-
-    // Returns an array of DataItemAction objects.
-    GameRequest.prototype.getDataItemActions = function()
-    {
-        switch (this.state)
-        {
-            case GAMEREQUEST_STATE_UNPAIRED:
-                return [
-                    new DataItemAction(OPERATION_TYPE_GAME_REQUEST_CANCEL, this, "Cancel", ACTION_TYPE_DANGER)
-                ];
-            case GAMEREQUEST_STATE_UNCONFIRMEDPAIRING:
-                return [
-                    new DataItemAction(OPERATION_TYPE_GAME_REQUEST_CONFIRM, this, "Confirm", ACTION_TYPE_PRIMARY),
-                ];
-            default:
-                return [];
-        }
-    };
-
     return GameRequest;
 })();
 
@@ -154,34 +118,6 @@ var GameInProgress = (function ()
         this.numberOfMovesPlayed = numberOfMovesPlayedToString(jsonObject.numberOfMovesPlayed);
         this.nextMoveColor = colorToString(jsonObject.nextMoveColor);
     }
-
-    // Returns an array that contains the values that make up the GameInProgress
-    // object. The values are suitable for display in a data table in the UI.
-    //
-    // The order of the array elements matches the columns of the data table.
-    GameInProgress.prototype.getDataTableValues = function()
-    {
-        return [
-            this.createTime,
-            this.gameID,
-            this.boardSize,
-            this.handicap,
-            this.komi,
-            this.koRule,
-            this.scoringSystem,
-            this.numberOfMovesPlayed,
-            this.nextMoveColor
-        ];
-    };
-
-    // Returns an array of DataItemAction objects.
-    GameInProgress.prototype.getDataItemActions = function()
-    {
-        return [
-            new DataItemAction(OPERATION_TYPE_GAME_IN_PROGRESS_RESUME, this, "Resume", ACTION_TYPE_PRIMARY),
-            new DataItemAction(OPERATION_TYPE_GAME_IN_PROGRESS_RESIGN, this, "Resign", ACTION_TYPE_DANGER)
-        ];
-    };
 
     return GameInProgress;
 })();
@@ -230,34 +166,6 @@ var FinishedGame = (function ()
         this.score = jsonObject.score;
         this.result = winningColorAndScoreToString(this.winningColor, this.score);
     }
-
-    // Returns an array that contains the values that make up the FinishedGame
-    // object. The values are suitable for display in a data table in the UI.
-    //
-    // The order of the array elements matches the columns of the data table.
-    FinishedGame.prototype.getDataTableValues = function()
-    {
-        return [
-            this.endTime,
-            this.id,
-            this.boardSize,
-            this.handicap,
-            this.komi,
-            this.koRule,
-            this.scoringSystem,
-            this.result
-        ];
-    };
-
-    // Returns an array of DataItemAction objects.
-    FinishedGame.prototype.getDataItemActions = function()
-    {
-        return [
-            new DataItemAction(OPERATION_TYPE_FINISHED_GAME_VIEW, this, "View", ACTION_TYPE_PRIMARY),
-            new DataItemAction(OPERATION_TYPE_FINISHED_GAME_EMAIL_RESULT, this, "Email result", ACTION_TYPE_SECONDARY),
-            new DataItemAction(OPERATION_TYPE_FINISHED_GAME_DELETE, this, "Delete", ACTION_TYPE_DANGER)
-        ];
-    };
 
     return FinishedGame;
 })();
@@ -388,26 +296,6 @@ var GameMove = (function ()
         this.intersection = moveIntersectionToString(goMove);
         this.captured = moveNumberOfCapturedStonesToString(goMove);
     }
-
-    // Returns an array that contains the values that make up the GameMove
-    // object. The values are suitable for display in a data table in the UI.
-    //
-    // The order of the array elements matches the columns of the data table.
-    GameMove.prototype.getDataTableValues = function()
-    {
-        return [
-            this.moveNumber,
-            this.playedBy,
-            this.intersection,
-            this.captured
-        ];
-    };
-
-    // Returns an array of DataItemAction objects.
-    GameMove.prototype.getDataItemActions = function()
-    {
-        return [];
-    };
 
     return GameMove;
 })();

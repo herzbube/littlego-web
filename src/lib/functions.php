@@ -139,13 +139,9 @@ namespace LittleGoWeb
     <script src="${urlBasePath}/js/littlego-web-functions.js"></script>
     <script src="${urlBasePath}/js/littlego-web-data-generator.js"></script>
     <script src="${urlBasePath}/js/littlego-web-viewmodel.js"></script>
-    <script src="${urlBasePath}/js/littlego-web-session.js"></script>
     <script src="${urlBasePath}/js/littlego-web-go.js"></script>
-    <script src="${urlBasePath}/js/littlego-web-drawing.js"></script>
-    <script src="${urlBasePath}/js/littlego-web-board.js"></script>
 
     <!-- Main script that starts the application -->
-    <script src="${urlBasePath}/js/littlego-web.js"></script>
     <script src="${urlBasePath}/js/lg4w-main.js"></script>
 
     <!-- AngularJS services, directives and controllers -->
