@@ -213,6 +213,14 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // Handle play mode operations
     // ----------------------------------------------------------------------
 
+    $scope.isPassButtonDisabled = function() {
+        return (goGame.getNextMoveColor() !== thisPlayerColor);
+    };
+
+    $scope.isResignButtonDisabled = function() {
+        return (goGame.getNextMoveColor() !== thisPlayerColor);
+    };
+
     // Playing a stone is not handled via AngularJS "ngClick" directive,
     // therefore the following function is not attached to the $scope.
     // The click is detected by the drawing service, which is why the

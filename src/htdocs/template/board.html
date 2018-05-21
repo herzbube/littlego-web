@@ -90,8 +90,8 @@
                             </div>
                             <div id="container-board-controls" class="board-right-hand-side-subsection">
                                 <div id="container-board-controls-play-mode">
-                                    <button class="btn btn-outline-dark" ng-click="pass()">Pass</button>
-                                    <button class="btn btn-outline-danger" ng-click="resign()">Resign</button>
+                                    <button class="btn btn-outline-dark" ng-click="pass()" ng-disabled="isPassButtonDisabled()">Pass</button>
+                                    <button class="btn btn-outline-danger" ng-click="resign()" ng-disabled="isResignButtonDisabled()">Resign</button>
                                 </div>
                                 <div id="container-board-controls-analyze-mode">
                                     <button class="btn btn-outline-dark" title="Go to first board position" data-toggle="modal" data-target="#notYetImplemented"><< First</button>
