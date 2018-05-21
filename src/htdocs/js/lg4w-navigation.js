@@ -38,7 +38,6 @@ lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNA
                 break;
 
             case ANGULARROUTE_PATH_GAMESINPROGRESS:
-            case ANGULARROUTE_PATH_BOARD:
                 tabName = TAB_NAME_GAMES_IN_PROGRESS;
                 break;
 
@@ -55,7 +54,10 @@ lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNA
                 break;
 
             default:
-                tabName = undefined;
+                if ($location.path().startsWith(ANGULARROUTE_PATH_BOARD + "/"))
+                    tabName = TAB_NAME_GAMES_IN_PROGRESS;
+                else
+                    tabName = undefined;
                 break;
         }
 
