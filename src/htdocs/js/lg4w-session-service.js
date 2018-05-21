@@ -121,7 +121,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_SESSION, [ANGULARNAME_SERVICE_WEBSOCKET, "$l
 
         $log.debug(ANGULARNAME_SERVICE_SESSION + ": Service is ready");
 
-        eventListeners.serviceIsReady.forEach(function(listener) {
+        // Iterate over a copy in case the handler wants to remove itself
+        var listenersCopy = eventListeners.serviceIsReady.slice(0);
+        listenersCopy.forEach(function(listener) {
             listener();
         });
     }
@@ -172,7 +174,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_SESSION, [ANGULARNAME_SERVICE_WEBSOCKET, "$l
 
         validationInProgress = false;
 
-        eventListeners.validationComplete.forEach(function(listener) {
+        // Iterate over a copy in case the handler wants to remove itself
+        var listenersCopy = eventListeners.validationComplete.slice(0);
+        listenersCopy.forEach(function(listener) {
             listener(errorMessage);
         });
     }

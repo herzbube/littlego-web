@@ -92,7 +92,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
 
         $log.debug(ANGULARNAME_SERVICE_WEBSOCKET + ": Service is ready");
 
-        eventListeners.serviceIsReady.forEach(function(listener) {
+        // Iterate over a copy in case the handler wants to remove itself
+        var listenersCopy = eventListeners.serviceIsReady.slice(0);
+        listenersCopy.forEach(function(listener) {
             listener();
         });
     }
@@ -478,7 +480,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         switch (webSocketMessage.messageType)
         {
             case WEBSOCKET_RESPONSE_TYPE_LOGIN:
-                eventListeners.login.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.login.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.sessionKey,
@@ -488,7 +492,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_LOGOUT:
-                eventListeners.logout.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.logout.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.errorMessage);
@@ -496,7 +502,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_REGISTERACCOUNT:
-                eventListeners.registerAccount.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.registerAccount.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.errorMessage);
@@ -504,7 +512,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_VALIDATESESSION:
-                eventListeners.validateSession.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.validateSession.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.sessionKey,
@@ -514,7 +524,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEREQUEST:
-                eventListeners.submitNewGameRequest.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.submitNewGameRequest.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.gameRequestPairing,
@@ -523,7 +535,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTS:
-                eventListeners.getGameRequests.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.getGameRequests.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.gameRequests,
@@ -532,7 +546,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_CANCELGAMEREQUEST:
-                eventListeners.cancelGameRequest.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.cancelGameRequest.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.gameRequests,
@@ -541,7 +557,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_GETGAMEREQUESTPAIRING:
-                eventListeners.getGameRequestPairing.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.getGameRequestPairing.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.gameRequestPairing,
@@ -550,7 +568,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_CONFIRMGAMEREQUESTPAIRING:
-                eventListeners.confirmGameRequestPairing.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.confirmGameRequestPairing.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.gameRequests,
@@ -559,7 +579,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_GETGAMESINPROGRESS:
-                eventListeners.getGamesInProgress.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.getGamesInProgress.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.gamesInProgress,
@@ -568,7 +590,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_GETGAMEINPROGRESSWITHMOVES:
-                eventListeners.getGameInProgressWithMoves.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.getGameInProgressWithMoves.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.gameInProgress,
@@ -578,7 +602,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEMOVE:
-                eventListeners.submitNewGameMove.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.submitNewGameMove.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.gameMove,
@@ -587,7 +613,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 break;
 
             case WEBSOCKET_MESSAGE_TYPE_GAMEREQUESTPAIRINGFOUND:
-                eventListeners.gameRequestPairingFound.forEach(function(listener) {
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.gameRequestPairingFound.slice(0);
+                listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.gameRequests,
