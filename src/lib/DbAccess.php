@@ -463,7 +463,7 @@ namespace LittleGoWeb
             $insertStatement->bindValue(
                 $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKOMI),
                 $gameRequest->getRequestedKomi(),
-                PDO::PARAM_INT);
+                PDO::PARAM_STR);  // PDO has no PARAM_FLOAT, float values must be bound as string :-(
             $insertStatement->bindValue(
                 $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE),
                 $gameRequest->getRequestedKoRule(),

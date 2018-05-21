@@ -78,13 +78,14 @@ lg4wApp.controller("lg4wNewGameRequestController", ["$scope", "$rootScope", ANGU
     });
 
     $scope.submit = function() {
+        // Coerce string values received from input form into numbers
         webSocketService.submitNewGameRequest(
-            $scope.requestedBoardSize,
-            $scope.requestedStoneColor,
-            $scope.requestedHandicap,
-            $scope.requestedKomi,
-            $scope.requestedKoRule,
-            $scope.requestedScoringSystem
+            $scope.requestedBoardSize - 0,
+            $scope.requestedStoneColor - 0,
+            $scope.requestedHandicap - 0,
+            $scope.requestedKomi - 0,  // can be a float!
+            $scope.requestedKoRule - 0,
+            $scope.requestedScoringSystem - 0
         );
 
         // TODO: Add "waiting for server response" overlay
