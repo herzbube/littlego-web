@@ -13,6 +13,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     var gameID = GAMEID_UNDEFINED;
     var thisPlayerColor = COLOR_NONE;
     var goGame = undefined;
+    var boardViewMode = BOARDVIEW_MODE_PLAY;
 
     // ----------------------------------------------------------------------
     // Placeholder handling for the entire play area
@@ -97,6 +98,8 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                     playGameMoveJsonObject(gameMoveJsonObject);
                 }, this);
 
+                goGame.state = gameInProgressJsonObject.state;
+
                 var blackPlayerUserInfo = new UserInfo(gameInProgressJsonObject.blackPlayer);
                 $scope.boardPlayerInfoBlack = new BoardPlayerInfoBlack(blackPlayerUserInfo, goGame);
                 var whitePlayerUserInfo = new UserInfo(gameInProgressJsonObject.whitePlayer);
@@ -130,7 +133,18 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 else
                     $scope.gameMovesPlaceHolderMessage = "";
 
-                makeBoardControlsContainerVisible(ID_CONTAINER_BOARD_CONTROLS_PLAY_MODE, ID_BUTTON_BOARD_MODE_PLAY);
+                switch (goGame.state)
+                {
+                    case GAME_STATE_INPROGRESS_PLAYING:
+                        boardViewMode = BOARDVIEW_MODE_PLAY;
+                        break;
+                    case GAME_STATE_INPROGRESS_SCORING:
+                    case GAME_STATE_FINISHED:
+                        boardViewMode = BOARDVIEW_MODE_SCORING;
+                        break;
+                    default:
+                        throw new Error("Unknown game state " + goGame.state);
+                }
 
                 // Last but not least: Remember the game ID so that the play
                 // area becomes visible and we can submit moves.
@@ -165,50 +179,28 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // ----------------------------------------------------------------------
 
     $scope.activatePlayMode = function() {
-        makeBoardControlsContainerVisible(ID_CONTAINER_BOARD_CONTROLS_PLAY_MODE, ID_BUTTON_BOARD_MODE_PLAY);
+        boardViewMode = BOARDVIEW_MODE_PLAY;
     };
 
     $scope.activateAnalyzeMode = function() {
-        makeBoardControlsContainerVisible(ID_CONTAINER_BOARD_CONTROLS_ANALYZE_MODE, ID_BUTTON_BOARD_MODE_ANALYZE);
+        boardViewMode = BOARDVIEW_MODE_ANALYZE;
     };
 
     $scope.activateScoringMode = function() {
-        makeBoardControlsContainerVisible(ID_CONTAINER_BOARD_CONTROLS_SCORING_MODE, ID_BUTTON_BOARD_MODE_SCORING);
+        boardViewMode = BOARDVIEW_MODE_SCORING;
     };
 
-    function makeBoardControlsContainerVisible(boardControlsContainerID, boardModeNavigationButtonID) {
-        // The Bootstrap docs show how tab toggling can be achieved without
-        // any JavaScript, just by using the "data-toggle" attribute. This
-        // works only with "a" elements, though, and we don't want "a"
-        // elements because they manipulate the URL, which interferes with
-        // AngularJS routing.
-        //
-        // The Bootstrap docs also show how tab toggling can be achieved
-        // with a single line of JavaScript (this requires Bootstrap's
-        // "tab" JavaScript plugin):
-        //   $("#" + boardModeNavigationButtonID).tab('show');
-        // Again, though, this does not work with "button" elements.
-        //
-        // So the final result is that we have to roll our own tab handling.
+    $scope.isPlayModeActivated = function() {
+        return (boardViewMode === BOARDVIEW_MODE_PLAY);
+    };
 
-        hideAllBoardControlsContainers();
-        deactivateAllBoardModeNavigationTabs();
+    $scope.isAnalyzeModeActivated = function() {
+        return (boardViewMode === BOARDVIEW_MODE_ANALYZE);
+    };
 
-        // TODO: Don't use jQuery
-        $("#" + boardControlsContainerID).show();
-        $("#" + boardModeNavigationButtonID).addClass(BOOTSTRAP_CLASS_ACTIVE);
-    }
-
-    function hideAllBoardControlsContainers() {
-        // Use the direct child selector for better performance
-        // TODO: Don't use jQuery
-        $("#" + ID_CONTAINER_BOARD_CONTROLS +  " > div").hide();
-    }
-
-    function deactivateAllBoardModeNavigationTabs() {
-        // TODO: Don't use jQuery
-        $("#" + ID_CONTAINER_BOARD_MODE_NAVIGATION +  " button").removeClass(BOOTSTRAP_CLASS_ACTIVE);
-    }
+    $scope.isScoringModeActivated = function() {
+        return (boardViewMode === BOARDVIEW_MODE_SCORING);
+    };
 
     // ----------------------------------------------------------------------
     // Handle play mode operations

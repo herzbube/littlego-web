@@ -78,28 +78,28 @@
                             <div id="container-board-mode-navigation" class="board-right-hand-side-subsection">
                                 <ul class="nav nav-tabs">
                                     <li class="nav-item">
-                                        <button class="nav-link btn btn-link active" ng-click="activatePlayMode()">Play Mode</button>
+                                        <button class="nav-link btn btn-link" ng-class="{ 'active': isPlayModeActivated() }" ng-click="activatePlayMode()">Play Mode</button>
                                     </li>
                                     <li class="nav-item">
-                                        <button class="nav-link btn btn-link" ng-click="activateAnalyzeMode()">Analyze Mode</button>
+                                        <button class="nav-link btn btn-link" ng-class="{ 'active': isAnalyzeModeActivated() }" ng-click="activateAnalyzeMode()">Analyze Mode</button>
                                     </li>
                                     <li class="nav-item">
-                                        <button class="nav-link btn btn-link" ng-click="activateScoringMode()">Scoring Mode</button>
+                                        <button class="nav-link btn btn-link" ng-class="{ 'active': isScoringModeActivated() }" ng-click="activateScoringMode()">Scoring Mode</button>
                                     </li>
                                 </ul>
                             </div>
                             <div id="container-board-controls" class="board-right-hand-side-subsection">
-                                <div id="container-board-controls-play-mode">
+                                <div ng-show="isPlayModeActivated()">
                                     <button class="btn btn-outline-dark" ng-click="pass()" ng-disabled="isPassButtonDisabled()">Pass</button>
                                     <button class="btn btn-outline-danger" ng-click="resign()" ng-disabled="isResignButtonDisabled()">Resign</button>
                                 </div>
-                                <div id="container-board-controls-analyze-mode">
+                                <div ng-show="isAnalyzeModeActivated()">
                                     <button class="btn btn-outline-dark" title="Go to first board position" data-toggle="modal" data-target="#notYetImplemented"><< First</button>
                                     <button class="btn btn-outline-dark" title="Go to previous board position" data-toggle="modal" data-target="#notYetImplemented">< Previous</button>
                                     <button class="btn btn-outline-dark" title="Go to next board position" data-toggle="modal" data-target="#notYetImplemented">Next ></button>
                                     <button class="btn btn-outline-dark" title="Go to last board position" data-toggle="modal" data-target="#notYetImplemented">Last >></button>
                                 </div>
-                                <div id="container-board-controls-scoring-mode">
+                                <div ng-show="isScoringModeActivated()">
                                     <button class="btn btn-outline-dark" title="Calculate the new score" data-toggle="modal" data-target="#notYetImplemented">Calculate</button>
                                     <button class="btn btn-outline-dark" title="Start marking as seki" data-toggle="modal" data-target="#notYetImplemented">Seki</button>
                                 </div>
