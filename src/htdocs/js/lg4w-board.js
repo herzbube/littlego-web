@@ -145,7 +145,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             }
         });
 
-        if ($scope.isBoardShown)
+        if ($scope.isBoardShown())
         {
             // Start drawing the board AFTER the play area has been made
             // visible, as per requirement of the drawing service.
