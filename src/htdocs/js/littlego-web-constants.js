@@ -12,6 +12,10 @@ const ANGULARNAME_EVENT_SHOWCONFIRMGAMEREQUESTPAIRINGMODAL = "showConfirmGameReq
 
 const STORAGEKEY_SESSIONKEY = "sessionKey";
 
+const GAME_STATE_INPROGRESS_PLAYING = 0;
+const GAME_STATE_INPROGRESS_SCORING = 1;
+const GAME_STATE_FINISHED = 2;
+
 const BOARDSIZE_7 = 7;
 const BOARDSIZE_9 = 9;
 const BOARDSIZE_11 = 11;
@@ -131,6 +135,10 @@ const ANGULARROUTE_PATH_BOARD = urlBasePath + "/board";
 const ANGULARROUTE_PATH_DEFAULT_IF_VALID_SESSION = ANGULARROUTE_PATH_GAMESINPROGRESS;
 const LOGOUT_MESSAGE_DELAY_IN_MILLISECONDS = 3 * MILLISECONDS_1_SECOND;
 
+const BOARDVIEW_MODE_PLAY = 0;
+const BOARDVIEW_MODE_ANALYZE = 1;
+const BOARDVIEW_MODE_SCORING = 2;
+
 // ----------------------------------------------------------------------
 // Drawing constants
 // ----------------------------------------------------------------------
@@ -146,9 +154,11 @@ const STROKE_COLOR_WHITE_LAST_MOVE_SYMBOL = "black";
 const FILL_COLOR_STAR_POINT = "black";
 const FILL_COLOR_BLACK_STONE = "black";
 const FILL_COLOR_WHITE_STONE = "white";
+const FILL_COLOR_TOGGLEINDICATOR = "red";
 const FILL_OPACITY_STARPOINT = 1.0;
 const FILL_OPACITY_STONE = 1.0;
 const FILL_OPACITY_NEXTMOVEINDICATOR = 0.6;
+const FILL_OPACITY_TOGGLEINDICATOR = 1.0;
 
 
 // ----------------------------------------------------------------------
@@ -202,6 +212,7 @@ const ID_SVG_BOARD = "board";
 const ID_SVG_STARPOINT_PREFIX = "starpoint-";
 const ID_SVG_STONE_PREFIX = "stone-";
 const ID_SVG_NEXTMOVEINDICATOR = "next-move-indicator";
+const ID_SVG_TOGGLEINDICATOR = "toggle-indicator";
 
 // Modals
 const ID_MODAL_NOT_YET_IMPLEMENTED = "notYetImplemented";

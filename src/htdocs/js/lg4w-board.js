@@ -14,6 +14,9 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     var thisPlayerColor = COLOR_NONE;
     var goGame = undefined;
     var boardViewMode = BOARDVIEW_MODE_PLAY;
+    var isThisPlayersTurn = false;
+    var isMoveSubmissionInProgress = false;
+    var thisPlayerCanPlayMove = false;
 
     // ----------------------------------------------------------------------
     // Placeholder handling for the entire play area
@@ -146,6 +149,12 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                         throw new Error("Unknown game state " + goGame.state);
                 }
 
+                // Invoke all updaters in order to make sure that everything
+                // is up-to-date
+                updateIsThisPlayersTurn();
+                updateThisPlayerCanPlayMove();
+                updateDrawingServiceUserInteraction();
+
                 // Last but not least: Remember the game ID so that the play
                 // area becomes visible and we can submit moves.
                 gameID = gameInProgressJsonObject.gameID;
@@ -170,8 +179,110 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             // operation, and we're not sure if this would negatively
             // affect the performance of $scope.$apply().
             drawingService.drawGoBoard();
-            drawingService.enableUserInteraction();
         }
+    }
+
+    // ----------------------------------------------------------------------
+    // Updaters
+    // ----------------------------------------------------------------------
+
+    // Enable or disable whether it is currently this player's turn (i.e. the
+    // user logged in on this client), depending on the state and moves of the
+    // current GoGame object that this controller operates on.
+    //
+    // This updater must be called whenever the game state changes or any
+    // game moves are played.
+    function updateIsThisPlayersTurn()
+    {
+        var newIsThisPlayersTurn;
+        if (goGame.getNextMoveColor() === thisPlayerColor)
+            newIsThisPlayersTurn = true;
+        else
+            newIsThisPlayersTurn = false;
+
+        if (isThisPlayersTurn === newIsThisPlayersTurn)
+            return;
+        isThisPlayersTurn = newIsThisPlayersTurn;
+
+        updateThisPlayerCanPlayMove();
+    }
+
+    // Enable or disable whether this player (i.e. the user logged in on
+    // this client) can currently play a move, depending on the value of
+    // the following properties of this controller:
+    //
+    // - Whether or not it's this player's turn
+    // - Whether or not the submission of a move by this player is
+    //   currently in progress.
+    //
+    // The latter is important because until we have received the server's
+    // response the move is not yet played, so isThisPlayersTurn is still
+    // true. Nevertheless the user must not be able to play more moves
+    // while we are waiting for the server's response.
+    //
+    // This updater must be called whenever any of these properties changes
+    // its value.
+    function updateThisPlayerCanPlayMove()
+    {
+
+        var newThisPlayerCanPlayMove;
+        if (isThisPlayersTurn && ! isMoveSubmissionInProgress)
+            newThisPlayerCanPlayMove = true;
+        else
+            newThisPlayerCanPlayMove = false;
+
+        if (thisPlayerCanPlayMove === newThisPlayerCanPlayMove)
+            return;
+        thisPlayerCanPlayMove = newThisPlayerCanPlayMove;
+
+        updateDrawingServiceUserInteraction();
+    }
+
+    // Enable or disable user interaction in the drawing service, depending
+    // on the value of the following properties of this controller:
+    //
+    // - Board view mode
+    // - Whether or not this player can currently play a move
+    //
+    // This updater must be called whenever any of these properties changes
+    // its value.
+    function updateDrawingServiceUserInteraction()
+    {
+        var enableUserInteraction;
+        if ($scope.isPlayModeActivated())
+        {
+            enableUserInteraction = thisPlayerCanPlayMove;
+        }
+        else if ($scope.isAnalyzeModeActivated())
+        {
+            enableUserInteraction = false;
+        }
+        else if ($scope.isScoringModeActivated())
+        {
+            // TODO: Enable always if game state is GAME_STATE_INPROGRESS_PLAYING (local scoring only)
+            // TODO: Enable only if it's this player's turn if game state is GAME_STATE_INPROGRESS_SCORING (scoring proposal is submitted)
+            enableUserInteraction = true;
+        }
+
+        if (drawingService.isUserInteractionEnabled() === enableUserInteraction)
+            return;
+
+        if (enableUserInteraction)
+            drawingService.enableUserInteraction();
+        else
+            drawingService.disableUserInteraction();
+    }
+
+    function updateBeforeEnteringScoringMode()
+    {
+        goGame.goScore.enableScoringInformationCollection();
+        drawingService.enableScoringMode();
+    }
+
+    function updateBeforeLeavingScoringMode()
+    {
+        goGame.goScore.disableScoringInformationCollection();
+        drawingService.disableScoringMode();
     }
 
     // ----------------------------------------------------------------------
@@ -179,15 +290,38 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // ----------------------------------------------------------------------
 
     $scope.activatePlayMode = function() {
+        if ($scope.isPlayModeActivated())
+            return;
+
+        if ($scope.isScoringModeActivated())
+            updateBeforeLeavingScoringMode();
+
         boardViewMode = BOARDVIEW_MODE_PLAY;
+
+        updateDrawingServiceUserInteraction();
     };
 
     $scope.activateAnalyzeMode = function() {
+        if ($scope.isAnalyzeModeActivated())
+            return;
+
+        if ($scope.isScoringModeActivated())
+            updateBeforeLeavingScoringMode();
+
         boardViewMode = BOARDVIEW_MODE_ANALYZE;
+
+        updateDrawingServiceUserInteraction();
     };
 
     $scope.activateScoringMode = function() {
+        if ($scope.isScoringModeActivated())
+            return;
+
+        updateBeforeEnteringScoringMode();
+
         boardViewMode = BOARDVIEW_MODE_SCORING;
+
+        updateDrawingServiceUserInteraction();
     };
 
     $scope.isPlayModeActivated = function() {
@@ -224,15 +358,28 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // therefore the following function is not attached to the $scope.
     // The click is detected by the drawing service, which is why the
     // following function is an event listener.
-    drawingService.addDidPlayStoneListener(handleDidPlayStone);
-    function handleDidPlayStone(goPoint) {
+    drawingService.addDidClickOnIntersectionListener(handleDidClickOnIntersection);
+    function handleDidClickOnIntersection(goPoint) {
 
-        // Until we have received the server's response the move is not
-        // yet played, so technically it's still the user's turn to
-        // play. Disable interaction so that the user cannot attempt to
-        // play several stones while we are waiting for the server's
-        // response.
-        drawingService.disableUserInteraction();
+        if ($scope.isScoringModeActivated())
+        {
+            // TODO: Distinguish between "mark as dead" and "mark as seki"
+            goGame.goScore.toggleDeadStateOfStoneGroup(goPoint.goBoardRegion);
+
+            drawingService.drawGoBoardAfterScoreChange();
+            // Enable/disable interaction depending on whether it's currently
+            // this player's turn to score
+            // TODO: Implement
+            //updateIsThisPlayersTurnToScore();
+
+            updateIsThisPlayersTurn();
+            updateDrawingServiceUserInteraction();
+
+            return;
+        }
+
+        isMoveSubmissionInProgress = true;
+        updateDrawingServiceUserInteraction();
 
         webSocketService.submitNewGameMovePlay(
             gameID,
@@ -243,8 +390,8 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
     $scope.pass = function() {
 
-        // See comment in handleDidPlayStone()
-        drawingService.disableUserInteraction();
+        isMoveSubmissionInProgress = true;
+        updateDrawingServiceUserInteraction();
 
         webSocketService.submitNewGameMovePass(
             gameID,
@@ -258,6 +405,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
     webSocketService.addSubmitNewGameMoveListener(handleSubmitNewGameMove);
     function handleSubmitNewGameMove(success, gameMoveJsonObject, errorMessage) {
+
         if (success)
         {
             // The server sends us moves for all games that the currently
@@ -265,6 +413,10 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             // moves that are for the game that the user is currently viewing
             if (gameMoveJsonObject.gameID !== gameID)
                 return;
+
+            // Clear the submission flag only if the response is for the
+            // game that the user is currently viewing
+            isMoveSubmissionInProgress = false;
 
             playGameMoveJsonObject(gameMoveJsonObject);
 
@@ -281,14 +433,18 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             });
 
             drawingService.drawGoBoardAfterNewGameMoveWasPlayed();
-
-            // Re-enable user interaction that was temporarily disabled
-            // by handleDidPlayStone() or pass().
-            drawingService.enableUserInteraction();
+            updateIsThisPlayersTurn();
+            updateDrawingServiceUserInteraction();
         }
         else
         {
             errorHandlingService.showServerError(errorMessage);
+
+            // We can confidently clear the submission flag because even
+            // though the WebSocket error response data does not include
+            // a game ID, we know that the server only sends us an error
+            // response after we made a request
+            isMoveSubmissionInProgress = false;
         }
     }
 
@@ -343,6 +499,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
         webSocketService.removeGetGameInProgressWithMovesListener(handleGetGameInProgressWithMoves);
         webSocketService.removeSubmitNewGameMoveListener(handleSubmitNewGameMove);
-        drawingService.removeDidPlayStoneListener(handleDidPlayStone);
+        drawingService.removeDidClickOnIntersectionListener(handleDidClickOnIntersection);
     })
 }]);

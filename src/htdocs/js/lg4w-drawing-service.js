@@ -15,8 +15,8 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
     var thisPlayerColor = COLOR_NONE;
     var boardViewMetrics = undefined;
     var paper = null;  // the Raphael library object
+    var scoringMode = false;
     var userInteractionIsEnabled = false;
-    var isThisPlayersTurn = false;
     var boardViewIntersectionOfPreviousMouseMoveEvent = null;
 
     // ----------------------------------------------------------------------
@@ -25,22 +25,22 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
 
     var eventListeners =
         {
-            didPlayStone: []
+            didClickOnIntersection: []
         };
 
     // ----------------------------------------------------------------------
     // Public API
     // ----------------------------------------------------------------------
 
-    this.addDidPlayStoneListener = function(listener) {
-        eventListeners.didPlayStone.push(listener);
+    this.addDidClickOnIntersectionListener = function(listener) {
+        eventListeners.didClickOnIntersection.push(listener);
     };
 
-    this.removeDidPlayStoneListener = function(listener)
+    this.removeDidClickOnIntersectionListener = function(listener)
     {
-        var index = eventListeners.didPlayStone.indexOf(listener);
+        var index = eventListeners.didClickOnIntersection.indexOf(listener);
         if (-1 !== index)
-            eventListeners.didPlayStone.splice(index, 1);
+            eventListeners.didClickOnIntersection.splice(index, 1);
     };
 
     // Configure the drawing service so that future drawing operations draw
@@ -52,6 +52,29 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         goGame = newGoGame;
         thisPlayerColor = newThisPlayerColor;
         userInteractionIsEnabled = false;
+    };
+
+    // Configure the drawing service for scoring mode user interaction.
+    // For instance, the user can now click only on intersections occupied
+    // by stones.
+    this.enableScoringMode = function() {
+        if (scoringMode === true)
+            return;
+
+        scoringMode = true;
+
+        clearNextMoveIndicatorIfExists();
+    };
+
+    // Configure the drawing service for play mode user interaction.
+    // For instance, the user can now click only on empty intersections.
+    this.disableScoringMode = function() {
+        if (scoringMode === false)
+            return;
+
+        scoringMode = false;
+
+        clearScoringModeLayers();
     };
 
     // Erases the previous Go board (if it exists) and draws a new Go board
@@ -71,8 +94,6 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         boardViewMetrics = new BoardViewMetrics(goGame);
         boardViewMetrics.updateWithBaseSize(CGSizeMake(paper.width, paper.height));
         boardViewMetrics.updateWithBoardSize(goGame.goBoard.boardSize);
-
-        updateIsThisPlayersTurn();
 
         // The order in which layers are drawn is important! Later layers are
         // drawn on top of earlier layers.
@@ -107,10 +128,17 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         //this.drawStonesLayer();
         //this.drawSymbolsLayer();
         this.drawGoBoard();
+    };
 
-        // Enable/disable interaction depending on whether it's currently
-        // this player's turn
-        updateIsThisPlayersTurn();
+    // Draws the Go board after a score change.
+    this.drawGoBoardAfterScoreChange = function()
+    {
+        // TODO: The controller must remove the submission indicator (if one
+        // is present).
+
+        // TODO: We should only re-draw those layers that need it.
+        // See comments in drawGoBoardAfterNewGameMoveWasPlayed();
+        this.drawGoBoard();
     };
 
     // Enables user interaction in general. Note that the user may still be
@@ -126,6 +154,10 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
     // user interaction while the UI waits for a server response.
     this.disableUserInteraction = function() {
         userInteractionIsEnabled = false;
+    };
+
+    this.isUserInteractionEnabled = function() {
+        return userInteractionIsEnabled;
     };
 
     // ----------------------------------------------------------------------
@@ -303,11 +335,55 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         }
     }
 
+    function drawToggleIndicatorIfStoneGroupCanBeToggledAtIntersection(boardViewIntersection)
+    {
+        if (boardViewIntersection.goPoint === null)
+        {
+            // Don't draw anything
+        }
+        else
+        {
+            if (! boardViewIntersection.goPoint.hasStone())
+            {
+                // Don't draw anything
+            }
+            else
+            {
+                var lastMove = goGame.getLastMove();
+
+                drawCircle(
+                    boardViewIntersection.coordinates.x,
+                    boardViewIntersection.coordinates.y,
+                    boardViewMetrics.starPointRadius * 2,
+                    FILL_COLOR_TOGGLEINDICATOR,
+                    FILL_OPACITY_TOGGLEINDICATOR,
+                    ID_SVG_TOGGLEINDICATOR);
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // Internal functions - Clearing drawing artifacts and layers
+    // ----------------------------------------------------------------------
+
     function clearNextMoveIndicatorIfExists()
     {
         var nextMoveIndicator = paper.getById(ID_SVG_NEXTMOVEINDICATOR);
         if (nextMoveIndicator !== null)
             nextMoveIndicator.remove();
+    }
+
+    function clearToggleIndicatorIfExists()
+    {
+        var toggleIndicator = paper.getById(ID_SVG_TOGGLEINDICATOR);
+        if (toggleIndicator !== null)
+            toggleIndicator.remove();
+    }
+
+    function clearScoringModeLayers()
+    {
+        // TODO: We should only remove some layers instead of redrawing the whole board
+        drawingService.drawGoBoard();
     }
 
     // ----------------------------------------------------------------------
@@ -365,24 +441,12 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
     }
 
     // ----------------------------------------------------------------------
-    // Internal functions - Game logic functions
-    // ----------------------------------------------------------------------
-
-    function updateIsThisPlayersTurn()
-    {
-        if (goGame.getNextMoveColor() === thisPlayerColor)
-            isThisPlayersTurn = true;
-        else
-            isThisPlayersTurn = false;
-    }
-
-    // ----------------------------------------------------------------------
     // Internal functions - Mouse event handling
     // ----------------------------------------------------------------------
 
     function onMouseMove(event)
     {
-        if (! userInteractionIsEnabled || ! isThisPlayersTurn)
+        if (! userInteractionIsEnabled)
             return;
 
         var intersection = getIntersectionNearMouseEvent(event);
@@ -399,40 +463,58 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         }
         boardViewIntersectionOfPreviousMouseMoveEvent = intersection;
 
-        clearNextMoveIndicatorIfExists();
-        drawNextMoveIndicatorIfStoneCanBePlacedAtIntersection(intersection);
+        if (scoringMode)
+        {
+            clearToggleIndicatorIfExists();
+            drawToggleIndicatorIfStoneGroupCanBeToggledAtIntersection(intersection);
+        }
+        else
+        {
+            clearNextMoveIndicatorIfExists();
+            drawNextMoveIndicatorIfStoneCanBePlacedAtIntersection(intersection);
+        }
     }
 
     function onMouseClick(event)
     {
-        if (! userInteractionIsEnabled || ! isThisPlayersTurn)
+        if (! userInteractionIsEnabled)
             return;
 
         var intersection = getIntersectionNearMouseEvent(event);
         if (BoardViewIntersectionIsNullIntersection(intersection))
             return;
 
-        if (intersection.goPoint.hasStone())
-            return;
-
-        var isLegalMoveResult = goGame.isLegalMove(intersection.goPoint);
-        if (! isLegalMoveResult.isLegalMove)
+        if (scoringMode)
         {
-            var illegalReasonString = goMoveIsIllegalReasonToString(isLegalMoveResult.illegalReason);
+            if (! intersection.goPoint.hasStone())
+                return;
 
-            // TODO: Don't use jQuery
-            $("#" + ID_MOVE_IS_ILLEGAL_MODAL_INTERSECTION).html(intersection.goPoint.goVertex.toString());
-            $("#" + ID_MOVE_IS_ILLEGAL_MODAL_REASON).html(illegalReasonString);
-            $("#" + ID_MOVE_IS_ILLEGAL_MODAL).modal();
+            clearToggleIndicatorIfExists();
+        }
+        else
+        {
+            if (intersection.goPoint.hasStone())
+                return;
+
+            var isLegalMoveResult = goGame.isLegalMove(intersection.goPoint);
+            if (!isLegalMoveResult.isLegalMove)
+            {
+                var illegalReasonString = goMoveIsIllegalReasonToString(isLegalMoveResult.illegalReason);
+
+                // TODO: Don't use jQuery
+                $("#" + ID_MOVE_IS_ILLEGAL_MODAL_INTERSECTION).html(intersection.goPoint.goVertex.toString());
+                $("#" + ID_MOVE_IS_ILLEGAL_MODAL_REASON).html(illegalReasonString);
+                $("#" + ID_MOVE_IS_ILLEGAL_MODAL).modal();
+
+                clearNextMoveIndicatorIfExists();
+                return;
+            }
 
             clearNextMoveIndicatorIfExists();
-            return;
         }
 
-        clearNextMoveIndicatorIfExists();
-
         // Iterate over a copy in case the handler wants to remove itself
-        var listenersCopy = eventListeners.didPlayStone.slice(0);
+        var listenersCopy = eventListeners.didClickOnIntersection.slice(0);
         listenersCopy.forEach(function(listener) {
             listener(intersection.goPoint);
         });
