@@ -260,6 +260,12 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     function handleSubmitNewGameMove(success, gameMoveJsonObject, errorMessage) {
         if (success)
         {
+            // The server sends us moves for all games that the currently
+            // logged in user is playing, but we are interested only in those
+            // moves that are for the game that the user is currently viewing
+            if (gameMoveJsonObject.gameID !== gameID)
+                return;
+
             playGameMoveJsonObject(gameMoveJsonObject);
 
             $scope.$apply(function() {
