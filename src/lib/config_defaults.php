@@ -23,6 +23,10 @@ namespace LittleGoWeb
 
         // Session configuration
         public $sessionValidityDuration = SESSION_VALIDITIY_DURATION_DEFAULT;
+
+        // Debugging/development configuration
+        public $webSocketMessageSendDelayInMilliseconds = WEBSOCKET_MESSAGESENDDELAYINMILLISECONDS_DEFAULT;
+        public $webSocketMessageReceiveDelayInMilliseconds = WEBSOCKET_MESSAGERECEIVEDELAYINMILLISECONDS_DEFAULT;
     }
 }
 

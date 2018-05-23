@@ -121,9 +121,10 @@ namespace LittleGoWeb
     <script>
       var webSocketConfig = {
           hostname : "$config->webSocketHost",
-          port : "$config->webSocketPort"
+          port : $config->webSocketPort,
+          messageReceiveDelayInMilliseconds: $config->webSocketMessageReceiveDelayInMilliseconds
       };
-      
+
       var urlBasePath = "$urlBasePath";
     </script>
 

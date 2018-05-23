@@ -13,6 +13,8 @@ namespace LittleGoWeb
     // WebSocket server defaults
     const WEBSOCKET_HOST_DEFAULT = "localhost";
     const WEBSOCKET_PORT_DEFAULT = 8001;
+    const WEBSOCKET_MESSAGESENDDELAYINMILLISECONDS_DEFAULT = 0;
+    const WEBSOCKET_MESSAGERECEIVEDELAYINMILLISECONDS_DEFAULT = 0;
 
     // WebSocket requests (client outgoing/server incoming messages)
     const WEBSOCKET_REQUEST_TYPE_LOGIN = "c2sLogin";

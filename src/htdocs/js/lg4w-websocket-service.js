@@ -52,6 +52,12 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         + webSocketConfig.port;
     var theWebSocket = new WebSocket(webSocketUrl);
 
+    var messageReceiveDelayInMilliseconds = webSocketConfig.messageReceiveDelayInMilliseconds;
+    if (messageReceiveDelayInMilliseconds > 0)
+    {
+        $log.warn("WARNING: Receiving of all WebSocket messages will be delayed by " + messageReceiveDelayInMilliseconds + " milliseconds! Fix the server-side configuration if this is unintentional.");
+    }
+
     theWebSocket.addEventListener("open", function(event) {
         handleServiceIsReady();
     });
@@ -60,9 +66,20 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         handleServiceIsNotReady();
     });
 
-    theWebSocket.addEventListener("message", function(event) {
-        handleWebSocketMessage(event);
-    });
+    if (messageReceiveDelayInMilliseconds > 0)
+    {
+        theWebSocket.addEventListener("message", function(event) {
+            setTimeout(function() {
+                handleWebSocketMessage(event);
+            }, messageReceiveDelayInMilliseconds);
+        });
+    }
+    else
+    {
+        theWebSocket.addEventListener("message", function(event) {
+            handleWebSocketMessage(event);
+        });
+    }
 
     theWebSocket.addEventListener("error", function(event) {
         handleServiceIsNotReady();

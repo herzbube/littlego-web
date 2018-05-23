@@ -57,4 +57,27 @@ declare(strict_types=1);
 // Validity is checked on every request, and renewed on success.
 // $config->sessionValidityDuration = 86400 * 30;
 
+// ----------------------------------------------------------------------
+// Debugging/development configuration
+// ----------------------------------------------------------------------
+
+// A value in milliseconds. If >0 the WebSocket server artificially delays
+// sending every message by waiting the specified amount of time before it
+// actually sends the message. The delay is useful for testing the
+// client/server interaction when communication between the two is not
+// instantaneous. The delay can be used simply to simulate a slow network
+// connection, or to add an artifical bottleneck on the server side (e.g.
+// if the WebSocket server has to process too many messages, or the server
+// machine is generally under heavy load).
+// $config->webSocketMessageSendDelayInMilliseconds = 0;
+
+// A value in milliseconds. If >0 the WebSocket client artificially delays
+// receiving every message by waiting the specified amount of time after it
+// receives the message before it actually notifies listeners. This
+// configuration option serves a very similar purpose as the configuration
+// option webSocketMessageSendDelayInMilliseconds (see description above),
+// but with this option you can add a bottleneck on the client side. This
+// may or may not be
+// $config->webSocketMessageReceiveDelayInMilliseconds = 0;
+
 ?>

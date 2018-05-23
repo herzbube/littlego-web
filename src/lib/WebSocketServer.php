@@ -24,6 +24,16 @@ namespace LittleGoWeb
             echo "Successfully established database connection\n";
 
             echo "WebSocket server is now running\n";
+
+            if ($config->webSocketMessageSendDelayInMilliseconds > 0)
+            {
+                echo "WARNING: Sending of all WebSocket messages will be delayed by " . $config->webSocketMessageSendDelayInMilliseconds . " milliseconds! Fix the configuration if this is unintentional.\n";
+            }
+
+            if ($config->webSocketMessageReceiveDelayInMilliseconds > 0)
+            {
+                echo "WARNING: Receiving of all WebSocket messages will be delayed by " . $config->webSocketMessageReceiveDelayInMilliseconds . " milliseconds! Fix the configuration if this is unintentional.\n";
+            }
         }
 
         private function getWebSocketClient(ConnectionInterface $conn) : ?WebSocketClient
@@ -50,7 +60,7 @@ namespace LittleGoWeb
 
         public function onOpen(ConnectionInterface $conn): void
         {
-            $webSocketClient = new WebSocketClient($conn);
+            $webSocketClient = new WebSocketClient($conn, $this->config->webSocketMessageSendDelayInMilliseconds);
             $this->clients[$conn->resourceId] = $webSocketClient;
             echo "New connection! ({$conn->resourceId})\n";
         }

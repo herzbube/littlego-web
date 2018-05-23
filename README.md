@@ -182,10 +182,26 @@ This typically is the case if you run Little Go for the Web in its own virtual h
  
 If you want to make Little Go for the Web accessible from a different base path than `/`, then you have to specify that URL base path in the config file `config.php`.
 
-## Debugging the client
+## Debugging / development aids
+
+### Client-side logging
 
 Search the client-side JavaScript code for the following line:
 
         $logProvider.debugEnabled(false);
 
 Set this to true if you want to see some logging in the JavaScript console of your browser.
+
+
+### Artificially delay WebSocket communication
+
+In the config file `config.php` you can specify two artificial delays for slowing down the WebSocket communication. The two options add a bottleneck either on the server or on the client side (or both, if you want this for some reason).
+
+For instance, the following config snippet will delay sending and receiving messages by 3000 milliseconds (i.e. 3 seconds) per message.
+
+```
+$config->webSocketMessageSendDelayInMilliseconds = 3000;
+$config->webSocketMessageReceiveDelayInMilliseconds = 3000;
+```
+
+This is very useful for manual testing: You can easily see how the application will handle impatient users ☺.
