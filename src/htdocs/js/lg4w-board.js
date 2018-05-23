@@ -156,6 +156,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             // operation, and we're not sure if this would negatively
             // affect the performance of $scope.$apply().
             drawingService.drawGoBoard();
+            drawingService.enableUserInteraction();
         }
     }
 
@@ -233,6 +234,14 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // following function is an event listener.
     drawingService.addDidPlayStoneListener(handleDidPlayStone);
     function handleDidPlayStone(goPoint) {
+
+        // Until we have received the server's response the move is not
+        // yet played, so technically it's still the user's turn to
+        // play. Disable interaction so that the user cannot attempt to
+        // play several stones while we are waiting for the server's
+        // response.
+        drawingService.disableUserInteraction();
+
         webSocketService.submitNewGameMovePlay(
             gameID,
             goGame.getNextMoveColor(),
@@ -241,6 +250,10 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     }
 
     $scope.pass = function() {
+
+        // See comment in handleDidPlayStone()
+        drawingService.disableUserInteraction();
+
         webSocketService.submitNewGameMovePass(
             gameID,
             goGame.getNextMoveColor());
@@ -270,6 +283,10 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             });
 
             drawingService.drawGoBoardAfterNewGameMoveWasPlayed();
+
+            // Re-enable user interaction that was temporarily disabled
+            // by handleDidPlayStone() or pass().
+            drawingService.enableUserInteraction();
         }
         else
         {

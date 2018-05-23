@@ -15,6 +15,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
     var thisPlayerColor = COLOR_NONE;
     var boardViewMetrics = undefined;
     var paper = null;  // the Raphael library object
+    var userInteractionIsEnabled = false;
     var isThisPlayersTurn = false;
     var boardViewIntersectionOfPreviousMouseMoveEvent = null;
 
@@ -50,6 +51,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
     this.configure = function(newGoGame, newThisPlayerColor) {
         goGame = newGoGame;
         thisPlayerColor = newThisPlayerColor;
+        userInteractionIsEnabled = false;
     };
 
     // Erases the previous Go board (if it exists) and draws a new Go board
@@ -109,6 +111,21 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         // Enable/disable interaction depending on whether it's currently
         // this player's turn
         updateIsThisPlayersTurn();
+    };
+
+    // Enables user interaction in general. Note that the user may still be
+    // unable to play simply because it's not her turn.
+    //
+    // User interaction is disabled by default whenever the service is
+    // configured for a new game, and needs to be explicitly enabled.
+    this.enableUserInteraction = function() {
+        userInteractionIsEnabled = true;
+    };
+
+    // Disables user interaction. This is useful e.g. to temporarily prevent
+    // user interaction while the UI waits for a server response.
+    this.disableUserInteraction = function() {
+        userInteractionIsEnabled = false;
     };
 
     // ----------------------------------------------------------------------
@@ -365,7 +382,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
 
     function onMouseMove(event)
     {
-        if (! isThisPlayersTurn)
+        if (! userInteractionIsEnabled || ! isThisPlayersTurn)
             return;
 
         var intersection = getIntersectionNearMouseEvent(event);
@@ -388,7 +405,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
 
     function onMouseClick(event)
     {
-        if (! isThisPlayersTurn)
+        if (! userInteractionIsEnabled || ! isThisPlayersTurn)
             return;
 
         var intersection = getIntersectionNearMouseEvent(event);
