@@ -66,6 +66,22 @@ const GOMOVEISILLEGALREASON_SIMPLEKO = 2;
 const GOMOVEISILLEGALREASON_SUPERKO = 3;
 const GOMOVEISILLEGALREASON_UNDEFINED = -1;
 
+// The states that a stone group can have during scoring
+const STONEGROUPSTATE_ALIVE = 0;
+const STONEGROUPSTATE_DEAD = 1;
+const STONEGROUPSTATE_SEKI = 2;
+const STONEGROUPSTATE_UNDEFINED = -1;
+
+// The modes that the user can choose to mark stone groups during scoring
+const SCORINGMARKMODE_DEAD = 0;
+const SCORINGMARKMODE_SEKI = 1;
+
+// The possible results of a scoring run
+const GAMERESULT_NONE = 0;
+const GAMERESULT_BLACKHASWON = 1;
+const GAMERESULT_WHITEHASWON = 2;
+const GAMERESULT_TIE = 3;
+
 const DEFAULT_BOARDSIZE = BOARDSIZE_19;
 const DEFAULT_STONECOLOR = COLOR_BLACK;
 const DEFAULT_HANDICAP = 0;
