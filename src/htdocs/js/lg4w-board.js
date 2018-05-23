@@ -214,11 +214,17 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // ----------------------------------------------------------------------
 
     $scope.isPassButtonDisabled = function() {
-        return (goGame.getNextMoveColor() !== thisPlayerColor);
+        if ($scope.isBoardShown())
+            return (goGame.getNextMoveColor() !== thisPlayerColor);
+        else
+            return false;  // we get here on page reload: goGame does not exist yet
     };
 
     $scope.isResignButtonDisabled = function() {
-        return (goGame.getNextMoveColor() !== thisPlayerColor);
+        if ($scope.isBoardShown())
+            return (goGame.getNextMoveColor() !== thisPlayerColor);
+        else
+            return false;  // we get here on page reload: goGame does not exist yet
     };
 
     // Playing a stone is not handled via AngularJS "ngClick" directive,
