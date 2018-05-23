@@ -23,6 +23,9 @@ var GoGame = (function ()
         this.goPlayerBlack = new GoPlayer(COLOR_BLACK);
         this.goPlayerWhite = new GoPlayer(COLOR_WHITE);
         this.firstMove = null;
+        this.goUtilities = new GoUtilities(this);
+
+        this.goUtilities.placeHandicapStones();
     }
 
     // Returns true if the GoGame has at least one move. Returns false
@@ -110,7 +113,7 @@ var GoGame = (function ()
             goMove = new GoMove(GOMOVE_TYPE_PLAY, goPlayer, previousGoMove);
 
         goMove.setGoPoint(goPoint);
-        goMove.doIt();
+        goMove.doIt(this);
 
         if (previousGoMove === null)
             this.firstMove = goMove;
@@ -144,7 +147,7 @@ var GoGame = (function ()
         else
             goMove = new GoMove(GOMOVE_TYPE_PASS, goPlayer, previousGoMove);
 
-        goMove.doIt();
+        goMove.doIt(this);
 
         if (previousGoMove === null)
             this.firstMove = goMove;
@@ -1561,7 +1564,7 @@ var GoMove = (function ()
     // - The goPoint  property is null
     // - The stoneState property of the GoPoint object in the goPoint property
     //   is not COLOR_NONE (i.e. there already is a stone on the intersection).
-    GoMove.prototype.doIt = function()
+    GoMove.prototype.doIt = function(goGame)
     {
         // Nothing to do for pass moves
         if (this.moveType === GOMOVE_TYPE_PASS)
@@ -1583,7 +1586,7 @@ var GoMove = (function ()
         else
             this.goPoint.stoneState = COLOR_WHITE;
 
-        this.movePointToNewRegion(this.goPoint);
+        goGame.goUtilities.movePointToNewRegion(this.goPoint);
 
         // If the captured stones array already contains entries we assume
         // that this invocation of doIt() is actually a "redo", i.e. undo()
@@ -1659,8 +1662,9 @@ var GoMove = (function ()
             throw new Error("Color of GoPoint " + this.goPoint + " does not match player color " + playedStoneColor + " (actual color is " + this.goPoint.stoneState + ")");
 
         // Update stone state of captured stones *BEFORE* handling the actual
-        // point of this move. This makes sure that movePointToNewRegion()
-        // further down does not join regions incorrectly.
+        // point of this move. This makes sure that the call to
+        // GoUtilities.movePointToNewRegion() further down does not join
+        // regions incorrectly.
         this.capturedStones.forEach(function(goPointCapture) {
             goPointCapture.stoneState = capturedStoneColor;
         }, this);  // <-- supply "this" value seen in the loop
@@ -1668,64 +1672,7 @@ var GoMove = (function ()
         // Update the point's stone state *BEFORE* moving it to a new region
         this.goPoint.stoneState = COLOR_NONE;
 
-        this.movePointToNewRegion(this.goPoint);
-    };
-
-    // Moves the specified GoPoint object to a new GoBoardRegion in response to
-    // a change of GoPoint.stoneState.
-    //
-    // The specified GoPoint's stoneState property must already have its new
-    // value at the time this method is invoked.
-    //
-    // Effects of this method are:
-    // - The GoPoint is removed from its old GoBoardRegion
-    // - The GoPoint is added either to an existing GoBoardRegion (if one of
-    //   the neighbours of the GoPoint has the same stoneState property value),
-    //   or to a new GoBoardRegion (if all neighbours have a different
-    //   stoneState property values)
-    // - The GoPoint's old GoBoardRegion may become fragmented if the GoPoint
-    //   has been the only link between two or more sub-regions
-    // - The GoPoint's new GoBoardRegion may merge with other regions if
-    //   the GoPoint joins them together
-    //
-    // TODO: This method should be made reusable, it is also needed by GoGame
-    // when it sets up handicap stones. We still lack a GoUtilities class with
-    // static functions.
-    GoMove.prototype.movePointToNewRegion = function(goPoint)
-    {
-        // Step 1: Remove point from old region
-        var oldGoBoardRegion = goPoint.goBoardRegion;
-        oldGoBoardRegion.removePoint(goPoint);  // possible side-effect: oldRegion might be
-                                                // split into multiple GoBoardRegion objects
-
-        // Step 2: Attempt to add the point to the same region as one of its
-        // neighbours. At the same time, merge regions if they can be joined.
-        var newGoBoardRegion = null;
-        this.goPoint.getNeighbours().forEach(function(neighbour) {
-            // Do not consider the neighbour if the stone states do not match
-            // (stone state also includes stone color)
-            if (neighbour.stoneState !== goPoint.stoneState)
-                return;
-
-            if (newGoBoardRegion === null)
-            {
-                // Join the region of one of the neighbours
-                newGoBoardRegion = neighbour.goBoardRegion;
-                newGoBoardRegion.addPoint(goPoint);
-            }
-            else
-            {
-                // The stone has already joined a neighbouring region
-                // -> now check if entire regions can be merged
-                var neighbourGoBoardRegion = neighbour.goBoardRegion;
-                if (neighbourGoBoardRegion !== newGoBoardRegion)
-                    newGoBoardRegion.joinRegion(neighbourGoBoardRegion);
-            }
-        }, this);  // <-- supply "this" value seen in the loop
-
-        // Step 3: Still no region? The point forms its own new region!
-        if (newGoBoardRegion === null)
-            newGoBoardRegion = new GoBoardRegion(goPoint);
+        goGame.goUtilities.movePointToNewRegion(this.goPoint);
     };
 
     return GoMove;
@@ -1939,5 +1886,270 @@ var GoZobristTable = (function ()
     };
 
     return GoZobristTable;
+})();
+
+// ----------------------------------------------------------------------
+// The GoUtilities class is a container for various utility functions
+// that operate on all sorts of Go domain model objects.
+// ----------------------------------------------------------------------
+var GoUtilities = (function ()
+{
+    "use strict";
+
+    // The following arrays must have one element for every possible board size
+    const MAX_HANDICAPS = [4, 9, 9, 9, 9, 9, 9];
+    const EDGE_DISTANCES = [3, 3, 3, 4, 4, 4, 4];
+
+    // Creates a new GoUtilities object that operates on the specified GoGame
+    // object and its associated Go domain model objects.
+    function GoUtilities(goGame)
+    {
+        this.goGame = goGame;
+    }
+
+    // Returns an (unordered) array of GoVertex objects that denote vertices
+    // for the handicap/board size combination of the GoGame that the GoUtilities
+    // operates on.
+    //
+    // For board sizes greater than 7x7, @a handicap must be between 2 and 9.
+    // For board size 7x7, @a handicap must be between 2 and 4. The limits
+    // are inclusive.
+    //
+    // The handicap positions returned by this method correspond to those
+    // specified in section 4.1.1 of the GTP v2 specification.
+    // http://www.lysator.liu.se/~gunnar/gtp/gtp2-spec-draft2/gtp2-spec.html#sec:fixed-handicap-placement
+    //
+    // Handicap stone distribution for handicaps 1-5:
+    // @verbatim
+    // 3   2
+    //   5
+    // 1   4
+    // @endverbatim
+    //
+    // Handicap stone distribution for handicaps 6-7:
+    // @verbatim
+    // 3   2
+    // 5 7 6
+    // 1   4
+    // @endverbatim
+    //
+    // Handicap stone distribution for handicaps 8-9:
+    // @verbatim
+    // 3 8 2
+    // 5 9 6
+    // 1 7 4
+    // @endverbatim
+    GoUtilities.prototype.getHandicapVertices = function()
+    {
+        var handicap = this.goGame.handicap;
+        var boardSize = this.goGame.goBoard.boardSize;
+
+        var handicapVertices = [];
+        if (0 === handicap)
+            return handicapVertices;
+
+        var boardSizeAsArrayIndex = Math.floor((boardSize - BOARDSIZE_SMALLEST) / 2);
+        if (handicap < 2 || handicap > MAX_HANDICAPS[boardSizeAsArrayIndex])
+        {
+            throw new Error("Handicap " + handicap + " is out of range for board size " + boardSize);
+        }
+
+        var edgeDistance = EDGE_DISTANCES[boardSizeAsArrayIndex];
+        var lineClose = edgeDistance;
+        var lineFar = boardSize - edgeDistance + 1;
+        var lineMiddle = lineClose + ((lineFar - lineClose) / 2);
+
+        for (var handicapIter = 1; handicapIter <= handicap; ++handicapIter)
+        {
+            var vertexX;
+            var vertexY;
+            switch (handicapIter)
+            {
+                case 1:
+                {
+                    vertexX = lineClose;
+                    vertexY = lineClose;
+                    break;
+                }
+                case 2:
+                {
+                    vertexX = lineFar;
+                    vertexY = lineFar;
+                    break;
+                }
+                case 3:
+                {
+                    vertexX = lineClose;
+                    vertexY = lineFar;
+                    break;
+                }
+                case 4:
+                {
+                    vertexX = lineFar;
+                    vertexY = lineClose;
+                    break;
+                }
+                case 5:
+                {
+                    if (handicapIter === handicap)
+                    {
+                        vertexX = lineMiddle;
+                        vertexY = lineMiddle;
+                    }
+                    else
+                    {
+                        vertexX = lineClose;
+                        vertexY = lineMiddle;
+                    }
+                    break;
+                }
+                case 6:
+                {
+                    vertexX = lineFar;
+                    vertexY = lineMiddle;
+                    break;
+                }
+                case 7:
+                {
+                    if (handicapIter === handicap)
+                    {
+                        vertexX = lineMiddle;
+                        vertexY = lineMiddle;
+                    }
+                    else
+                    {
+                        vertexX = lineMiddle;
+                        vertexY = lineClose;
+                    }
+                    break;
+                }
+                case 8:
+                {
+                    vertexX = lineMiddle;
+                    vertexY = lineFar;
+                    break;
+                }
+                case 9:
+                {
+                    vertexX = lineMiddle;
+                    vertexY = lineMiddle;
+                    break;
+                }
+                default:
+                {
+                    throw new Error("Unsupported handicap " + handicapIter);
+                }
+            }
+
+            var goVertex = new GoVertex(vertexX, vertexY);
+            handicapVertices.push(goVertex);
+        }
+
+        return handicapVertices;
+    };
+
+    // Returns an (unordered) array of GoPoint objects that denote the
+    // intersections on which handicap stones are to be placed for the
+    // handicap/board size combination of the GoGame that the GoUtilities
+    // operates on.
+    //
+    // See getHandicapVertices() for details.
+    GoUtilities.prototype.getHandicapPoints = function()
+    {
+        var board = this.goGame.goBoard;
+        var handicapPoints = [];
+
+        var handicapVertices = this.getHandicapVertices();
+        handicapVertices.forEach(function(goVertex) {
+            var goPoint = board.getPointAtVertex(goVertex);
+            handicapPoints.push(goPoint);
+        }, this);
+
+        return handicapPoints;
+    };
+
+    // Returns the maximum handicap for the board size of the GoGame that
+    // the GoUtilities operates on.
+    GoUtilities.prototype.getMaximumHandicap = function()
+    {
+        var boardSize = this.goGame.goBoard.boardSize;
+
+        switch (boardSize)
+        {
+            case GoBoardSize7:
+                return 4;
+            default:
+                return 9;
+        }
+    };
+
+    // Places handicap stones on the board of the GoGame that the GoUtilities
+    // operates on. The game's handicap/board size determine the intersections
+    // where stones are to be placed.
+    //
+    // See getHandicapVertices() for details.
+    GoUtilities.prototype.placeHandicapStones = function()
+    {
+        var handicapPoints = this.getHandicapPoints();
+        handicapPoints.forEach(function(goPoint) {
+            goPoint.stoneState = COLOR_BLACK;
+            this.movePointToNewRegion(goPoint);
+        }, this);
+    };
+
+    // Moves the specified GoPoint object to a new GoBoardRegion in response to
+    // a change of GoPoint.stoneState.
+    //
+    // The specified GoPoint's stoneState property must already have its new
+    // value at the time this method is invoked.
+    //
+    // Effects of this method are:
+    // - The GoPoint is removed from its old GoBoardRegion
+    // - The GoPoint is added either to an existing GoBoardRegion (if one of
+    //   the neighbours of the GoPoint has the same stoneState property value),
+    //   or to a new GoBoardRegion (if all neighbours have a different
+    //   stoneState property values)
+    // - The GoPoint's old GoBoardRegion may become fragmented if the GoPoint
+    //   has been the only link between two or more sub-regions
+    // - The GoPoint's new GoBoardRegion may merge with other regions if
+    //   the GoPoint joins them together
+    GoUtilities.prototype.movePointToNewRegion = function(goPoint)
+    {
+        // Step 1: Remove point from old region
+        var oldGoBoardRegion = goPoint.goBoardRegion;
+        oldGoBoardRegion.removePoint(goPoint);  // possible side-effect: oldRegion might be
+                                                // split into multiple GoBoardRegion objects
+
+        // Step 2: Attempt to add the point to the same region as one of its
+        // neighbours. At the same time, merge regions if they can be joined.
+        var newGoBoardRegion = null;
+        goPoint.getNeighbours().forEach(function(neighbour) {
+            // Do not consider the neighbour if the stone states do not match
+            // (stone state also includes stone color)
+            if (neighbour.stoneState !== goPoint.stoneState)
+                return;
+
+            if (newGoBoardRegion === null)
+            {
+                // Join the region of one of the neighbours
+                newGoBoardRegion = neighbour.goBoardRegion;
+                newGoBoardRegion.addPoint(goPoint);
+            }
+            else
+            {
+                // The stone has already joined a neighbouring region
+                // -> now check if entire regions can be merged
+                var neighbourGoBoardRegion = neighbour.goBoardRegion;
+                if (neighbourGoBoardRegion !== newGoBoardRegion)
+                    newGoBoardRegion.joinRegion(neighbourGoBoardRegion);
+            }
+        }, this);  // <-- supply "this" value seen in the loop
+
+        // Step 3: Still no region? The point forms its own new region!
+        if (newGoBoardRegion === null)
+            newGoBoardRegion = new GoBoardRegion(goPoint);
+    };
+
+    return GoUtilities;
 })();
 
