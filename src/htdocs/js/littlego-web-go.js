@@ -1135,6 +1135,8 @@ var GoBoardRegion = (function ()
                     adjacentRegions.push(adjacentRegion);
             }, this);  // <-- supply "this" value seen in the loop
         }, this);  // <-- supply "this" value seen in the loop
+
+        return adjacentRegions;
     };
 
     // Adds the specified GoPoint object to the GoBoardRegion.
@@ -1489,17 +1491,6 @@ var GoBoardRegion = (function ()
         this.territoryColor = undefined;
         this.territoryInconsistencyFound = undefined;
         this.stoneGroupState = undefined;
-    };
-
-    // During scoring denotes which territory the GoBoardRegion belongs to.
-    // Must be COLOR_BLACK, COLOR_WHITE or COLOR_NONE.
-    GoBoardRegion.prototype.getTerritoryColor = function()
-    {
-        return this.territoryColor;
-    };
-    GoBoardRegion.prototype.setTerritoryColor = function(territoryColor)
-    {
-        this.territoryColor = territoryColor;
     };
 
     // During scoring denotes which territory the GoBoardRegion belongs to.
@@ -2484,13 +2475,17 @@ var GoScore = (function ()
     {
         var allRegions = this.goGame.goBoard.getRegions();
         allRegions.forEach(function(goBoardRegion) {
-            goBoardRegion.territoryColor = COLOR_NONE;
-            goBoardRegion.territoryInconsistencyFound = false;
+            // Enabling scoring mode allows caching for optimized performance.
+            // Invoke this first because it initializes all scoring mode
+            // members.
+            goBoardRegion.enableScoringMode();
+
+            goBoardRegion.setTerritoryColor(COLOR_NONE);
+            goBoardRegion.setTerritoryInconsistencyFound(false);
             if (goBoardRegion.isStoneGroup())
                 goBoardRegion.setStoneGroupState(STONEGROUPSTATE_ALIVE);
             else
                 goBoardRegion.setStoneGroupState(STONEGROUPSTATE_UNDEFINED);
-            goBoardRegion.enableScoringMode();  // enabling scoring mode allows caching for optimized performance
         }, this);
     };
 
@@ -2554,7 +2549,7 @@ var GoScore = (function ()
 
         stoneGroupsToToggle.push(stoneGroup);
         regionsAlreadyProcessed.push(stoneGroup);
-        while (stoneGroupsToToggle.count > 0)
+        while (stoneGroupsToToggle.length > 0)
         {
             var stoneGroupToToggle = stoneGroupsToToggle.shift();  // removes (and returns) the first element of the array
 
@@ -2704,7 +2699,7 @@ var GoScore = (function ()
                         // If the group is alive, it belongs to the territory of the color who
                         // played the stones in the group. This is important only for area
                         // scoring.
-                        region.setTerritoryColor = region.getColor();
+                        region.setTerritoryColor(region.getColor());
                         break;
                     }
                     case STONEGROUPSTATE_DEAD:
@@ -2965,7 +2960,7 @@ var GoScore = (function ()
                     break;
                 }
             }
-            move = move.previous;
+            move = move.getPreviousGoMove();
         }
 
         // Area, territory & dead stones (for current board position)
