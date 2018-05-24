@@ -74,7 +74,8 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
 
         scoringMode = false;
 
-        clearScoringModeLayers();
+        // TODO: We should only remove some layers instead of redrawing the whole board
+        this.drawGoBoard();
     };
 
     // Erases the previous Go board (if it exists) and draws a new Go board
@@ -518,12 +519,6 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         var toggleIndicator = paper.getById(ID_SVG_TOGGLEINDICATOR);
         if (toggleIndicator !== null)
             toggleIndicator.remove();
-    }
-
-    function clearScoringModeLayers()
-    {
-        // TODO: We should only remove some layers instead of redrawing the whole board
-        drawingService.drawGoBoard();
     }
 
     // ----------------------------------------------------------------------
