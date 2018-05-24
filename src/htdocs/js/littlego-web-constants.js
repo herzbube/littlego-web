@@ -151,15 +151,23 @@ const STROKE_WIDTH_NORMAL_GRID_LINE = 1;
 const STROKE_COLOR_GRID_LINE = "black";
 const STROKE_COLOR_BLACK_LAST_MOVE_SYMBOL = "white";
 const STROKE_COLOR_WHITE_LAST_MOVE_SYMBOL = "black";
+const STROKE_COLOR_DEAD_STONE_SYMBOL = "red";
+const STROKE_COLOR_BLACK_SEKI_SYMBOL = "#80c0f0";
+const STROKE_COLOR_WHITE_SEKI_SYMBOL = "#60b0e0";
 const FILL_COLOR_STAR_POINT = "black";
 const FILL_COLOR_BLACK_STONE = "black";
 const FILL_COLOR_WHITE_STONE = "white";
+const FILL_COLOR_BLACK_TERRITORY = "black";
+const FILL_COLOR_WHITE_TERRITORY = "white";
+const FILL_COLOR_INCONSISTENT_TERRITORY = "red";
 const FILL_COLOR_TOGGLEINDICATOR = "red";
 const FILL_OPACITY_STARPOINT = 1.0;
 const FILL_OPACITY_STONE = 1.0;
 const FILL_OPACITY_NEXTMOVEINDICATOR = 0.6;
 const FILL_OPACITY_TOGGLEINDICATOR = 1.0;
-
+const FILL_OPACITY_BLACK_TERRITORY = 0.35;
+const FILL_OPACITY_WHITE_TERRITORY = 0.6;
+const FILL_OPACITY_INCONSISTENT_TERRITORY = 0.3;
 
 // ----------------------------------------------------------------------
 // Application IDs
@@ -201,6 +209,10 @@ const ID_MOVE_IS_ILLEGAL_MODAL_REASON = PREFIX_MOVE_IS_ILLEGAL_MODAL + "reason";
 const ID_SVG_BOARD = "board";
 const ID_SVG_STARPOINT_PREFIX = "starpoint-";
 const ID_SVG_STONE_PREFIX = "stone-";
+const ID_SVG_LASTMOVESYMBOL = "last-move-symbol";
+const ID_SVG_DEADSTONESYMBOL_PREFIX = "dead-stone-symbol-";
+const ID_SVG_TERRITORY_PREFIX = "territory-";
+const ID_SVG_SEKISYMBOL_PREFIX = "seki-symbol-";
 const ID_SVG_NEXTMOVEINDICATOR = "next-move-indicator";
 const ID_SVG_TOGGLEINDICATOR = "toggle-indicator";
 

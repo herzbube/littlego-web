@@ -100,6 +100,8 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         drawGridLayer();
         drawStonesLayer();
         drawSymbolsLayer();
+        if (scoringMode)
+            drawScoringLayer();
 
         // TODO: Don't use jQuery. Can we use paper.canvas?
         var jQueryObjectBoard = $("#" + ID_SVG_BOARD);
@@ -127,6 +129,8 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         //this.erasedSymbolsLayer();
         //this.drawStonesLayer();
         //this.drawSymbolsLayer();
+        if (scoringMode)
+            drawScoringLayer();
         this.drawGoBoard();
     };
 
@@ -271,21 +275,157 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         if (lastMove !== null && GOMOVE_TYPE_PLAY === lastMove.moveType)
         {
             var lastMoveSymbolRect = getSymbolRectCenteredAtPoint(lastMove.goPoint);
-            var lastMoveSymbolSvg = paper.rect(
-                lastMoveSymbolRect.origin.x,
-                lastMoveSymbolRect.origin.y,
-                lastMoveSymbolRect.size.width,
-                lastMoveSymbolRect.size.height);
 
             var lastMoveSymbolStrokeColor;
             if (lastMove.goPlayer.isBlack())
                 lastMoveSymbolStrokeColor = STROKE_COLOR_BLACK_LAST_MOVE_SYMBOL;
             else
                 lastMoveSymbolStrokeColor = STROKE_COLOR_WHITE_LAST_MOVE_SYMBOL;
-            lastMoveSymbolSvg.attr("stroke", lastMoveSymbolStrokeColor);
 
             var lastMoveSymbolStrokeWidth = boardViewMetrics.normalLineWidth * boardViewMetrics.contentsScale;
-            lastMoveSymbolSvg.attr("stroke-width", lastMoveSymbolStrokeWidth);
+
+            drawRect(
+                lastMoveSymbolRect,
+                lastMoveSymbolStrokeColor,
+                lastMoveSymbolStrokeWidth,
+                undefined,
+                undefined,
+                ID_SVG_LASTMOVESYMBOL);
+        }
+    }
+
+    // Draws territory and marks up stones according to their GoBoardRegion's
+    // stoneGroupState property. This function is invoked only while scoring
+    // scoring is in progress.
+    function drawScoringLayer()
+    {
+        goGame.goBoard.getPoints().forEach(function(pointsXAxis) {
+            pointsXAxis.forEach(function(goPoint) {
+
+                var goBoardRegion = goPoint.goBoardRegion;
+
+                drawTerritoryRectIfNotNeutral(goPoint, goBoardRegion);
+                drawStoneGroupStateIfNotAlive(goPoint, goBoardRegion);
+
+            }, this);
+        }, this);
+    }
+
+    // ----------------------------------------------------------------------
+    // Internal functions - Drawing helpers for layer drawing functions
+    // ----------------------------------------------------------------------
+
+    function drawTerritoryRectIfNotNeutral(goPoint, goBoardRegion) {
+
+        var territoryFillColor;
+        var territoryFillOpacity;
+        var territoryColor = goBoardRegion.getTerritoryColor();
+        switch (territoryColor)
+        {
+            case COLOR_BLACK:
+                territoryFillColor = FILL_COLOR_BLACK_TERRITORY;
+                territoryFillOpacity = FILL_OPACITY_BLACK_TERRITORY;
+                break;
+            case COLOR_WHITE:
+                territoryFillColor = FILL_COLOR_WHITE_TERRITORY;
+                territoryFillOpacity = FILL_OPACITY_WHITE_TERRITORY;
+                break;
+            case COLOR_NONE:
+                if (goBoardRegion.getTerritoryInconsistencyFound())
+                {
+                    territoryFillColor = FILL_COLOR_INCONSISTENT_TERRITORY;
+                    territoryFillOpacity = FILL_OPACITY_INCONSISTENT_TERRITORY;
+                }
+                else
+                {
+                    // Territory is truly neutral, no markup needed
+                    return;
+                }
+                break;
+            default:
+            {
+                throw new Error("Unknown territory color " + territoryColor + " for intersection " + goPoint.goVertex);
+            }
+        }
+
+        var territoryRect = getTerritoryRectCenteredAtPoint(goPoint);
+        var territoryID = ID_SVG_TERRITORY_PREFIX + goPoint.goVertex.toString();
+
+        drawRect(
+            territoryRect,
+            undefined,
+            undefined,
+            territoryFillColor,
+            territoryFillOpacity,
+            territoryID);
+    }
+
+    function drawStoneGroupStateIfNotAlive(goPoint, goBoardRegion)
+    {
+        if (! goPoint.hasStone())
+            return;
+
+        var stoneGroupState = goBoardRegion.getStoneGroupState();
+        switch (stoneGroupState)
+        {
+            case STONEGROUPSTATE_DEAD:
+            {
+                var deadStoneSymbolRect = getSymbolRectCenteredAtPoint(goPoint);
+
+                // The symbol for marking a dead stone is an "x"; we draw this as the two
+                // diagonals of a Go stone's "inner square".
+                var deadStoneSymbolPath = "";
+                deadStoneSymbolPath += "M" + deadStoneSymbolRect.origin.x + "," + deadStoneSymbolRect.origin.y;
+                deadStoneSymbolPath += "L" + (deadStoneSymbolRect.origin.x + deadStoneSymbolRect.size.width) + "," + (deadStoneSymbolRect.origin.y + deadStoneSymbolRect.size.width);
+                deadStoneSymbolPath += "M" + deadStoneSymbolRect.origin.x + "," + (deadStoneSymbolRect.origin.y + deadStoneSymbolRect.size.width);
+                deadStoneSymbolPath += "L" + (deadStoneSymbolRect.origin.x + deadStoneSymbolRect.size.width) + "," + deadStoneSymbolRect.origin.y;
+
+                var deadStoneSymbolStrokeColor = STROKE_COLOR_DEAD_STONE_SYMBOL;
+                var deadStoneSymbolStrokeWidth = boardViewMetrics.normalLineWidth * boardViewMetrics.contentsScale;
+                var deadStoneSymbolID = ID_SVG_DEADSTONESYMBOL_PREFIX + goPoint.goVertex.toString();
+
+                drawPath(
+                    deadStoneSymbolPath,
+                    deadStoneSymbolStrokeColor,
+                    deadStoneSymbolStrokeWidth,
+                    undefined,
+                    undefined,
+                    deadStoneSymbolID);
+
+                break;
+            }
+            case STONEGROUPSTATE_SEKI:
+            {
+                var sekiSymbolRect = getSymbolRectCenteredAtPoint(goPoint);
+
+                var sekiSymbolStrokeColor;
+                if (goPoint.hasBlackStone())
+                    sekiSymbolStrokeColor = STROKE_COLOR_BLACK_SEKI_SYMBOL;
+                else
+                    sekiSymbolStrokeColor = STROKE_COLOR_WHITE_SEKI_SYMBOL;
+
+                var sekiSymbolStrokeWidth = boardViewMetrics.normalLineWidth * boardViewMetrics.contentsScale;
+                var sekiSymbolID = ID_SVG_SEKISYMBOL_PREFIX + goPoint.goVertex.toString();
+
+                drawRect(
+                    sekiSymbolRect,
+                    sekiSymbolStrokeColor,
+                    sekiSymbolStrokeWidth,
+                    undefined,
+                    undefined,
+                    sekiSymbolID);
+
+                break;
+            }
+            case STONEGROUPSTATE_ALIVE:
+            {
+                // Don't draw anything for alive groups
+                return;
+            }
+            default:
+            {
+                throw new Error("Unknown stone group state " + stoneGroupState + " for intersection " + goPoint.goVertex);
+            }
         }
     }
 
@@ -409,6 +549,56 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         circleSvg.id = id;
     }
 
+    function drawRect(rect, strokeColor, strokeWidth, fillColor, fillOpacity, id)
+    {
+        var rectSvg = paper.rect(
+            rect.origin.x,
+            rect.origin.y,
+            rect.size.width,
+            rect.size.height);
+
+        if (strokeColor !== undefined)
+        {
+            rectSvg.attr("stroke", strokeColor);
+            rectSvg.attr("stroke-width", strokeWidth);
+        }
+
+        // TODO: Remove stroke-width entirely - we don't need it, but
+        // Raphael adds stroke-width != 0 for us.
+        rectSvg.attr("stroke-width", "0");
+
+        if (fillColor !== undefined)
+        {
+            rectSvg.attr("fill", fillColor);
+            rectSvg.attr("fill-opacity", fillOpacity);
+        }
+
+        rectSvg.id = id;
+    }
+
+    function drawPath(pathString, strokeColor, strokeWidth, fillColor, fillOpacity, id)
+    {
+        var pathSvg = paper.path(pathString);
+
+        if (strokeColor !== undefined)
+        {
+            pathSvg.attr("stroke", strokeColor);
+            pathSvg.attr("stroke-width", strokeWidth);
+        }
+
+        // TODO: Remove stroke-width entirely - we don't need it, but
+        // Raphael adds stroke-width != 0 for us.
+        //pathSvg.attr("stroke-width", "0");
+
+        if (fillColor !== undefined)
+        {
+            pathSvg.attr("fill", fillColor);
+            pathSvg.attr("fill-opacity", fillOpacity);
+        }
+
+        pathSvg.id = id;
+    }
+
     // ----------------------------------------------------------------------
     // Internal functions - Geometry functions
     // ----------------------------------------------------------------------
@@ -429,18 +619,36 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
 
         var symbolSize = CGSizeMake(width, height);
 
-
-        var originBasedRect = CGRectMake(CGPointZero, symbolSize);
-        var originBasedRectCenter = CGPointMake(CGRectGetMidX(originBasedRect), CGRectGetMidY(originBasedRect));
-        var goPointCoordinates = boardViewMetrics.getCoordinatesFromGoPoint(goPoint);
-        var x = goPointCoordinates.x - originBasedRectCenter.x;
-        var y = goPointCoordinates.y - originBasedRectCenter.y;
-        var symbolOrigin = CGPointMake(x, y);
-
-        return CGRectMake(symbolOrigin, symbolSize);
+        return getRectWithSizeCenteredAtPoint(symbolSize, goPoint);
     }
 
-    // ----------------------------------------------------------------------
+    function getTerritoryRectCenteredAtPoint(goPoint)
+    {
+        var width = boardViewMetrics.pointCellSize.width;
+        var height = boardViewMetrics.pointCellSize.height;
+        width *= boardViewMetrics.contentsScale;
+        height *= boardViewMetrics.contentsScale;
+
+        var rectSize = CGSizeMake(width, height);
+
+        return getRectWithSizeCenteredAtPoint(rectSize, goPoint);
+    }
+
+    function getRectWithSizeCenteredAtPoint(rectSize, goPoint)
+    {
+        var originBasedRect = CGRectMake(CGPointZero, rectSize);
+        var originBasedRectCenter = CGPointMake(CGRectGetMidX(originBasedRect), CGRectGetMidY(originBasedRect));
+
+        var goPointCoordinates = boardViewMetrics.getCoordinatesFromGoPoint(goPoint);
+
+        var x = goPointCoordinates.x - originBasedRectCenter.x;
+        var y = goPointCoordinates.y - originBasedRectCenter.y;
+        var rectOrigin = CGPointMake(x, y);
+
+        return CGRectMake(rectOrigin, rectSize);
+    }
+
+        // ----------------------------------------------------------------------
     // Internal functions - Mouse event handling
     // ----------------------------------------------------------------------
 
