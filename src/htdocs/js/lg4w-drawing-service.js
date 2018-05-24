@@ -11,13 +11,26 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
     // Private variables
     // ----------------------------------------------------------------------
 
-    var goGame = undefined;
-    var thisPlayerColor = COLOR_NONE;
-    var boardViewMetrics = undefined;
-    var paper = null;  // the Raphael library object
-    var scoringMode = false;
-    var userInteractionIsEnabled = false;
-    var boardViewIntersectionOfPreviousMouseMoveEvent = null;
+    var goGame;
+    var thisPlayerColor;
+    var boardViewMetrics;
+    var paper;  // the Raphael library object
+    var scoringMode;
+    var userInteractionIsEnabled;
+    var boardViewIntersectionOfPreviousMouseMoveEvent;
+
+    initializeService();
+
+    function initializeService()
+    {
+        goGame = undefined;
+        thisPlayerColor = COLOR_NONE;
+        boardViewMetrics = undefined;
+        paper = null;
+        scoringMode = false;
+        userInteractionIsEnabled = false;
+        boardViewIntersectionOfPreviousMouseMoveEvent = null;
+    }
 
     // ----------------------------------------------------------------------
     // Event listeners
@@ -48,15 +61,24 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
     //
     // The player who in the future will interact with the Go board has the
     // specified stone color (must be either COLOR_BLACK or COLOR_WHITE).
+    //
+    // Every time this function is invoked the service re-initializes itself
+    // to the default state and the calling controller must set up again
+    // any non-default state.
     this.configure = function(newGoGame, newThisPlayerColor) {
+
+        initializeService();
+
         goGame = newGoGame;
         thisPlayerColor = newThisPlayerColor;
-        userInteractionIsEnabled = false;
     };
 
     // Configure the drawing service for scoring mode user interaction.
     // For instance, the user can now click only on intersections occupied
     // by stones.
+    //
+    // Scoring mode is disabled by default whenever the service is configured
+    // for a new game, and needs to be explicitly enabled.
     this.enableScoringMode = function() {
         if (scoringMode === true)
             return;
