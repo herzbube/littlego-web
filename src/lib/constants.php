@@ -185,7 +185,7 @@ namespace LittleGoWeb
     // Game constants
     const GAME_STATE_INPROGRESS_PLAYING = 0;
     const GAME_STATE_INPROGRESS_SCORING = 1;
-    const GAME_STATE_FINISHED = 1;
+    const GAME_STATE_FINISHED = 2;
 
     // Game parameter constants
     const BOARDSIZE_7 = 7;

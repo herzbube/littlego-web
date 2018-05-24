@@ -87,7 +87,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         // TODO: Add better error message. The current error message
         // only makes sense to a developer.
         var errorMessage = ANGULARNAME_SERVICE_WEBSOCKET + ": WebSocket error! Please check if the server is running. Reload the page after restarting the server.";
-        $log.error(errorMessage)
+        $log.error(errorMessage);
 
         handleError(errorMessage);
     });
