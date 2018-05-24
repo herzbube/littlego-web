@@ -322,6 +322,9 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         boardViewMode = BOARDVIEW_MODE_SCORING;
 
         updateDrawingServiceUserInteraction();
+
+        goGame.goScore.calculate();
+        drawingService.drawGoBoardAfterScoreChange();
     };
 
     $scope.isPlayModeActivated = function() {
@@ -365,6 +368,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         {
             // TODO: Distinguish between "mark as dead" and "mark as seki"
             goGame.goScore.toggleDeadStateOfStoneGroup(goPoint.goBoardRegion);
+            goGame.goScore.calculate();
 
             drawingService.drawGoBoardAfterScoreChange();
             // Enable/disable interaction depending on whether it's currently
