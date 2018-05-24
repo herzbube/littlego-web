@@ -456,8 +456,6 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
             }
             else
             {
-                var lastMove = goGame.getLastMove();
-
                 var nextMoveColor = goGame.getNextMoveColor();
                 var nextMoveStoneColor;
                 if (nextMoveColor === COLOR_BLACK)
@@ -490,12 +488,10 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
             }
             else
             {
-                var lastMove = goGame.getLastMove();
-
                 drawCircle(
                     boardViewIntersection.coordinates.x,
                     boardViewIntersection.coordinates.y,
-                    boardViewMetrics.starPointRadius * 2,
+                    boardViewMetrics.starPointRadius * 1.5,
                     FILL_COLOR_TOGGLEINDICATOR,
                     FILL_OPACITY_TOGGLEINDICATOR,
                     ID_SVG_TOGGLEINDICATOR);
@@ -580,10 +576,12 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
             pathSvg.attr("stroke", strokeColor);
             pathSvg.attr("stroke-width", strokeWidth);
         }
-
-        // TODO: Remove stroke-width entirely - we don't need it, but
-        // Raphael adds stroke-width != 0 for us.
-        //pathSvg.attr("stroke-width", "0");
+        else
+        {
+            // TODO: Remove stroke-width entirely - we don't need it, but
+            // Raphael adds stroke-width != 0 for us.
+            pathSvg.attr("stroke-width", "0");
+        }
 
         if (fillColor !== undefined)
         {
