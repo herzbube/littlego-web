@@ -99,9 +99,21 @@
                                     <button class="btn btn-outline-dark" title="Go to next board position" data-toggle="modal" data-target="#notYetImplemented">Next ></button>
                                     <button class="btn btn-outline-dark" title="Go to last board position" data-toggle="modal" data-target="#notYetImplemented">Last >></button>
                                 </div>
-                                <div ng-show="isScoringModeActivated()">
-                                    <button class="btn btn-outline-dark" title="Calculate the new score" data-toggle="modal" data-target="#notYetImplemented">Calculate</button>
-                                    <button class="btn btn-outline-dark" title="Start marking as seki" data-toggle="modal" data-target="#notYetImplemented">Seki</button>
+                                <div class="container-fluid" ng-show="isScoringModeActivated()">
+                                    <div class="row justify-content-between">
+                                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                            <label class="btn btn-outline-dark active" title="Select to mark dead stones" ng-click="beginMarkingDeadStones()">
+                                                <input type="radio" autocomplete="off" ng-checked="isMarkDeadActivated()">Dead
+                                            </label>
+                                            <label class="btn btn-outline-dark" title="Select to mark stones in seki" ng-click="beginMarkingStonesInSeki()">
+                                                <input type="radio" autocomplete="off" ng-checked="isMarkSekiActivated()">Seki
+                                            </label>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-outline-danger" title="Resign the game" data-toggle="modal" data-target="#notYetImplemented">Resign</button>
+                                            <button class="btn btn-success" title="Propose the current score as the final result to your opponent" data-toggle="modal" data-target="#notYetImplemented">Submit</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

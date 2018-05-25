@@ -294,6 +294,12 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
     // Draws the symbols (e.g. last move, move numbers)
     function drawSymbolsLayer()
     {
+        // In scoring mode the user wants to concentrate on marking dead
+        // stones and/or stones in seki. Symbols are only a distraction
+        // from that task, so we disable them completely.
+        if (scoringMode)
+            return;
+
         var lastMove = goGame.getLastMove();
         if (lastMove !== null && GOMOVE_TYPE_PLAY === lastMove.moveType)
         {

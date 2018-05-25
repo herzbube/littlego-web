@@ -17,6 +17,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     var isThisPlayersTurn = false;
     var isMoveSubmissionInProgress = false;
     var thisPlayerCanPlayMove = false;
+    var scoringMarkMode = SCORINGMARKMODE_DEAD;
 
     // ----------------------------------------------------------------------
     // Placeholder handling for the entire play area
@@ -366,8 +367,10 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
         if ($scope.isScoringModeActivated())
         {
-            // TODO: Distinguish between "mark as dead" and "mark as seki"
-            goGame.goScore.toggleDeadStateOfStoneGroup(goPoint.goBoardRegion);
+            if ($scope.isMarkDeadActivated())
+                goGame.goScore.toggleDeadStateOfStoneGroup(goPoint.goBoardRegion);
+            else
+                goGame.goScore.toggleSekiStateOfStoneGroup(goPoint.goBoardRegion);
             goGame.goScore.calculate();
 
             drawingService.drawGoBoardAfterScoreChange();
@@ -483,6 +486,26 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 throw new Error("Invalid move type " + gameMoveJsonObject.moveType);
         }
     }
+
+    // ----------------------------------------------------------------------
+    // Handle scoring mode operations
+    // ----------------------------------------------------------------------
+
+    $scope.beginMarkingDeadStones = function() {
+        scoringMarkMode = SCORINGMARKMODE_DEAD;
+    };
+
+    $scope.beginMarkingStonesInSeki = function() {
+        scoringMarkMode = SCORINGMARKMODE_SEKI;
+    };
+
+    $scope.isMarkDeadActivated = function() {
+        return (scoringMarkMode === SCORINGMARKMODE_DEAD);
+    };
+
+    $scope.isMarkSekiActivated = function() {
+        return (scoringMarkMode === SCORINGMARKMODE_SEKI);
+    };
 
     // ----------------------------------------------------------------------
     // Controller initialization and destruction
