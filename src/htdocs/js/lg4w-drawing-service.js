@@ -575,10 +575,12 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
             rectSvg.attr("stroke", strokeColor);
             rectSvg.attr("stroke-width", strokeWidth);
         }
-
-        // TODO: Remove stroke-width entirely - we don't need it, but
-        // Raphael adds stroke-width != 0 for us.
-        rectSvg.attr("stroke-width", "0");
+        else
+        {
+            // TODO: Remove stroke-width entirely - we don't need it, but
+            // Raphael adds stroke-width != 0 for us.
+            rectSvg.attr("stroke-width", "0");
+        }
 
         if (fillColor !== undefined)
         {
