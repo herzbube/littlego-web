@@ -139,6 +139,9 @@ const BOARDVIEW_MODE_PLAY = 0;
 const BOARDVIEW_MODE_ANALYZE = 1;
 const BOARDVIEW_MODE_SCORING = 2;
 
+const BOARDVIEW_DATATYPE_GAMEMOVES = 0;
+const BOARDVIEW_DATATYPE_SCORE = 1;
+
 // ----------------------------------------------------------------------
 // Drawing constants
 // ----------------------------------------------------------------------

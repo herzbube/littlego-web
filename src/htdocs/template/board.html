@@ -75,7 +75,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-12">
-                            <div id="container-board-mode-navigation" class="board-right-hand-side-subsection">
+                            <div class="board-right-hand-side-subsection">
                                 <ul class="nav nav-tabs">
                                     <li class="nav-item">
                                         <button class="nav-link btn btn-link" ng-class="{ 'active': isPlayModeActivated() }" ng-click="activatePlayMode()">Play Mode</button>
@@ -88,7 +88,7 @@
                                     </li>
                                 </ul>
                             </div>
-                            <div id="container-board-controls" class="board-right-hand-side-subsection">
+                            <div class="board-right-hand-side-subsection">
                                 <div ng-show="isPlayModeActivated()">
                                     <button class="btn btn-outline-dark" ng-click="pass()" ng-disabled="isPassButtonDisabled()">Pass</button>
                                     <button class="btn btn-outline-danger" ng-click="resign()" ng-disabled="isResignButtonDisabled()">Resign</button>
@@ -124,23 +124,56 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-12">
-                            <h5 class="card-title">Game Moves</h5>
-                            <table class="table table-striped table-bordered table-hover table-responsive-md">
-                                <thead class="thead-dark">
-                                    <tr><th>#</th><th>Played by</th><th>Intersection</th><th>Captured</th></tr>
-                                </thead>
-                                <tbody>
-                                    <tr ng-show="isGameMovesPlaceHolderMessageShown()">
-                                        <td class="data-placeholder" colspan="4" ng-class="{ 'error-message': gameMovesPlaceHolderMessageIsErrorMessage }">{{ gameMovesPlaceHolderMessage }}</td>
-                                    </tr>
-                                    <tr ng-repeat="gameMove in gameMoves">
-                                        <td>{{ gameMove.moveNumber }}</td>
-                                        <td>{{ gameMove.playedBy }}</td>
-                                        <td>{{ gameMove.intersection }}</td>
-                                        <td>{{ gameMove.captured }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div class="board-right-hand-side-subsection">
+                                <ul class="nav nav-tabs">
+                                    <li class="nav-item">
+                                        <button class="nav-link btn btn-link" ng-class="{ 'active': areGameMovesShown() }" ng-click="showGameMoves()">Game Moves</button>
+                                    </li>
+                                    <li class="nav-item">
+                                        <button class="nav-link btn btn-link" ng-class="{ 'active': isScoreShown() }" ng-click="showScore()">Score</button>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="board-right-hand-side-subsection">
+                                <div ng-show="areGameMovesShown()">
+                                    <table class="table table-striped table-bordered table-hover table-responsive-md">
+                                        <thead class="thead-dark">
+                                            <tr><th>#</th><th>Played by</th><th>Intersection</th><th>Captured</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-show="isGameMovesPlaceHolderMessageShown()">
+                                                <td class="data-placeholder" colspan="4" ng-class="{ 'error-message': gameMovesPlaceHolderMessageIsErrorMessage }">{{ gameMovesPlaceHolderMessage }}</td>
+                                            </tr>
+                                            <tr ng-repeat="gameMove in gameMoves">
+                                                <td>{{ gameMove.moveNumber }}</td>
+                                                <td>{{ gameMove.playedBy }}</td>
+                                                <td>{{ gameMove.intersection }}</td>
+                                                <td>{{ gameMove.captured }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div ng-show="isScoreShown()">
+                                    <table id="scoringDataTable" class="table table-striped table-bordered table-hover table-responsive-md">
+                                        <thead class="thead-dark">
+                                            <tr><th>Black</th><th></th><th>White</th></tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr><td>-</td><td>Komi</td><td>{{ scoreKomi }}</td></tr>
+                                          <tr ng-show="isAreaScoring()"><td>-</td><td>Handicap</td><td>{{ scoreHandicapCompensationWhite }}</td></tr>
+                                          <tr ng-show="isAreaScoring()"><td>{{ scoreAliveBlack }}</td><td>Stones</td><td>{{ scoreAliveWhite }}</td></tr>
+                                          <tr ng-show="isTerritoryScoring()"><td>{{ scoreCapturedByBlack }}</td><td>Captured</td><td>{{ scoreCapturedByWhite }}</td></tr>
+                                          <tr ng-show="isTerritoryScoring()"><td>{{ scoreDeadWhite }}</td><td>Dead</td><td>{{ scoreDeadBlack }}</td></tr>
+                                          <tr><td>{{ scoreTerritoryBlack }}</td><td>Territory</td><td>{{ scoreTerritoryWhite }}</td></tr>
+                                          <tr class="scoringDataTotalRow"><td>{{ scoreTotalScoreBlack }}</td><td>Score</td><td>{{ scoreTotalScoreWhite }}</td></tr>
+                                          <tr class="scoringDataTotalRow"><td colspan="3">{{ scoreFinalScore }} <br> <small>{{ scoreScoringSystem }}</small></td></tr>
+                                        </tbody>
+                                    </table>
+                                    <p ng-show="isScoringModeNotActivated()">
+                                        <small><span ng-show="isAreaScoring()">Stone count</span><span ng-show="isTerritoryScoring()">Dead stone count</span> and territory score are not available because you are not in scoring mode.</small>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

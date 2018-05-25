@@ -18,10 +18,12 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     var isMoveSubmissionInProgress = false;
     var thisPlayerCanPlayMove = false;
     var scoringMarkMode = SCORINGMARKMODE_DEAD;
+    var dataTypeShown = BOARDVIEW_DATATYPE_GAMEMOVES;
 
     // ----------------------------------------------------------------------
     // Placeholder handling for the entire play area
     // ----------------------------------------------------------------------
+
     $scope.playPlaceHolderMessage = "Waiting for server connection ...";
     $scope.playPlaceHolderMessageIsErrorMessage = false;
     $scope.isPlayPlaceHolderMessageShown = function() {
@@ -294,11 +296,14 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         if ($scope.isPlayModeActivated())
             return;
 
-        if ($scope.isScoringModeActivated())
+        var leavingScoringMode = $scope.isScoringModeActivated();
+        if (leavingScoringMode)
             updateBeforeLeavingScoringMode();
 
         boardViewMode = BOARDVIEW_MODE_PLAY;
 
+        if (leavingScoringMode)
+            updateScoringData();
         updateDrawingServiceUserInteraction();
     };
 
@@ -306,11 +311,14 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         if ($scope.isAnalyzeModeActivated())
             return;
 
-        if ($scope.isScoringModeActivated())
+        var leavingScoringMode = $scope.isScoringModeActivated();
+        if (leavingScoringMode)
             updateBeforeLeavingScoringMode();
 
         boardViewMode = BOARDVIEW_MODE_ANALYZE;
 
+        if (leavingScoringMode)
+            updateScoringData();
         updateDrawingServiceUserInteraction();
     };
 
@@ -325,6 +333,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         updateDrawingServiceUserInteraction();
 
         goGame.goScore.calculate();
+        updateScoringData();
         drawingService.drawGoBoardAfterScoreChange();
     };
 
@@ -371,8 +380,11 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 goGame.goScore.toggleDeadStateOfStoneGroup(goPoint.goBoardRegion);
             else
                 goGame.goScore.toggleSekiStateOfStoneGroup(goPoint.goBoardRegion);
-            goGame.goScore.calculate();
 
+            goGame.goScore.calculate();
+            $scope.$apply(function() {
+                updateScoringData();
+            });
             drawingService.drawGoBoardAfterScoreChange();
             // Enable/disable interaction depending on whether it's currently
             // this player's turn to score
@@ -381,18 +393,18 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
             updateIsThisPlayersTurn();
             updateDrawingServiceUserInteraction();
-
-            return;
         }
+        else if ($scope.isPlayModeActivated())
+        {
+            isMoveSubmissionInProgress = true;
+            updateDrawingServiceUserInteraction();
 
-        isMoveSubmissionInProgress = true;
-        updateDrawingServiceUserInteraction();
-
-        webSocketService.submitNewGameMovePlay(
-            gameID,
-            goGame.getNextMoveColor(),
-            goPoint.goVertex.x,
-            goPoint.goVertex.y);
+            webSocketService.submitNewGameMovePlay(
+                gameID,
+                goGame.getNextMoveColor(),
+                goPoint.goVertex.x,
+                goPoint.goVertex.y);
+        }
     }
 
     $scope.pass = function() {
@@ -488,7 +500,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     }
 
     // ----------------------------------------------------------------------
-    // Handle scoring mode operations
+    // Handle scoring mode data and operations
     // ----------------------------------------------------------------------
 
     $scope.beginMarkingDeadStones = function() {
@@ -505,6 +517,89 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
     $scope.isMarkSekiActivated = function() {
         return (scoringMarkMode === SCORINGMARKMODE_SEKI);
+    };
+
+    $scope.isScoringModeNotActivated = function() {
+        return ! $scope.isScoringModeActivated();
+    };
+
+    $scope.isAreaScoring = function() {
+        if ($scope.isBoardShown())
+            return (goGame.goGameRules.scoringSystem === SCORINGSYSTEM_AREA_SCORING);
+        else
+            return false;  // we get here on page reload: goGame does not exist yet
+    };
+
+    $scope.isTerritoryScoring = function() {
+        if ($scope.isBoardShown())
+            return (goGame.goGameRules.scoringSystem === SCORINGSYSTEM_TERRITORY_SCORING);
+        else
+            return false;  // we get here on page reload: goGame does not exist yet
+    };
+
+    function updateScoringData() {
+        $scope.scoreKomi = fractionalNumberToString(goGame.goScore.komi);
+        $scope.scoreHandicapCompensationWhite = goGame.goScore.handicapCompensationWhite;
+        if ($scope.isScoringModeActivated())
+        {
+            $scope.scoreAliveBlack = goGame.goScore.aliveBlack;
+            $scope.scoreAliveWhite = goGame.goScore.aliveWhite;
+            $scope.scoreDeadWhite = goGame.goScore.deadWhite;
+            $scope.scoreDeadBlack = goGame.goScore.deadBlack;
+            $scope.scoreTerritoryBlack = goGame.goScore.territoryBlack;
+            $scope.scoreTerritoryWhite = goGame.goScore.territoryWhite;
+        }
+        else
+        {
+            var notAvailableString = "n/a";
+            $scope.scoreAliveBlack = notAvailableString;
+            $scope.scoreAliveWhite = notAvailableString;
+            $scope.scoreDeadWhite = notAvailableString;
+            $scope.scoreDeadBlack = notAvailableString;
+            $scope.scoreTerritoryBlack = notAvailableString;
+            $scope.scoreTerritoryWhite = notAvailableString;
+        }
+        $scope.scoreCapturedByBlack = goGame.goScore.capturedByBlack;
+        $scope.scoreCapturedByWhite = goGame.goScore.capturedByWhite;
+        $scope.scoreTotalScoreBlack = fractionalNumberToString(goGame.goScore.totalScoreBlack);
+        $scope.scoreTotalScoreWhite = fractionalNumberToString(goGame.goScore.totalScoreWhite);
+        switch (goGame.goScore.result)
+        {
+            case GAMERESULT_BLACKHASWON:
+                var score = goGame.goScore.totalScoreBlack - goGame.goScore.totalScoreWhite;
+                $scope.scoreFinalScore = "Black wins by " + fractionalNumberToString(score);
+                break;
+            case GAMERESULT_WHITEHASWON:
+                var score = goGame.goScore.totalScoreWhite - goGame.goScore.totalScoreBlack;
+                $scope.scoreFinalScore = "White wins by " + fractionalNumberToString(score);
+                break;
+            case GAMERESULT_TIE:
+                $scope.scoreFinalScore = "Game is a tie";
+                break;
+            default:
+                throw new Error("Unknown game result " + goGame.goScore.result);
+        }
+        $scope.scoreScoringSystem = "(" + scoringSystemToString(goGame.goGameRules.scoringSystem) + ")";
+    }
+
+    // ----------------------------------------------------------------------
+    // Handle data switching operations
+    // ----------------------------------------------------------------------
+
+    $scope.showGameMoves = function() {
+        dataTypeShown = BOARDVIEW_DATATYPE_GAMEMOVES;
+    };
+
+    $scope.showScore = function() {
+        dataTypeShown = BOARDVIEW_DATATYPE_SCORE;
+    };
+
+    $scope.areGameMovesShown = function() {
+        return (dataTypeShown === BOARDVIEW_DATATYPE_GAMEMOVES);
+    };
+
+    $scope.isScoreShown = function() {
+        return (dataTypeShown === BOARDVIEW_DATATYPE_SCORE);
     };
 
     // ----------------------------------------------------------------------
