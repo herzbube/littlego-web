@@ -30,6 +30,16 @@ var GoGame = (function ()
         this.goUtilities.placeHandicapStones();
     }
 
+    GoGame.prototype.getState = function()
+    {
+        return this.state;
+    };
+
+    GoGame.prototype.setState = function(state)
+    {
+        this.state = state;
+    };
+
     // Returns true if the GoGame has at least one move. Returns false
     // if the GoGame has no moves.
     GoGame.prototype.hasMoves = function()

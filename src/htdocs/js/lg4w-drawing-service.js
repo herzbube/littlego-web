@@ -533,6 +533,11 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
 
     function clearNextMoveIndicatorIfExists()
     {
+        // The function might be already called before we have drawn an
+        // initial board
+        if (paper === null)
+            return;
+
         var nextMoveIndicator = paper.getById(ID_SVG_NEXTMOVEINDICATOR);
         if (nextMoveIndicator !== null)
             nextMoveIndicator.remove();
@@ -540,6 +545,11 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
 
     function clearToggleIndicatorIfExists()
     {
+        // The function might be already called before we have drawn an
+        // initial board
+        if (paper === null)
+            return;
+
         var toggleIndicator = paper.getById(ID_SVG_TOGGLEINDICATOR);
         if (toggleIndicator !== null)
             toggleIndicator.remove();

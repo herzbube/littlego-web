@@ -10,10 +10,11 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // ----------------------------------------------------------------------
     // Private data not available via the $scope
     // ----------------------------------------------------------------------
+
+    var boardViewMode = BOARDVIEW_MODE_INITIALIZING;
     var gameID = GAMEID_UNDEFINED;
     var thisPlayerColor = COLOR_NONE;
     var goGame = undefined;
-    var boardViewMode = BOARDVIEW_MODE_PLAY;
     var isThisPlayersTurn = false;
     var isMoveSubmissionInProgress = false;
     var thisPlayerCanPlayMove = false;
@@ -104,7 +105,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                     playGameMoveJsonObject(gameMoveJsonObject);
                 }, this);
 
-                goGame.state = gameInProgressJsonObject.state;
+                goGame.setState(gameInProgressJsonObject.state);
 
                 var blackPlayerUserInfo = new UserInfo(gameInProgressJsonObject.blackPlayer);
                 $scope.boardPlayerInfoBlack = new BoardPlayerInfoBlack(blackPlayerUserInfo, goGame);
@@ -139,18 +140,25 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 else
                     $scope.gameMovesPlaceHolderMessage = "";
 
-                switch (goGame.state)
+                switch (goGame.getState())
                 {
                     case GAME_STATE_INPROGRESS_PLAYING:
                         boardViewMode = BOARDVIEW_MODE_PLAY;
                         break;
                     case GAME_STATE_INPROGRESS_SCORING:
                     case GAME_STATE_FINISHED:
+                        updateBeforeEnteringScoringMode();
                         boardViewMode = BOARDVIEW_MODE_SCORING;
+                        dataTypeShown = BOARDVIEW_DATATYPE_SCORE;
                         break;
                     default:
-                        throw new Error("Unknown game state " + goGame.state);
+                        throw new Error("Unknown game state " + goGame.getState());
                 }
+
+                // Even in play mode we need an initial score, the user might
+                // switch immediately to the score tab without playing a move
+                goGame.goScore.calculate();
+                updateScoringData();
 
                 // Invoke all updaters in order to make sure that everything
                 // is up-to-date
@@ -214,6 +222,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // this client) can currently play a move, depending on the value of
     // the following properties of this controller:
     //
+    // - The game state
     // - Whether or not it's this player's turn
     // - Whether or not the submission of a move by this player is
     //   currently in progress.
@@ -227,9 +236,10 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // its value.
     function updateThisPlayerCanPlayMove()
     {
-
         var newThisPlayerCanPlayMove;
-        if (isThisPlayersTurn && ! isMoveSubmissionInProgress)
+        if (goGame.getState() !== GAME_STATE_INPROGRESS_PLAYING)
+            newThisPlayerCanPlayMove = false;
+        else if (isThisPlayersTurn && ! isMoveSubmissionInProgress)
             newThisPlayerCanPlayMove = true;
         else
             newThisPlayerCanPlayMove = false;
@@ -355,14 +365,14 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
     $scope.isPassButtonDisabled = function() {
         if ($scope.isBoardShown())
-            return (goGame.getNextMoveColor() !== thisPlayerColor);
+            return ! thisPlayerCanPlayMove;
         else
             return false;  // we get here on page reload: goGame does not exist yet
     };
 
     $scope.isResignButtonDisabled = function() {
         if ($scope.isBoardShown())
-            return (goGame.getNextMoveColor() !== thisPlayerColor);
+            return ! thisPlayerCanPlayMove;  // TODO: Player should be able to resign in scoring mode
         else
             return false;  // we get here on page reload: goGame does not exist yet
     };
@@ -384,6 +394,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             goGame.goScore.calculate();
             $scope.$apply(function() {
                 updateScoringData();
+                updateIsThisPlayersTurn();
             });
             drawingService.drawGoBoardAfterScoreChange();
             // Enable/disable interaction depending on whether it's currently
@@ -391,7 +402,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             // TODO: Implement
             //updateIsThisPlayersTurnToScore();
 
-            updateIsThisPlayersTurn();
             updateDrawingServiceUserInteraction();
         }
         else if ($scope.isPlayModeActivated())
