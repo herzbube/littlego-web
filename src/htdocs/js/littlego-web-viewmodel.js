@@ -96,7 +96,8 @@ var GameRequest = (function ()
 //   "koRule" : 0,                 // valid values: 0 (= simple ko), 1 (= positional superko), 2 (= situational superko)
 //   "scoringSystem": 0,           // valid values: 0 (= area scoring), 1 (= territory scoring)
 //   "numberOfMovesPlayed" : 32,   // valid values: 0-n
-//   "nextMoveColor" : 1,          // valid values: 0 (= black), 1 (= white)
+//   "state" : 0,                  // valid values: 0 (= in progress & playing), 1 (= in progress & scoring)
+//   "nextMoveColor" : 1,          // valid values: 0 (= black), 1 (= white), -1 (= undefined, only allowed if state === 1)
 // };
 // ----------------------------------------------------------------------
 var GameInProgress = (function ()
@@ -116,7 +117,11 @@ var GameInProgress = (function ()
         this.koRule = koRuleToString(jsonObject.koRule);
         this.scoringSystem = scoringSystemToString(jsonObject.scoringSystem);
         this.numberOfMovesPlayed = numberOfMovesPlayedToString(jsonObject.numberOfMovesPlayed);
-        this.nextMoveColor = colorToString(jsonObject.nextMoveColor);
+        this.state = jsonObject.state;
+        if (this.state === GAME_STATE_INPROGRESS_PLAYING)
+            this.nextMoveColor = colorToString(jsonObject.nextMoveColor);
+        else
+            this.nextMoveColor = "Scoring in progress";
     }
 
     return GameInProgress;
