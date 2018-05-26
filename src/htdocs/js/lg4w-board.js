@@ -433,7 +433,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     };
 
     webSocketService.addSubmitNewGameMoveListener(handleSubmitNewGameMove);
-    function handleSubmitNewGameMove(success, gameMoveJsonObject, errorMessage) {
+    function handleSubmitNewGameMove(success, gameMoveJsonObject, gameState, errorMessage) {
 
         if (success)
         {
@@ -459,10 +459,27 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 var moveNumber = $scope.gameMoves.length + 1;
                 var gameMove = new GameMove(goMove, moveNumber);
                 $scope.gameMoves.unshift(gameMove);
+                updateIsThisPlayersTurn();
+
+                // At least the number of captured stones in territory scoring
+                // must be updated
+                goGame.goScore.calculate();
+                updateScoringData();
+
+                // Move from GAME_STATE_INPROGRESS_PLAYING to
+                // GAME_STATE_INPROGRESS_SCORING if the server instructs us
+                // to do so
+                if (gameState === GAME_STATE_INPROGRESS_SCORING)
+                {
+                    goGame.setState(GAME_STATE_INPROGRESS_SCORING);
+                    updateThisPlayerCanPlayMove();
+
+                    $scope.activateScoringMode();
+                    dataTypeShown = BOARDVIEW_DATATYPE_SCORE;
+                }
             });
 
             drawingService.drawGoBoardAfterNewGameMoveWasPlayed();
-            updateIsThisPlayersTurn();
             updateDrawingServiceUserInteraction();
         }
         else

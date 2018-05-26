@@ -625,6 +625,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.gameMove,
+                        webSocketMessage.data.gameState,
                         webSocketMessage.data.errorMessage);
                 });
                 break;
