@@ -91,6 +91,7 @@ namespace LittleGoWeb
     const WEBSOCKET_MESSAGEDATA_KEY_GAMEINPROGRESS = "gameInProgress";
     const WEBSOCKET_MESSAGEDATA_KEY_GAMEMOVES = "gameMoves";
     const WEBSOCKET_MESSAGEDATA_KEY_GAMEMOVE = "gameMove";
+    const WEBSOCKET_MESSAGEDATA_KEY_GAMESTATE = "gameState";
     const WEBSOCKET_MESSAGEDATA_KEY_SUCCESS = "success";
     const WEBSOCKET_MESSAGEDATA_KEY_ERRORMESSAGE = "errorMessage";
 

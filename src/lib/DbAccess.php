@@ -1306,6 +1306,49 @@ namespace LittleGoWeb
             return $gameID;
         }
 
+        // Updates an existing row in the database with the data in the
+        // specified Game object, with the exception of the game ID.
+        // Returns true on success, false on failure (e.g. game does
+        // not exist).
+        public function updateGame(Game $game): bool
+        {
+            $tableName = DB_TABLE_NAME_GAME;
+            // The game state is the only column that can change
+            $columnNames = array(DB_COLUMN_NAME_GAME_STATE);
+            $whereColumnNames = array(DB_COLUMN_NAME_GAME_GAMEID);
+
+            $updateQueryString = $this->sqlGenerator->getUpdateStatementWithWhereClause(
+                $tableName,
+                $columnNames,
+                $whereColumnNames);
+
+            $updateStatement = $this->pdo->prepare($updateQueryString);
+            $updateStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAME_STATE),
+                $game->getState(),
+                PDO::PARAM_INT);
+            $updateStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAME_GAMEID),
+                $game->getGameID(),
+                PDO::PARAM_INT);
+
+            try
+            {
+                $updateStatement->execute();
+
+                $numberOfUpdatedRows = $updateStatement->rowCount();
+                if ($numberOfUpdatedRows === 1)
+                    return true;
+                else
+                    return false;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return false;
+            }
+        }
+
         // Obtains the game move data for the last move of the specified game
         // ID from the database and returns the data as a GameMove object.
         // Returns null if the database has no game move data for the specified

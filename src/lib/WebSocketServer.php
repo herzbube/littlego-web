@@ -772,8 +772,6 @@ namespace LittleGoWeb
 
             $dbAccess = new DbAccess($this->config);
 
-            // Validate that the supplied game is in progress, i.e. it's allowed
-            // to add moves
             $userID = $webSocketClient->getSession()->getUserID();
             $gameInProgress = $this->getGameInProgressWithoutAdditionalData(
                 $webSocketClient,
@@ -784,6 +782,8 @@ namespace LittleGoWeb
             if ($gameInProgress === null)
                 return;  // helper function has already sent WebSocket error message
 
+            // Validate that the supplied game is in progress, i.e. it's allowed
+            // to add moves
             if ($gameInProgress->getState() !== GAME_STATE_INPROGRESS_PLAYING)
             {
                 $errorMessage = "Game in progress is not in a state that allows playing moves";
@@ -791,7 +791,9 @@ namespace LittleGoWeb
                 return;
             }
 
-            $nextMoveColor = $this->getNextMoveColor($gameInProgress, $dbAccess);
+            // Validate that it's the player's turn to move
+            $lastGameMove = $dbAccess->findLastGameMove($gameInProgress->getGameID());
+            $nextMoveColor = $this->getNextMoveColor($gameInProgress, $lastGameMove);
             if ($nextMoveColor !== $gameMove->getMoveColor())
             {
                 $errorMessage = "Not this player's turn to move";
@@ -803,6 +805,25 @@ namespace LittleGoWeb
             // - Is the intersection occupied?
             // - Is the move suicidal?
             // - Is the move a Ko?
+
+            // Find out whether it's time to move the game into the scoring phase.
+            // At the moment only two pass moves in a row can lead to this, but if
+            // we support new game rules in a future version the trigger could be
+            // something different (e.g. 3 pass moves under AGA rules).
+            if ($lastGameMove !== null)
+            {
+                if ($gameMove->getMoveType() === GAMEMOVE_MOVETYPE_PASS && $lastGameMove->getMoveType() === GAMEMOVE_MOVETYPE_PASS)
+                {
+                    $gameInProgress->setState(GAME_STATE_INPROGRESS_SCORING);
+                    $success = $dbAccess->updateGame($gameInProgress);
+                    if (! $success)
+                    {
+                        $errorMessage = "Failed to update game data in database";
+                        $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                        return;
+                    }
+                }
+            }
 
             $gameMoveID = $dbAccess->insertGameMove($gameMove);
             if ($gameMoveID === -1)
@@ -817,7 +838,8 @@ namespace LittleGoWeb
             $webSocketResponseData =
                 [
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
-                    WEBSOCKET_MESSAGEDATA_KEY_GAMEMOVE => $gameMove->toJsonObject()
+                    WEBSOCKET_MESSAGEDATA_KEY_GAMEMOVE => $gameMove->toJsonObject(),
+                    WEBSOCKET_MESSAGEDATA_KEY_GAMESTATE => $gameInProgress->getState()
                 ];
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
 
@@ -883,7 +905,8 @@ namespace LittleGoWeb
 
             if ($gameInProgress->getState() === GAME_STATE_INPROGRESS_PLAYING)
             {
-                $nextMoveColor = $this->getNextMoveColor($gameInProgress, $dbAccess);
+                $lastGameMove = $dbAccess->findLastGameMove($gameInProgress->getGameID());
+                $nextMoveColor = $this->getNextMoveColor($gameInProgress, $lastGameMove);
                 $gameInProgress->setNextMoveColor($nextMoveColor);
             }
 
@@ -899,9 +922,8 @@ namespace LittleGoWeb
             return true;
         }
 
-        private function getNextMoveColor(Game $gameInProgress, DbAccess $dbAccess) : int
+        private function getNextMoveColor(Game $gameInProgress, $lastGameMove) : int
         {
-            $lastGameMove = $dbAccess->findLastGameMove($gameInProgress->getGameID());
             if ($lastGameMove === null)
             {
                 if ($gameInProgress->getHandicap() === 0)
