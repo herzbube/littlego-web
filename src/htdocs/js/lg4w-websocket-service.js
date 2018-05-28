@@ -168,8 +168,12 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         getGameRequestPairing: [],
         confirmGameRequestPairing: [],
         getGamesInProgress: [],
-        getGameInProgressWithMoves: [],
+        getGame: [],
         submitNewGameMove: [],
+        submitNewScoreProposal: [],
+        getScoreProposal: [],
+        acceptScoreProposal: [],
+        getFinishedGames: [],
         gameRequestPairingFound: []
     };
 
@@ -299,15 +303,15 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
             eventListeners.getGamesInProgress.splice(index, 1);
     };
 
-    this.addGetGameInProgressWithMovesListener = function(listener) {
-        eventListeners.getGameInProgressWithMoves.push(listener);
+    this.addGetGame = function(listener) {
+        eventListeners.getGame.push(listener);
     };
 
-    this.removeGetGameInProgressWithMovesListener = function(listener)
+    this.removeGetGame = function(listener)
     {
-        var index = eventListeners.getGameInProgressWithMoves.indexOf(listener);
+        var index = eventListeners.getGame.indexOf(listener);
         if (-1 !== index)
-            eventListeners.getGameInProgressWithMoves.splice(index, 1);
+            eventListeners.getGame.splice(index, 1);
     };
 
     this.addSubmitNewGameMoveListener = function(listener) {
@@ -319,6 +323,51 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         var index = eventListeners.submitNewGameMove.indexOf(listener);
         if (-1 !== index)
             eventListeners.submitNewGameMove.splice(index, 1);
+    };
+
+
+    this.addSubmitNewScoreProposal = function(listener) {
+        eventListeners.submitNewScoreProposal.push(listener);
+    };
+
+    this.removeSubmitNewScoreProposal = function(listener)
+    {
+        var index = eventListeners.submitNewScoreProposal.indexOf(listener);
+        if (-1 !== index)
+            eventListeners.submitNewScoreProposal.splice(index, 1);
+    };
+
+    this.addGetScoreProposal = function(listener) {
+        eventListeners.getScoreProposal.push(listener);
+    };
+
+    this.removeGetScoreProposal = function(listener)
+    {
+        var index = eventListeners.getScoreProposal.indexOf(listener);
+        if (-1 !== index)
+            eventListeners.getScoreProposal.splice(index, 1);
+    };
+
+    this.addAcceptScoreProposal = function(listener) {
+        eventListeners.acceptScoreProposal.push(listener);
+    };
+
+    this.removeAcceptScoreProposal = function(listener)
+    {
+        var index = eventListeners.acceptScoreProposal.indexOf(listener);
+        if (-1 !== index)
+            eventListeners.acceptScoreProposal.splice(index, 1);
+    };
+
+    this.addGetFinishedGames = function(listener) {
+        eventListeners.getFinishedGames.push(listener);
+    };
+
+    this.removeGetFinishedGames = function(listener)
+    {
+        var index = eventListeners.getFinishedGames.indexOf(listener);
+        if (-1 !== index)
+            eventListeners.getFinishedGames.splice(index, 1);
     };
 
     this.addGameRequestPairingFoundListener = function(listener) {
@@ -453,8 +502,8 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         sendWebSocketMessage(theWebSocket, messageType, messageData);
     };
 
-    this.getGameInProgressWithMoves = function(gameID) {
-        var messageType = WEBSOCKET_REQUEST_TYPE_GETGAMEINPROGRESSWITHMOVES;
+    this.getGame = function(gameID) {
+        var messageType = WEBSOCKET_REQUEST_TYPE_GETGAME;
         var messageData =
             {
                 gameID: gameID
@@ -483,6 +532,43 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 moveType: GOMOVE_TYPE_PASS,
                 moveColor: moveColor
             };
+        sendWebSocketMessage(theWebSocket, messageType, messageData);
+    };
+
+    this.submitNewScoreProposal = function(gameID, scoreDetails) {
+        var messageType = WEBSOCKET_REQUEST_TYPE_SUBMITNEWSCOREPROPOSAL;
+        var messageData =
+            {
+                gameID: gameID,
+                scoreDetails: scoreDetails
+            };
+        sendWebSocketMessage(theWebSocket, messageType, messageData);
+    };
+
+    this.getScoreProposal = function(gameID) {
+        var messageType = WEBSOCKET_REQUEST_TYPE_GETSCOREPROPOSAL;
+        var messageData =
+            {
+                gameID: gameID
+            };
+        sendWebSocketMessage(theWebSocket, messageType, messageData);
+    };
+
+    this.acceptScoreProposal = function(gameID, resultType, winningStoneColor, winningPoints) {
+        var messageType = WEBSOCKET_REQUEST_TYPE_ACCEPTSCOREPROPOSAL;
+        var messageData =
+            {
+                gameID: gameID,
+                resultType: resultType,
+                winningStoneColor: winningStoneColor,
+                winningPoints: winningPoints
+            };
+        sendWebSocketMessage(theWebSocket, messageType, messageData);
+    };
+
+    this.getFinishedGames = function() {
+        var messageType = WEBSOCKET_REQUEST_TYPE_GETFINISHEDGAMES;
+        var messageData = { };
         sendWebSocketMessage(theWebSocket, messageType, messageData);
     };
 
@@ -606,14 +692,16 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 });
                 break;
 
-            case WEBSOCKET_RESPONSE_TYPE_GETGAMEINPROGRESSWITHMOVES:
+            case WEBSOCKET_RESPONSE_TYPE_GETGAME:
                 // Iterate over a copy in case the handler wants to remove itself
-                var listenersCopy = eventListeners.getGameInProgressWithMoves.slice(0);
+                var listenersCopy = eventListeners.getGame.slice(0);
                 listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
-                        webSocketMessage.data.gameInProgress,
+                        webSocketMessage.data.game,
                         webSocketMessage.data.gameMoves,
+                        webSocketMessage.data.score,
+                        webSocketMessage.data.scoreDetails,
                         webSocketMessage.data.errorMessage);
                 });
                 break;
@@ -626,6 +714,50 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                         webSocketMessage.data.success,
                         webSocketMessage.data.gameMove,
                         webSocketMessage.data.gameState,
+                        webSocketMessage.data.errorMessage);
+                });
+                break;
+
+
+            case WEBSOCKET_RESPONSE_TYPE_SUBMITNEWSCOREPROPOSAL:
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.submitNewScoreProposal.slice(0);
+                listenersCopy.forEach(function(listener) {
+                    listener(
+                        webSocketMessage.data.success,
+                        webSocketMessage.data.score,
+                        webSocketMessage.data.scoreDetails);
+                });
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_GETSCOREPROPOSAL:
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.getScoreProposal.slice(0);
+                listenersCopy.forEach(function(listener) {
+                    listener(
+                        webSocketMessage.data.success,
+                        webSocketMessage.data.score,
+                        webSocketMessage.data.scoreDetails);
+                });
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_ACCEPTSCOREPROPOSAL:
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.acceptScoreProposal.slice(0);
+                listenersCopy.forEach(function(listener) {
+                    listener(
+                        webSocketMessage.data.success,
+                        webSocketMessage.data.gameID);
+                });
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_GETFINISHEDGAMES:
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.getFinishedGames.slice(0);
+                listenersCopy.forEach(function(listener) {
+                    listener(
+                        webSocketMessage.data.success,
+                        webSocketMessage.data.finishedGames,
                         webSocketMessage.data.errorMessage);
                 });
                 break;

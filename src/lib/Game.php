@@ -25,6 +25,7 @@ namespace LittleGoWeb
         private $whitePlayer = null;
         private $numberOfMovesPlayed = GAME_NUMBEROFMOVESPLAYED_DEFAULT;
         private $nextMoveColor = GAME_NEXTMOVECOLOR_DEFAULT;
+        private $gameResult = null;
 
         public function __construct(
             int $gameID,
@@ -166,9 +167,19 @@ namespace LittleGoWeb
             $this->nextMoveColor = $nextMoveColor;
         }
 
+        public function getGameResult(): GameResult
+        {
+            return $this->gameResult;
+        }
+
+        public function setGameResult(GameResult $gameResult): void
+        {
+            $this->gameResult = $gameResult;
+        }
+
         public function toJsonObject(): array
         {
-            return array(
+            $jsonData = array(
                 WEBSOCKET_MESSAGEDATA_KEY_GAMEID => $this->gameID,
                 WEBSOCKET_MESSAGEDATA_KEY_CREATETIME => $this->createTime,
                 WEBSOCKET_MESSAGEDATA_KEY_BOARDSIZE => $this->boardSize,
@@ -179,9 +190,16 @@ namespace LittleGoWeb
                 WEBSOCKET_MESSAGEDATA_KEY_STATE => $this->state,
                 WEBSOCKET_MESSAGEDATA_KEY_BLACKPLAYER => $this->blackPlayer->toJsonObject(),
                 WEBSOCKET_MESSAGEDATA_KEY_WHITEPLAYER => $this->whitePlayer->toJsonObject(),
-                WEBSOCKET_MESSAGEDATA_KEY_NUMBEROFMOVESPLAYED => $this->numberOfMovesPlayed,
-                WEBSOCKET_MESSAGEDATA_KEY_NEXTMOVECOLOR => $this->nextMoveColor
             );
+
+            if ($this->numberOfMovesPlayed !== GAME_NUMBEROFMOVESPLAYED_DEFAULT)
+                $jsonData[WEBSOCKET_MESSAGEDATA_KEY_NUMBEROFMOVESPLAYED] = $this->numberOfMovesPlayed;
+            if ($this->nextMoveColor !== GAME_NEXTMOVECOLOR_DEFAULT)
+                $jsonData[WEBSOCKET_MESSAGEDATA_KEY_NEXTMOVECOLOR] = $this->nextMoveColor;
+            if ($this->gameResult !== null)
+                $jsonData[WEBSOCKET_MESSAGEDATA_KEY_GAMERESULT] = $this->gameResult->toJsonObject();
+
+            return $jsonData;
         }
     }
 }

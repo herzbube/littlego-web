@@ -116,11 +116,23 @@ namespace LittleGoWeb
                 case WEBSOCKET_REQUEST_TYPE_GETGAMESINPROGRESS:
                     $this->handleGetGamesInProgress($webSocketClient, $webSocketResponseType);
                     break;
-                case WEBSOCKET_REQUEST_TYPE_GETGAMEINPROGRESSWITHMOVES:
-                    $this->handleGetGameInProgressWithMoves($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
+                case WEBSOCKET_REQUEST_TYPE_GETGAME:
+                    $this->handleGetGame($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
                     break;
                 case WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEMOVE:
                     $this->handleSubmitNewGameMove($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
+                    break;
+                case WEBSOCKET_REQUEST_TYPE_SUBMITNEWSCOREPROPOSAL:
+                    $this->handleSubmitNewScoreProposal($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
+                    break;
+                case WEBSOCKET_REQUEST_TYPE_GETSCOREPROPOSAL:
+                    $this->handleGetScoreProposal($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
+                    break;
+                case WEBSOCKET_REQUEST_TYPE_ACCEPTSCOREPROPOSAL:
+                    $this->handleAcceptScoreProposal($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
+                    break;
+                case WEBSOCKET_REQUEST_TYPE_GETFINISHEDGAMES:
+                    $this->handleGetFinishedGames($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
                     break;
                 default:
                     echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
@@ -165,10 +177,18 @@ namespace LittleGoWeb
                     return WEBSOCKET_RESPONSE_TYPE_CONFIRMGAMEREQUESTPAIRING;
                 case WEBSOCKET_REQUEST_TYPE_GETGAMESINPROGRESS:
                     return WEBSOCKET_RESPONSE_TYPE_GETGAMESINPROGRESS;
-                case WEBSOCKET_REQUEST_TYPE_GETGAMEINPROGRESSWITHMOVES:
-                    return WEBSOCKET_RESPONSE_TYPE_GETGAMEINPROGRESSWITHMOVES;
+                case WEBSOCKET_REQUEST_TYPE_GETGAME:
+                    return WEBSOCKET_RESPONSE_TYPE_GETGAME;
                 case WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEMOVE:
                     return WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEMOVE;
+                case WEBSOCKET_REQUEST_TYPE_SUBMITNEWSCOREPROPOSAL:
+                    return WEBSOCKET_RESPONSE_TYPE_SUBMITNEWSCOREPROPOSAL;
+                case WEBSOCKET_REQUEST_TYPE_GETSCOREPROPOSAL:
+                    return WEBSOCKET_RESPONSE_TYPE_GETSCOREPROPOSAL;
+                case WEBSOCKET_REQUEST_TYPE_ACCEPTSCOREPROPOSAL:
+                    return WEBSOCKET_RESPONSE_TYPE_ACCEPTSCOREPROPOSAL;
+                case WEBSOCKET_REQUEST_TYPE_GETFINISHEDGAMES:
+                    return WEBSOCKET_RESPONSE_TYPE_GETFINISHEDGAMES;
                 default:
                     throw new \Exception("Unsupported request type $webSocketRequestType");
             }
@@ -677,6 +697,14 @@ namespace LittleGoWeb
             $gamesInProgressJSON = array();
             foreach ($gamesInProgress as $gameInProgress)
             {
+                $success = $this->addUsersToGame(
+                    $webSocketClient,
+                    $webSocketResponseType,
+                    $gameInProgress,
+                    $dbAccess);
+                if (! $success)
+                    return;  // helper function has already sent WebSocket error message
+
                 $success = $this->addDataToGameInProgress(
                     $webSocketClient,
                     $webSocketResponseType,
@@ -697,29 +725,99 @@ namespace LittleGoWeb
             $webSocketClient->send($webSocketMessage);
         }
 
-        private function handleGetGameInProgressWithMoves(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType) : void
+        private function handleGetGame(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType) : void
         {
             $gameID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEID];
+            $userID = $webSocketClient->getSession()->getUserID();
 
             $dbAccess = new DbAccess($this->config);
 
-            $userID = $webSocketClient->getSession()->getUserID();
-            $gameInProgress = $this->getGameInProgressWithoutAdditionalData(
-                $webSocketClient,
-                $webSocketResponseType,
-                $userID,
-                $gameID,
-                $dbAccess);
-            if ($gameInProgress === null)
-                return;  // helper function has already sent WebSocket error message
+            $game = $dbAccess->findGameByGameID($gameID);
+            if ($game === null)
+            {
+                $errorMessage = "Failed to retrieve game data from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
 
-            $success = $this->addDataToGameInProgress(
+            // Validate that the user is authorized to access the game
+            $success = $this->addUsersToGame(
                 $webSocketClient,
                 $webSocketResponseType,
-                $gameInProgress,
+                $game,
                 $dbAccess);
             if (! $success)
                 return;  // helper function has already sent WebSocket error message
+            if ($game->getBlackPlayer()->getUserID() !== $userID &&
+                $game->getWhitePlayer()->getUserID() !== $userID)
+            {
+                $errorMessage = "Access to game data denied, user is not one of the players of the game";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $score = null;
+            $scoreDetailsJSON = null;
+
+            if ($game->getState() === GAME_STATE_INPROGRESS_PLAYING)
+            {
+                // Validate that the user has confirmed the pairing
+                $gameRequests = $dbAccess->findGameRequestsByGameID($gameID);
+                if ($gameRequests !== null)
+                {
+                    if (array_key_exists($userID, $gameRequests))
+                    {
+                        $gameRequest = $gameRequests[$userID];
+                        if ($gameRequest->getState() !== GAMEREQUEST_STATE_CONFIRMEDPAIRING)
+                        {
+                            $errorMessage = "User has not yet confirmed game request pairing";
+                            $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        $errorMessage = "Failed to retrieve game request data from database";
+                        $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                        return;
+                    }
+                }
+            }
+            else if ($game->getState() === GAME_STATE_INPROGRESS_SCORING ||
+                $game->getState() === GAME_STATE_FINISHED)
+            {
+                $success = $this->getScoreData(
+                    $webSocketClient,
+                    $webSocketResponseType,
+                    $gameID,
+                    $dbAccess,
+                    $score,
+                    $scoreDetails);
+                if (! $success)
+                    return;  // helper function has already sent WebSocket error message
+
+                if ($scoreDetails !== null)
+                {
+                    $scoreDetailsJSON = array();
+                    foreach ($scoreDetails as $scoreDetail)
+                        array_push($scoreDetailsJSON, $scoreDetail->toJsonObject());
+                }
+
+                if ($game->getState() === GAME_STATE_FINISHED)
+                {
+                    $success = $this->addGameResultToFinishedGame(
+                        $webSocketClient,
+                        $webSocketResponseType,
+                        $game,
+                        $dbAccess);
+                    if (! $success)
+                        return;  // helper function has already sent WebSocket error message
+                }
+            }
+            else
+            {
+                throw new \Exception("Game has unknown state");
+            }
 
             $gameMoves = $dbAccess->findGameMovesByGameID($gameID);
             if ($gameMoves === null)
@@ -736,9 +834,13 @@ namespace LittleGoWeb
             $webSocketResponseData =
                 [
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
-                    WEBSOCKET_MESSAGEDATA_KEY_GAMEINPROGRESS => $gameInProgress->toJsonObject(),
+                    WEBSOCKET_MESSAGEDATA_KEY_GAME => $game->toJsonObject(),
                     WEBSOCKET_MESSAGEDATA_KEY_GAMEMOVES => $gameMovesJSON
                 ];
+            if ($score !== null)
+                $webSocketResponseData[WEBSOCKET_MESSAGEDATA_KEY_SCORE] = $score->toJsonObject();
+            if ($scoreDetailsJSON !== null)
+                $webSocketResponseData[WEBSOCKET_MESSAGEDATA_KEY_SCOREDETAILS] = $scoreDetailsJSON;
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
             $webSocketClient->send($webSocketMessage);
         }
@@ -759,17 +861,6 @@ namespace LittleGoWeb
                 $vertexY = GAMEMOVE_VERTEXY_DEFAULT;
             }
 
-            $gameMoveID = GAMEMOVE_GAMEMOVEID_DEFAULT;
-            $createTime = time();
-            $gameMove = new GameMove(
-                $gameMoveID,
-                $createTime,
-                $gameID,
-                $moveType,
-                $moveColor,
-                $vertexX,
-                $vertexY);
-
             $dbAccess = new DbAccess($this->config);
 
             $userID = $webSocketClient->getSession()->getUserID();
@@ -782,8 +873,8 @@ namespace LittleGoWeb
             if ($gameInProgress === null)
                 return;  // helper function has already sent WebSocket error message
 
-            // Validate that the supplied game is in progress, i.e. it's allowed
-            // to add moves
+            // Validate that the supplied game is in progress and that it is in a
+            // state that allows to add moves
             if ($gameInProgress->getState() !== GAME_STATE_INPROGRESS_PLAYING)
             {
                 $errorMessage = "Game in progress is not in a state that allows playing moves";
@@ -792,9 +883,11 @@ namespace LittleGoWeb
             }
 
             // Validate that it's the player's turn to move
+            // TODO The current validation allows a user to submit a move for the other player!
+            // TODO Validate the USER, not the COLOR.
             $lastGameMove = $dbAccess->findLastGameMove($gameInProgress->getGameID());
             $nextMoveColor = $this->getNextMoveColor($gameInProgress, $lastGameMove);
-            if ($nextMoveColor !== $gameMove->getMoveColor())
+            if ($nextMoveColor !== $moveColor)
             {
                 $errorMessage = "Not this player's turn to move";
                 $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
@@ -812,7 +905,7 @@ namespace LittleGoWeb
             // something different (e.g. 3 pass moves under AGA rules).
             if ($lastGameMove !== null)
             {
-                if ($gameMove->getMoveType() === GAMEMOVE_MOVETYPE_PASS && $lastGameMove->getMoveType() === GAMEMOVE_MOVETYPE_PASS)
+                if ($moveType === GAMEMOVE_MOVETYPE_PASS && $lastGameMove->getMoveType() === GAMEMOVE_MOVETYPE_PASS)
                 {
                     $gameInProgress->setState(GAME_STATE_INPROGRESS_SCORING);
                     $success = $dbAccess->updateGame($gameInProgress);
@@ -824,6 +917,17 @@ namespace LittleGoWeb
                     }
                 }
             }
+
+            $gameMoveID = GAMEMOVE_GAMEMOVEID_DEFAULT;
+            $createTime = time();
+            $gameMove = new GameMove(
+                $gameMoveID,
+                $createTime,
+                $gameID,
+                $moveType,
+                $moveColor,
+                $vertexX,
+                $vertexY);
 
             $gameMoveID = $dbAccess->insertGameMove($gameMove);
             if ($gameMoveID === -1)
@@ -843,21 +947,332 @@ namespace LittleGoWeb
                 ];
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
 
-            // Send the response not only to the client who sent the request,
-            // but also to clients where the other user is logged in
-            $users = $dbAccess->findUsersByGameID($gameID);
-            if ($users === null)
+            $this->sendMessageToAllGameIDClients(
+                $webSocketMessage,
+                $gameID,
+                $dbAccess,
+                $webSocketClient);
+        }
+
+        private function handleSubmitNewScoreProposal(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType) : void
+        {
+            $gameID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEID];
+            $scoreDetailsJSON = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SCOREDETAILS];
+
+            $userID = $webSocketClient->getSession()->getUserID();
+
+            $dbAccess = new DbAccess($this->config);
+
+            $gameInProgress = null;
+            $score = null;
+            $success = $this->getGameInProgressAndOptionalScore(
+                $webSocketClient,
+                $webSocketResponseType,
+                $userID,
+                $gameID,
+                $dbAccess,
+                $gameInProgress,
+                $score);
+            if (! $success)
+                return;  // helper function has already sent WebSocket error message
+
+            if ($score === null)
             {
-                $errorMessage = "Failed to retrieve users for game in progress from database";
+                $scoreID = SCORE_SCOREID_DEFAULT;
+                $state = SCORE_STATE_PROPOSED;
+                $lastModifiedByUserID = $userID;
+                $lastModifiedTime = time();
+
+                $score = new Score(
+                    $scoreID,
+                    $gameID,
+                    $state,
+                    $lastModifiedByUserID,
+                    $lastModifiedTime);
+
+                $scoreID = $dbAccess->insertScore($score);
+                if ($scoreID === -1)
+                {
+                    $errorMessage = "Failed to store score in database";
+                    $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                    return;
+                }
+
+                $score->setScoreID($scoreID);
+            }
+            else
+            {
+                $score->setLastModifiedByUserID($userID);
+                $score->setLastModifiedTime(time());
+                $success = $dbAccess->updateScore($score);
+                if (! $success)
+                {
+                    $errorMessage = "Failed to update score";
+                    $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                    return;
+                }
+
+                // Remove existing score details, they are completely replace
+                // by the new score details
+                $success = $dbAccess->deleteScoreDetailsByScoreID($score->getScoreID());
+                if (! $success)
+                {
+                    $errorMessage = "Failed to delete score details";
+                    $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                    return;
+                }
+            }
+
+            $scoreDetailID = SCOREDETAIL_SCOREDETAILID_DEFAULT;
+            $scoreID = $score->getScoreID();
+            $scoreDetailsJSONResponse = array();
+            foreach ($scoreDetailsJSON as $scoreDetailJSON)
+            {
+                $vertexX = $scoreDetailJSON[WEBSOCKET_MESSAGEDATA_KEY_VERTEXX];
+                $vertexY = $scoreDetailJSON[WEBSOCKET_MESSAGEDATA_KEY_VERTEXY];
+                $stoneGroupState = $scoreDetailJSON[WEBSOCKET_MESSAGEDATA_KEY_STONEGROUPSTATE];
+
+                $scoreDetail = new ScoreDetail(
+                    $scoreDetailID,
+                    $scoreID,
+                    $vertexX,
+                    $vertexY,
+                    $stoneGroupState);
+
+                $scoreDetailID = $dbAccess->insertScoreDetail($scoreDetail);
+                if ($scoreDetailID === -1)
+                {
+                    $errorMessage = "Failed to store score detail in database";
+                    $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                    return;
+                }
+
+                $scoreDetail->setScoreDetailID($scoreDetailID);
+
+                array_push($scoreDetailsJSONResponse, $scoreDetail->toJsonObject());
+            }
+
+            $webSocketResponseData =
+                [
+                    WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
+                    WEBSOCKET_MESSAGEDATA_KEY_SCORE => $score->toJsonObject(),
+                    WEBSOCKET_MESSAGEDATA_KEY_SCOREDETAILS => $scoreDetailsJSONResponse
+                ];
+            $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+
+            $this->sendMessageToAllGameIDClients(
+                $webSocketMessage,
+                $gameID,
+                $dbAccess,
+                $webSocketClient);
+        }
+
+        private function handleGetScoreProposal(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType) : void
+        {
+            $gameID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEID];
+
+            $dbAccess = new DbAccess($this->config);
+
+            $score = $dbAccess->findScoreByGameID($gameID);
+            $scoreDetailsJSON = array();
+            if ($score === null)
+            {
+                // A score is optional: Initially, when the game progresses
+                // from state "playing" to state "scoring", a score proposal
+                // does not exist yet.
+                $scoreID = SCORE_SCOREID_DEFAULT;
+                $gameID = SCORE_GAMEID_DEFAULT;
+                $state = SCORE_STATE_DEFAULT;
+                $lastModifiedByUserID = SCORE_LASTMODIFIEDBYUSERID_DEFAULT;
+                $lastModifiedTime = SCORE_LASTMODIFIEDTIME_DEFAULT;
+                $score = new Score($scoreID, $gameID, $state, $lastModifiedByUserID, $lastModifiedTime);
+            }
+            else
+            {
+                $scoreDetails = $dbAccess->findScoreDetailsByScoreID($score->getScoreID());
+
+                foreach ($scoreDetails as $scoreDetail)
+                    array_push($scoreDetailsJSON, $scoreDetail->toJsonObject());
+            }
+
+            $webSocketResponseData =
+                [
+                    WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
+                    WEBSOCKET_MESSAGEDATA_KEY_SCORE => $score->toJsonObject(),
+                    WEBSOCKET_MESSAGEDATA_KEY_SCOREDETAILS => $scoreDetailsJSON
+                ];
+            $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+            $webSocketClient->send($webSocketMessage);
+        }
+
+        private function handleAcceptScoreProposal(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType) : void
+        {
+            $gameID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEID];
+            $resultType = $messageData[WEBSOCKET_MESSAGEDATA_KEY_RESULTTYPE];
+            $winningStoneColor = $messageData[WEBSOCKET_MESSAGEDATA_KEY_WINNINGSTONECOLOR];
+            $winningPoints = $messageData[WEBSOCKET_MESSAGEDATA_KEY_WINNINGPOINTS];
+
+            $userID = $webSocketClient->getSession()->getUserID();
+
+            $dbAccess = new DbAccess($this->config);
+
+            // Validate that a game that is still in scoring state exists.
+            // This validation is somewhat extraneous because if a score
+            // in the correct state exists there should be no reason why a
+            // game in the correct does not exist. Since we need the game
+            // data anyway for the subsequent update, there's no harm in a
+            // small double-check.
+            $game = $dbAccess->findGameByGameID($gameID);
+            if ($game === null)
+            {
+                $errorMessage = "Failed to retrieve game data from database";
                 $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
                 return;
             }
-            foreach ($users as $user)
+            if ($game->getState() !== GAME_STATE_INPROGRESS_SCORING)
             {
-                $webSocketClients = $this->getWebSocketClientsByUserID($user->getUserID());
-                foreach ($webSocketClients as $loopWebSocketClient)
-                    $loopWebSocketClient->send($webSocketMessage);
+                $errorMessage = "Game is not in a state that allows accepting the score";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
             }
+
+            // Validate that the user is authorized to make changes to the game
+            $success = $this->addUsersToGame(
+                $webSocketClient,
+                $webSocketResponseType,
+                $game,
+                $dbAccess);
+            if (! $success)
+                return;  // helper function has already sent WebSocket error message
+            if ($game->getBlackPlayer()->getUserID() !== $userID &&
+                $game->getWhitePlayer()->getUserID() !== $userID)
+            {
+                $errorMessage = "User is not one of the players of the game";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            // Validate that a score that is still in proposed state exists
+            $score = $dbAccess->findScoreByGameID($gameID);
+            if ($score === null)
+            {
+                $errorMessage = "Failed to retrieve score data from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+            if ($score->getState() !== SCORE_STATE_PROPOSED)
+            {
+                $errorMessage = "Score cannot be accepted because it's not proposed";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            // Validate that it's the user's turn to accept the score proposal
+            if ($score->getLastModifiedByUserID() === $userID)
+            {
+                $errorMessage = "Not this player's turn to accept the score";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $gameResultID = GAMERESULT_GAMERESULTID_DEFAULT;
+            $createTime = time();
+
+            $gameResult = new GameResult(
+                $gameResultID,
+                $createTime,
+                $gameID,
+                $resultType,
+                $winningStoneColor,
+                $winningPoints);
+
+            $gameResultID = $dbAccess->insertGameResult($gameResult);
+            if ($gameResultID === -1)
+            {
+                $errorMessage = "Failed to store game result in database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            // Only update the state, not the last modified user ID and time.
+            // Accepting a score does not alter the fact who made the last
+            // score proposal and when that proposal was made.
+            $score->setState(SCORE_STATE_ACCEPTED);
+            $success = $dbAccess->updateScore($score);
+            if (! $success)
+            {
+                $errorMessage = "Failed to update score";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $game->setState(GAME_STATE_FINISHED);
+            $success = $dbAccess->updateGame($game);
+            if (! $success)
+            {
+                $errorMessage = "Failed to update game";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $webSocketResponseData =
+                [
+                    WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
+                    WEBSOCKET_MESSAGEDATA_KEY_GAMEID => $gameID,
+                ];
+            $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+
+            // TODO: We already have the user data, the send... messages should
+            // not have to retrieve it again
+            $this->sendMessageToAllGameIDClients(
+                $webSocketMessage,
+                $gameID,
+                $dbAccess,
+                $webSocketClient);
+        }
+
+        private function handleGetFinishedGames(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType) : void
+        {
+            $dbAccess = new DbAccess($this->config);
+
+            $userID = $webSocketClient->getSession()->getUserID();
+            $finishedGames = $dbAccess->findFinishedGamesByUserID($userID);
+            if ($finishedGames === null)
+            {
+                $errorMessage = "Failed to retrieve finished games data from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $finishedGamesJSON = array();
+            foreach ($finishedGames as $finishedGame)
+            {
+                $success = $this->addUsersToGame(
+                    $webSocketClient,
+                    $webSocketResponseType,
+                    $finishedGame,
+                    $dbAccess);
+                if (! $success)
+                    return;  // helper function has already sent WebSocket error message
+
+                $success = $this->addGameResultToFinishedGame(
+                    $webSocketClient,
+                    $webSocketResponseType,
+                    $finishedGame,
+                    $dbAccess);
+                if (! $success)
+                    return;  // helper function has already sent WebSocket error message
+
+                array_push($finishedGamesJSON, $finishedGame->toJsonObject());
+            }
+
+            $webSocketResponseData =
+                [
+                    WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
+                    WEBSOCKET_MESSAGEDATA_KEY_GAMESINPROGRESS => $finishedGamesJSON
+                ];
+            $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+            $webSocketClient->send($webSocketMessage);
         }
 
         private function getGameInProgressWithoutAdditionalData(
@@ -893,16 +1308,6 @@ namespace LittleGoWeb
             Game $gameInProgress,
             DbAccess $dbAccess) : bool
         {
-            $users = $dbAccess->findUsersByGameID($gameInProgress->getGameID());
-            if ($users === null)
-            {
-                $errorMessage = "Failed to retrieve users for game in progress from database";
-                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
-                return false;
-            }
-            $gameInProgress->setBlackPlayer($users[COLOR_BLACK]);
-            $gameInProgress->setWhitePlayer($users[COLOR_WHITE]);
-
             if ($gameInProgress->getState() === GAME_STATE_INPROGRESS_PLAYING)
             {
                 $lastGameMove = $dbAccess->findLastGameMove($gameInProgress->getGameID());
@@ -918,6 +1323,82 @@ namespace LittleGoWeb
                 return false;
             }
             $gameInProgress->setNumberOfMovesPlayed($numberOfMovesPlayed);
+
+            return true;
+        }
+
+        private function addUsersToGame(
+            WebSocketClient $webSocketClient,
+            string $webSocketResponseType,
+            Game $game,
+            DbAccess $dbAccess) : bool
+        {
+            $users = $dbAccess->findUsersByGameID($game->getGameID());
+            if ($users === null)
+            {
+                $errorMessage = "Failed to retrieve users for game from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return false;
+            }
+
+            if (array_key_exists(COLOR_BLACK, $users))
+                $game->setBlackPlayer($users[COLOR_BLACK]);
+
+            if (array_key_exists(COLOR_WHITE, $users))
+                $game->setWhitePlayer($users[COLOR_WHITE]);
+
+            return true;
+        }
+
+        private function getScoreData(
+            WebSocketClient $webSocketClient,
+            string $webSocketResponseType,
+            int $gameID,
+            DbAccess $dbAccess,
+            ?Score &$score,
+            ?array &$scoreDetails) : bool
+        {
+            $score = $dbAccess->findScoreByGameID($gameID);
+
+            // A score is optional: Initially, when the game progresses
+            // from state "playing" to state "scoring", a score proposal
+            // does not exist yet.
+            if ($score !== null)
+            {
+                $scoreDetails = $dbAccess->findScoreDetailsByScoreID($score->getScoreID());
+                if ($scoreDetails === null)
+                {
+                    $errorMessage = "Failed to retrieve score details from database";
+                    $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private function addGameResultToFinishedGame(
+            WebSocketClient $webSocketClient,
+            string $webSocketResponseType,
+            Game $finishedGame,
+            DbAccess $dbAccess) : bool
+        {
+            $success = $this->addUsersToGame(
+                $webSocketClient,
+                $webSocketResponseType,
+                $finishedGame,
+                $dbAccess);
+            if (! $success)
+                return false;  // helper function has already sent WebSocket error message
+
+            $gameResult = $dbAccess->findGameResultByGameID($finishedGame->getGameID());
+            if ($gameResult === null)
+            {
+                $errorMessage = "Failed to retrieve game result data from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return false;
+            }
+            $finishedGame->setGameResult($gameResult);
 
             return true;
         }
@@ -971,6 +1452,85 @@ namespace LittleGoWeb
             $webSocketClient->send($webSocketMessage);
         }
 
+        private function getGameInProgressAndOptionalScore(
+            WebSocketClient $webSocketClient,
+            string $webSocketResponseType,
+            int $userID,
+            int $gameID,
+            DbAccess $dbAccess,
+            // From here on out parameters. These must be specified as
+            // nullable types so that the caller can provide NULL as
+            // input value.
+            ?GameInProgress &$gameInProgress,
+            ?Score &$score) : bool
+        {
+            $gameInProgress = $this->getGameInProgressWithoutAdditionalData(
+                $webSocketClient,
+                $webSocketResponseType,
+                $userID,
+                $gameID,
+                $dbAccess);
+            if ($gameInProgress === null)
+                return false;  // helper function has already sent WebSocket error message
+
+            // Validate that the supplied game is in progress and that it is in a
+            // state that allows proposing a score
+            if ($gameInProgress->getState() !== GAME_STATE_INPROGRESS_SCORING)
+            {
+                $errorMessage = "Game in progress is not in a state that allows proposing a score";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return false;
+            }
+
+            $success = $this->addUsersToGame(
+                $webSocketClient,
+                $webSocketResponseType,
+                $gameInProgress,
+                $dbAccess);
+            if (! $success)
+                return false;  // helper function has already sent WebSocket error message
+
+            $score = $dbAccess->findScoreByGameID($gameID);
+
+            // Validate that a score that is still in proposed state exists
+            if ($score !== null && $score->getState() !== SCORE_STATE_PROPOSED)
+            {
+                $errorMessage = "An already accepted score cannot be proposed again";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return false;
+            }
+
+            // Validate that it's the user's turn to make a score proposal
+            $isItThisPlayersTurnToProposeAScore = true;
+            if ($score === null)
+            {
+                $lastGameMove = $dbAccess->findLastGameMove($gameID);
+                if ($lastGameMove->getMoveColor() === COLOR_BLACK)
+                    $lastGameMoveUserID = $gameInProgress->getBlackPlayer()->getUserID();
+                else
+                    $lastGameMoveUserID = $gameInProgress->getWhitePlayer()->getUserID();
+
+                // The user who made the second pass move is allowed to
+                // make the first score proposal
+                if ($lastGameMoveUserID !== $userID)
+                    $isItThisPlayersTurnToProposeAScore = false;
+            }
+            else
+            {
+                // Users must make score proposals in alternating order
+                if ($score->getLastModifiedByUserID() === $userID)
+                    $isItThisPlayersTurnToProposeAScore = false;
+            }
+            if (! $isItThisPlayersTurnToProposeAScore)
+            {
+                $errorMessage = "Not this player's turn to propose a score";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return false;
+            }
+
+            return true;
+        }
+
         private function sendInvalidSession(WebSocketClient $webSocketClient, string $webSocketMessageType): void
         {
             $errorMessage = "Invalid session key";
@@ -987,6 +1547,31 @@ namespace LittleGoWeb
                 ];
             $webSocketMessage = new WebSocketMessage($webSocketMessageType, $webSocketMessageData);
             $webSocketClient->send($webSocketMessage);
+        }
+
+        // Sends the specified WebSocketMessage to all clients where one of
+        // the users is logged in who is playing the game with the specified
+        // game ID.
+        private function sendMessageToAllGameIDClients(
+            WebSocketMessage $webSocketMessage,
+            int $gameID,
+            DbAccess $dbAccess,
+            WebSocketClient $originatingWebSocketClient) : void
+        {
+            $users = $dbAccess->findUsersByGameID($gameID);
+            if ($users === null)
+            {
+                $errorMessage = "Failed to retrieve users for game from database";
+                $this->sendErrorMessage($originatingWebSocketClient, $webSocketMessage->getMessageType(), $errorMessage);
+                return;
+            }
+
+            foreach ($users as $user)
+            {
+                $webSocketClients = $this->getWebSocketClientsByUserID($user->getUserID());
+                foreach ($webSocketClients as $loopWebSocketClient)
+                    $loopWebSocketClient->send($webSocketMessage);
+            }
         }
     }
 }

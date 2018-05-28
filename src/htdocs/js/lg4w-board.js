@@ -11,15 +11,49 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // Private data not available via the $scope
     // ----------------------------------------------------------------------
 
+    // The general mode that the view is in. Changing this affects which
+    // controls are visible and what kind of interaction the drawing service
+    // offers to the user.
     var boardViewMode = BOARDVIEW_MODE_INITIALIZING;
+    // The ID of the game that the user is currently viewing. The view
+    // remains empty as long as this is not set.
     var gameID = GAMEID_UNDEFINED;
+    // The color of the stones that the currently logged in user is playing
+    // with in this game.
     var thisPlayerColor = COLOR_NONE;
+    // The main Go domain model object. All other domain model objects are
+    // accessible via this object.
     var goGame = undefined;
-    var isThisPlayersTurn = false;
+    // The following three variables help us to control alternating play
+    // while the user views a game in state GAME_STATE_INPROGRESS_PLAYING
+    var isThisPlayersTurnToPlayMove = false;
     var isMoveSubmissionInProgress = false;
     var thisPlayerCanPlayMove = false;
+    // The mark mode that is in effect while the view is in
+    // BOARDVIEW_MODE_SCORING
     var scoringMarkMode = SCORINGMARKMODE_DEAD;
+    // Which type of data should be shown in the view's data area
     var dataTypeShown = BOARDVIEW_DATATYPE_GAMEMOVES;
+    // The score object helps us keep track whose turn it is to submit a
+    // score proposal while the user views a game in state
+    // GAME_STATE_INPROGRESS_SCORING
+    var score = undefined;
+    // The scoreDetails object contains the actual score (either the
+    // proposal for a game in state GAME_STATE_INPROGRESS_SCORING, or
+    // the final score for a game in state GAME_STATE_FINISHED).
+    var scoreDetails = undefined;
+    // The following three variables help us to control alternating
+    // submission of score proposals while the user views a game in state
+    // GAME_STATE_INPROGRESS_SCORING
+    var isThisPlayersTurnToSubmitScoreProposal = false;
+    var isScoreProposalSubmissionInProgress = false;
+    var thisPlayerCanSubmitScoreProposal = false;
+    // A kind of "dirty" flag that indicates whether the user has
+    // made changes to a score proposal that the opponent submitted
+    var thisPlayerHasChangedScoreProposal = false;
+    // The gameResult object is present only for a game in state
+    // GAME_STATE_FINISHED. It contains the summary of the final result.
+    var gameResult = undefined;
 
     // ----------------------------------------------------------------------
     // Placeholder handling for the entire play area
@@ -37,6 +71,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // ----------------------------------------------------------------------
     // Player data
     // ----------------------------------------------------------------------
+
     $scope.boardPlayerInfoBlack = undefined;
     $scope.boardPlayerInfoWhite = undefined;
 
@@ -57,6 +92,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // ----------------------------------------------------------------------
     // Game moves data
     // ----------------------------------------------------------------------
+
     $scope.gameMoves = [];
     $scope.gameMovesPlaceHolderMessage = "Waiting for server connection ...";
     $scope.gameMovesPlaceHolderMessageIsErrorMessage = false;
@@ -67,7 +103,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // ----------------------------------------------------------------------
     // Fetch game data once when this controller is initialized
     // ----------------------------------------------------------------------
-    function getGameInProgressWithMoves() {
+    function getGame() {
         $scope.playPlaceHolderMessage = "Retrieving data ...";
         $scope.playPlaceHolderMessageIsErrorMessage = false;
         $scope.gameMovesPlaceHolderMessage = "Retrieving data ...";
@@ -80,23 +116,23 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         if (isNaN(gameIDFromRoute))
             gameIDFromRoute = GAMEID_UNDEFINED;
 
-        webSocketService.getGameInProgressWithMoves(gameIDFromRoute);
+        webSocketService.getGame(gameIDFromRoute);
     }
 
-    webSocketService.addGetGameInProgressWithMovesListener(handleGetGameInProgressWithMoves);
-    function handleGetGameInProgressWithMoves(success, gameInProgressJsonObject, gameMovesJsonObjects, errorMessage) {
+    webSocketService.addGetGame(handleGetGame);
+    function handleGetGame(success, gameJsonObject, gameMovesJsonObjects, scoreJsonObject, scoreDetailsJsonObject, errorMessage) {
         $scope.$apply(function() {
             if (success)
             {
                 var goBoard = new GoBoard(
-                    gameInProgressJsonObject.boardSize);
+                    gameJsonObject.boardSize);
                 var goGameRules = new GoGameRules(
-                    gameInProgressJsonObject.koRule,
-                    gameInProgressJsonObject.scoringSystem);
+                    gameJsonObject.koRule,
+                    gameJsonObject.scoringSystem);
                 goGame = new GoGame(
                     goBoard,
-                    gameInProgressJsonObject.handicap,
-                    gameInProgressJsonObject.komi,
+                    gameJsonObject.handicap,
+                    gameJsonObject.komi,
                     goGameRules);
 
                 gameMovesJsonObjects.forEach(function(gameMoveJsonObject) {
@@ -105,11 +141,11 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                     playGameMoveJsonObject(gameMoveJsonObject);
                 }, this);
 
-                goGame.setState(gameInProgressJsonObject.state);
+                goGame.setState(gameJsonObject.state);
 
-                var blackPlayerUserInfo = new UserInfo(gameInProgressJsonObject.blackPlayer);
+                var blackPlayerUserInfo = new UserInfo(gameJsonObject.blackPlayer);
                 $scope.boardPlayerInfoBlack = new BoardPlayerInfoBlack(blackPlayerUserInfo, goGame);
-                var whitePlayerUserInfo = new UserInfo(gameInProgressJsonObject.whitePlayer);
+                var whitePlayerUserInfo = new UserInfo(gameJsonObject.whitePlayer);
                 $scope.boardPlayerInfoWhite = new BoardPlayerInfoWhite(whitePlayerUserInfo, goGame);
 
                 $scope.gameMoves = [];
@@ -125,7 +161,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                     goMove = goMove.getNextGoMove();
                 }
 
-                if (gameInProgressJsonObject.blackPlayer.userID === sessionService.getUserInfo().userID)
+                if (gameJsonObject.blackPlayer.userID === sessionService.getUserInfo().userID)
                     thisPlayerColor = COLOR_BLACK;
                 else
                     thisPlayerColor = COLOR_WHITE;
@@ -147,7 +183,22 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                         break;
                     case GAME_STATE_INPROGRESS_SCORING:
                     case GAME_STATE_FINISHED:
+                        // For GAME_STATE_INPROGRESS_SCORING the following
+                        // two parameters can be undefined if no score proposal
+                        // has been submitted yet.
+                        score = scoreJsonObject;
+                        scoreDetails = scoreDetailsJsonObject;
+
+                        if (goGame.getState() === GAME_STATE_FINISHED)
+                            gameResult = gameJsonObject.gameResult;
+
                         updateBeforeEnteringScoringMode();
+                        if (scoreDetails !== undefined)
+                        {
+                            applyScoreDetails();
+                            thisPlayerHasChangedScoreProposal = false;
+                        }
+
                         boardViewMode = BOARDVIEW_MODE_SCORING;
                         dataTypeShown = BOARDVIEW_DATATYPE_SCORE;
                         break;
@@ -162,13 +213,15 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
                 // Invoke all updaters in order to make sure that everything
                 // is up-to-date
-                updateIsThisPlayersTurn();
+                updateIsThisPlayersTurnToPlayMove();
                 updateThisPlayerCanPlayMove();
+                updateIsThisPlayersTurnToSubmitScoreProposal();
+                updateThisPlayerCanSubmitScoreProposal();
                 updateDrawingServiceUserInteraction();
 
                 // Last but not least: Remember the game ID so that the play
                 // area becomes visible and we can submit moves.
-                gameID = gameInProgressJsonObject.gameID;
+                gameID = gameJsonObject.gameID;
             }
             else
             {
@@ -182,13 +235,9 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         if ($scope.isBoardShown())
         {
             // Start drawing the board AFTER the play area has been made
-            // visible, as per requirement of the drawing service.
-            //
-            // Why don't we invoke this method further up in the if(success)
-            // branch? Because we don't want to do this inside $scope.$apply(),
-            // because drawing the entire board is quite an expensive
-            // operation, and we're not sure if this would negatively
-            // affect the performance of $scope.$apply().
+            // visible, as per requirement of the drawing service. The
+            // play area becomes visible only after $scope.$apply() has
+            // finished its magic.
             drawingService.drawGoBoard();
         }
     }
@@ -198,22 +247,21 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // ----------------------------------------------------------------------
 
     // Enable or disable whether it is currently this player's turn (i.e. the
-    // user logged in on this client), depending on the state and moves of the
-    // current GoGame object that this controller operates on.
+    // user logged in on this client) to play a move, depending on the state
+    // and moves of the current GoGame object that this controller operates on.
     //
-    // This updater must be called whenever the game state changes or any
-    // game moves are played.
-    function updateIsThisPlayersTurn()
+    // This updater must be called whenever any game move is played.
+    function updateIsThisPlayersTurnToPlayMove()
     {
-        var newIsThisPlayersTurn;
+        var newIsThisPlayersTurnToPlayMove;
         if (goGame.getNextMoveColor() === thisPlayerColor)
-            newIsThisPlayersTurn = true;
+            newIsThisPlayersTurnToPlayMove = true;
         else
-            newIsThisPlayersTurn = false;
+            newIsThisPlayersTurnToPlayMove = false;
 
-        if (isThisPlayersTurn === newIsThisPlayersTurn)
+        if (isThisPlayersTurnToPlayMove === newIsThisPlayersTurnToPlayMove)
             return;
-        isThisPlayersTurn = newIsThisPlayersTurn;
+        isThisPlayersTurnToPlayMove = newIsThisPlayersTurnToPlayMove;
 
         updateThisPlayerCanPlayMove();
     }
@@ -228,9 +276,9 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     //   currently in progress.
     //
     // The latter is important because until we have received the server's
-    // response the move is not yet played, so isThisPlayersTurn is still
-    // true. Nevertheless the user must not be able to play more moves
-    // while we are waiting for the server's response.
+    // response the move is not yet played, so isThisPlayersTurnToPlayMove
+    // is still true. Nevertheless the user must not be able to play more
+    // moves while we are waiting for the server's response.
     //
     // This updater must be called whenever any of these properties changes
     // its value.
@@ -239,7 +287,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         var newThisPlayerCanPlayMove;
         if (goGame.getState() !== GAME_STATE_INPROGRESS_PLAYING)
             newThisPlayerCanPlayMove = false;
-        else if (isThisPlayersTurn && ! isMoveSubmissionInProgress)
+        else if (isThisPlayersTurnToPlayMove && ! isMoveSubmissionInProgress)
             newThisPlayerCanPlayMove = true;
         else
             newThisPlayerCanPlayMove = false;
@@ -251,11 +299,78 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         updateDrawingServiceUserInteraction();
     }
 
+    // Enable or disable whether it is currently this player's turn (i.e. the
+    // user logged in on this client) to submit a score proposal, depending on
+    // the state of the current GoGame and score objects that this
+    // controller operates on.
+    //
+    // This updater must be called whenever any game move is played or a new
+    // score proposal is received.
+    function updateIsThisPlayersTurnToSubmitScoreProposal()
+    {
+        var newIsThisPlayersTurnToSubmitScoreProposal;
+        if (score === undefined)
+        {
+            if (goGame.getNextMoveColor() === thisPlayerColor)
+                newIsThisPlayersTurnToSubmitScoreProposal = false;
+            else
+                newIsThisPlayersTurnToSubmitScoreProposal = true;
+        }
+        else
+        {
+            if (score.lastModifiedByUserID === sessionService.getUserInfo().userID)
+                newIsThisPlayersTurnToSubmitScoreProposal = false;
+            else
+                newIsThisPlayersTurnToSubmitScoreProposal = true;
+        }
+
+        if (isThisPlayersTurnToSubmitScoreProposal === newIsThisPlayersTurnToSubmitScoreProposal)
+            return;
+        isThisPlayersTurnToSubmitScoreProposal = newIsThisPlayersTurnToSubmitScoreProposal;
+
+        updateThisPlayerCanSubmitScoreProposal();
+    }
+
+    // Enable or disable whether this player (i.e. the user logged in on
+    // this client) can currently submit a score proposal, depending on the
+    // value of the following properties of this controller:
+    //
+    // - The game state
+    // - Whether or not it's this player's turn to submit a score proposal
+    // - Whether or not the submission of a score proposal by this player is
+    //   currently in progress
+    //
+    // The latter is important because until we have received the server's
+    // response the score proposal is not yet in effect, so
+    // isThisPlayersTurnToSubmitScoreProposal is still true. Nevertheless
+    // the user must not be able to submit more score proposals while we
+    // are waiting for the server's response.
+    //
+    // This updater must be called whenever any of these properties changes
+    // its value.
+    function updateThisPlayerCanSubmitScoreProposal()
+    {
+        var newThisPlayerCanSubmitScoreProposal;
+        if (goGame.getState() !== GAME_STATE_INPROGRESS_SCORING)
+            newThisPlayerCanSubmitScoreProposal = false;
+        else if (isThisPlayersTurnToSubmitScoreProposal && ! isScoreProposalSubmissionInProgress)
+            newThisPlayerCanSubmitScoreProposal = true;
+        else
+            newThisPlayerCanSubmitScoreProposal = false;
+
+        if (thisPlayerCanSubmitScoreProposal === newThisPlayerCanSubmitScoreProposal)
+            return;
+        thisPlayerCanSubmitScoreProposal = newThisPlayerCanSubmitScoreProposal;
+
+        updateDrawingServiceUserInteraction();
+    }
+
     // Enable or disable user interaction in the drawing service, depending
     // on the value of the following properties of this controller:
     //
     // - Board view mode
-    // - Whether or not this player can currently play a move
+    // - Whether or not this player can currently play a move or submit a
+    //   score proposal
     //
     // This updater must be called whenever any of these properties changes
     // its value.
@@ -264,7 +379,10 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         var enableUserInteraction;
         if ($scope.isPlayModeActivated())
         {
-            enableUserInteraction = thisPlayerCanPlayMove;
+            if (goGame.getState() === GAME_STATE_INPROGRESS_PLAYING)
+                enableUserInteraction = thisPlayerCanPlayMove;
+            else
+                enableUserInteraction = false;
         }
         else if ($scope.isAnalyzeModeActivated())
         {
@@ -272,9 +390,16 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         }
         else if ($scope.isScoringModeActivated())
         {
-            // TODO: Enable always if game state is GAME_STATE_INPROGRESS_PLAYING (local scoring only)
-            // TODO: Enable only if it's this player's turn if game state is GAME_STATE_INPROGRESS_SCORING (scoring proposal is submitted)
-            enableUserInteraction = true;
+            if (goGame.getState() === GAME_STATE_INPROGRESS_PLAYING)
+                enableUserInteraction = true;  // in playing state the score is only local, so no restrictions
+            else if (goGame.getState() === GAME_STATE_INPROGRESS_SCORING)
+                enableUserInteraction = thisPlayerCanSubmitScoreProposal;
+            else
+                enableUserInteraction = false;
+        }
+        else
+        {
+            throw new Error("Unknown board view mode");
         }
 
         if (drawingService.isUserInteractionEnabled() === enableUserInteraction)
@@ -367,14 +492,14 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         if ($scope.isBoardShown())
             return ! thisPlayerCanPlayMove;
         else
-            return false;  // we get here on page reload: goGame does not exist yet
+            return true;  // we get here on page reload: goGame does not exist yet
     };
 
     $scope.isResignButtonDisabled = function() {
         if ($scope.isBoardShown())
             return ! thisPlayerCanPlayMove;  // TODO: Player should be able to resign in scoring mode
         else
-            return false;  // we get here on page reload: goGame does not exist yet
+            return true;  // we get here on page reload: goGame does not exist yet
     };
 
     // Playing a stone is not handled via AngularJS "ngClick" directive,
@@ -391,22 +516,20 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             else
                 goGame.goScore.toggleSekiStateOfStoneGroup(goPoint.goBoardRegion);
 
-            goGame.goScore.calculate();
             $scope.$apply(function() {
-                updateScoringData();
-                updateIsThisPlayersTurn();
-            });
-            drawingService.drawGoBoardAfterScoreChange();
-            // Enable/disable interaction depending on whether it's currently
-            // this player's turn to score
-            // TODO: Implement
-            //updateIsThisPlayersTurnToScore();
+                thisPlayerHasChangedScoreProposal = true;
 
-            updateDrawingServiceUserInteraction();
+                goGame.goScore.calculate();
+                updateScoringData();
+            });
+
+            drawingService.drawGoBoardAfterScoreChange();
         }
         else if ($scope.isPlayModeActivated())
         {
             isMoveSubmissionInProgress = true;
+            // TODO: Shouldn't this be in a $score.$apply() context
+            updateThisPlayerCanPlayMove();
             updateDrawingServiceUserInteraction();
 
             webSocketService.submitNewGameMovePlay(
@@ -420,6 +543,8 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     $scope.pass = function() {
 
         isMoveSubmissionInProgress = true;
+        // TODO: Shouldn't this be in a $score.$apply() context
+        updateThisPlayerCanPlayMove();
         updateDrawingServiceUserInteraction();
 
         webSocketService.submitNewGameMovePass(
@@ -459,7 +584,8 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 var moveNumber = $scope.gameMoves.length + 1;
                 var gameMove = new GameMove(goMove, moveNumber);
                 $scope.gameMoves.unshift(gameMove);
-                updateIsThisPlayersTurn();
+                updateIsThisPlayersTurnToPlayMove();
+                updateIsThisPlayersTurnToSubmitScoreProposal();
 
                 // At least the number of captured stones in territory scoring
                 // must be updated
@@ -473,6 +599,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 {
                     goGame.setState(GAME_STATE_INPROGRESS_SCORING);
                     updateThisPlayerCanPlayMove();
+                    updateThisPlayerCanSubmitScoreProposal();
 
                     $scope.activateScoringMode();
                     dataTypeShown = BOARDVIEW_DATATYPE_SCORE;
@@ -546,6 +673,53 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         return (scoringMarkMode === SCORINGMARKMODE_SEKI);
     };
 
+    $scope.isRevertToOpponentScoreProposalButtonDisabled = function() {
+        if ($scope.isRevertToOpponentScoreProposalButtonShown())
+            return (! thisPlayerCanSubmitScoreProposal);
+        else
+            return true;
+    };
+
+    $scope.isRevertToOpponentScoreProposalButtonShown = function() {
+        // Basic rule: Show revert button only if accept button is also
+        // shown. But revert button remains hidden if there's no score
+        // proposal to revert to.
+        if ($scope.isSubmitScoreProposalButtonShown())
+            return (score !== undefined);
+        else
+            return false;
+    };
+
+    $scope.isSubmitScoreProposalButtonDisabled= function() {
+        if ($scope.isSubmitScoreProposalButtonShown())
+            return (! thisPlayerCanSubmitScoreProposal);
+        else
+            return true;
+    };
+
+    $scope.isSubmitScoreProposalButtonShown= function() {
+        if ($scope.isAcceptScoreProposalButtonShown())
+            return false;  // don't show accept and submit button at the same time
+        else if ($scope.isBoardShown())
+            return true;
+        else
+            return false;  // accept and submit button can be hidden at the same time
+    };
+
+    $scope.isAcceptScoreProposalButtonDisabled = function() {
+        if ($scope.isAcceptScoreProposalButtonShown())
+            return (! thisPlayerCanSubmitScoreProposal);
+        else
+            return true;
+    };
+
+    $scope.isAcceptScoreProposalButtonShown = function() {
+        if ($scope.isBoardShown())
+            return (score !== undefined && ! thisPlayerHasChangedScoreProposal);
+        else
+            return false;
+    };
+
     $scope.isScoringModeNotActivated = function() {
         return ! $scope.isScoringModeActivated();
     };
@@ -609,6 +783,214 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         $scope.scoreScoringSystem = "(" + scoringSystemToString(goGame.goGameRules.scoringSystem) + ")";
     }
 
+    $scope.revertToOpponentScoreProposal = function () {
+        applyScoreDetails();
+        thisPlayerHasChangedScoreProposal = false;
+
+        goGame.goScore.calculate();
+        updateScoringData();
+
+        drawingService.drawGoBoardAfterScoreChange();
+    };
+
+    $scope.submitScoreProposal = function () {
+
+        // TODO Should we not allow submission if inconsistent territory exists?
+
+        var scoreDetails = [];
+
+        var allRegions = goGame.goBoard.getRegions();
+        allRegions.forEach(function(goBoardRegion) {
+
+            // We want to transmit only regions that are stone groups
+            // that are either dead or in seki. Everything else can
+            // be derived from these two pieces of information:
+            // - Remaining stone groups must be alive
+            // - Regions that consist of empty intersections are
+            //   territory, whether or not it's neutral or any color
+            //   is determined by the surrounding stone groups
+            if (! goBoardRegion.isStoneGroup())
+                return;
+            var stoneGroupState = goBoardRegion.getStoneGroupState();
+            if (stoneGroupState !== STONEGROUPSTATE_DEAD && stoneGroupState !== STONEGROUPSTATE_SEKI)
+                return;
+
+            // The first intersection of the stone group is representative
+            // for the entire group. We are safe accessing the array's
+            // first elemnt because regions cannot be empty.
+            var goPoint = goBoardRegion.getPoints()[0];
+
+            var scoreDetail =
+                {
+                    vertexX: goPoint.goVertex.x,
+                    vertexY: goPoint.goVertex.y,
+                    stoneGroupState: stoneGroupState
+                };
+
+            scoreDetails.push(scoreDetail);
+        });
+
+        // TODO: Compare the new proposal to the previous proposal
+        // If they are the same, let the user know
+
+        isScoreProposalSubmissionInProgress = true;
+        // TODO: Shouldn't this be in a $score.$apply() context
+        updateThisPlayerCanSubmitScoreProposal();
+        updateDrawingServiceUserInteraction();
+
+        webSocketService.submitNewScoreProposal(gameID, scoreDetails);
+    };
+
+    webSocketService.addSubmitNewScoreProposal(handleSubmitNewScoreProposal);
+    function handleSubmitNewScoreProposal(success, scoreJsonObject, scoreDetailsJsonObject, errorMessage) {
+
+        if (success)
+        {
+            // The server sends us score proposals for all games that the
+            // currently logged in user is playing, but we are interested
+            // only in those score proposals that are for the game that
+            // the user is currently viewing
+            if (score.gameID !== gameID)
+                return;
+
+            // Clear the submission flag only if the response is for the
+            // game that the user is currently viewing
+            isScoreProposalSubmissionInProgress = false;
+
+            score = scoreJsonObject;
+            scoreDetails = scoreDetailsJsonObject;
+
+            // TODO: Only apply if we're in scoring mode
+            // TODO: Reapply when we enter scoring mode
+            applyScoreDetails();
+            thisPlayerHasChangedScoreProposal = false;
+
+            $scope.$apply(function() {
+
+                updateIsThisPlayersTurnToSubmitScoreProposal();
+
+                goGame.goScore.calculate();
+                updateScoringData();
+            });
+
+            drawingService.drawGoBoardAfterScoreChange();
+        }
+        else
+        {
+            errorHandlingService.showServerError(errorMessage);
+
+            // We can confidently clear the submission flag because even
+            // though the WebSocket error response data does not include
+            // a game ID, we know that the server only sends us an error
+            // response after we made a request
+            isScoreProposalSubmissionInProgress = false;
+        }
+    }
+
+    function applyScoreDetails()
+    {
+        // Pass 1: Reset all stone groups back to alive.
+        var allRegions = goGame.goBoard.getRegions();
+        allRegions.forEach(function(goBoardRegion) {
+            if (goBoardRegion.isStoneGroup())
+                goBoardRegion.setStoneGroupState(STONEGROUPSTATE_ALIVE);
+
+        });
+
+        // Pass 2: Apply the dead/seki state for which we have explicit
+        // information. Stone groups that have been marked as alive
+        // in pass 1 are now turned again.
+        scoreDetails.forEach(function(scoreDetail) {
+            var goPoint = goGame.goBoard.getPointAtVertexCoordinates(
+                scoreDetail.vertexX,
+                scoreDetail.vertexY);
+
+            // A minimalistic check that the score detail contains
+            // correct data - although we *should* trust our own data :-/
+            if (! goPoint.hasStone())
+                throw new Error("Intersection is not occupied but score detail says it should be: " + goPoint.goVertex);
+
+            goPoint.goBoardRegion.setStoneGroupState(scoreDetail.stoneGroupState);
+        });
+    }
+
+    $scope.acceptScoreProposal = function () {
+
+        // TODO Ask for confirmation. Show $scope.scoreFinalScore in the modal.
+
+        var resultType;
+        var winningStoneColor;
+        var winningPoints;
+        switch (goGame.goScore.result)
+        {
+            case GAMERESULT_BLACKHASWON:
+                resultType = GAMERESULT_RESULTTYPE_WINBYPOINTS;
+                winningStoneColor = COLOR_BLACK;
+                winningPoints = goGame.goScore.totalScoreBlack - goGame.goScore.totalScoreWhite;
+                break;
+            case GAMERESULT_WHITEHASWON:
+                resultType = GAMERESULT_RESULTTYPE_WINBYPOINTS;
+                winningStoneColor = COLOR_WHITE;
+                winningPoints = goGame.goScore.totalScoreWhite - goGame.goScore.totalScoreBlack;
+                break;
+            case GAMERESULT_TIE:
+                resultType = GAMERESULT_RESULTTYPE_DRAW;
+                winningStoneColor = COLOR_NONE;
+                winningPoints = WINNINGPOINTS_UNDEFINED;
+                break;
+            default:
+                throw new Error("Unknown score result " + goGame.goScore.result);
+        }
+
+        webSocketService.acceptScoreProposal(
+            gameID,
+            resultType,
+            winningStoneColor,
+            winningPoints);
+
+        // Accepting a proposal is just another form of
+        // score proposal submission
+        isScoreProposalSubmissionInProgress = true;
+        // TODO: Shouldn't this be in a $score.$apply() context
+        updateThisPlayerCanSubmitScoreProposal();
+        updateDrawingServiceUserInteraction();
+    };
+
+    webSocketService.addAcceptScoreProposal(handleAcceptScoreProposal);
+    function handleAcceptScoreProposal(success, responseGameID, errorMessage) {
+        if (success)
+        {
+            // The server sends us acceptance notifications for all games that
+            // the currently logged in user is playing, but we are interested
+            // only in those notifications that are for the game that the user
+            // is currently viewing
+            if (responseGameID !== gameID)
+                return;
+
+            // Clear the submission flag only if the response is for the
+            // game that the user is currently viewing
+            isScoreProposalSubmissionInProgress = false;
+
+            $scope.$apply(function() {
+                goGame.setState(GAME_STATE_FINISHED);
+
+                updateIsThisPlayersTurnToSubmitScoreProposal();
+
+                $scope.activateAnalyzeMode();
+            });
+        }
+        else
+        {
+            errorHandlingService.showServerError(errorMessage);
+
+            // We can confidently clear the submission flag because even
+            // though the WebSocket error response data does not include
+            // a game ID, we know that the server only sends us an error
+            // response after we made a request
+            isScoreProposalSubmissionInProgress = false;
+        }
+    }
+
     // ----------------------------------------------------------------------
     // Handle data switching operations
     // ----------------------------------------------------------------------
@@ -634,20 +1016,22 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // ----------------------------------------------------------------------
 
     if (webSocketService.isReady())
-        getGameInProgressWithMoves();
+        getGame();
     else
         webSocketService.addServiceIsReadyListener(handleWebSocketServiceIsReady);
 
     function handleWebSocketServiceIsReady() {
         $scope.$apply(function() {
-            getGameInProgressWithMoves();
+            getGame();
         });
     }
 
     $scope.$on("$destroy", function() {
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
-        webSocketService.removeGetGameInProgressWithMovesListener(handleGetGameInProgressWithMoves);
+        webSocketService.removeGetGame(handleGetGame);
         webSocketService.removeSubmitNewGameMoveListener(handleSubmitNewGameMove);
+        webSocketService.removeSubmitNewScoreProposal(handleSubmitNewScoreProposal);
+        webSocketService.removeAcceptScoreProposal(handleAcceptScoreProposal);
         drawingService.removeDidClickOnIntersectionListener(handleDidClickOnIntersection);
     })
 }]);

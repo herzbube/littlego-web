@@ -110,8 +110,10 @@
                                             </label>
                                         </div>
                                         <div>
+                                            <button class="btn btn-secondary" title="Discard the current score and revert to your opponent's proposed score" ng-click="revertToOpponentScoreProposal()" ng-disabled="isRevertToOpponentScoreProposalButtonDisabled()" ng-show="isRevertToOpponentScoreProposalButtonShown()">Revert</button>
                                             <button class="btn btn-outline-danger" title="Resign the game" data-toggle="modal" data-target="#notYetImplemented">Resign</button>
-                                            <button class="btn btn-success" title="Propose the current score as the final result to your opponent" data-toggle="modal" data-target="#notYetImplemented">Submit</button>
+                                            <button class="btn btn-success" title="Propose the current score as the final result to your opponent" ng-click="submitScoreProposal()" ng-disabled="isSubmitScoreProposalButtonDisabled()" ng-show="isSubmitScoreProposalButtonShown()">Submit</button>
+                                            <button class="btn btn-success" title="Accept the proposed score as the final result and end the game" ng-click="acceptScoreProposal()" ng-disabled="isAcceptScoreProposalButtonDisabled()" ng-show="isAcceptScoreProposalButtonShown()">Accept</button>
                                         </div>
                                     </div>
                                 </div>
