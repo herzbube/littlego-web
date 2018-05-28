@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 05, 2018 at 06:19 PM
+-- Generation Time: May 27, 2018 at 08:11 AM
 -- Server version: 5.7.20
 -- PHP Version: 7.1.13
 
@@ -121,6 +121,34 @@ CREATE TABLE `gamesusersmapping` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `score`
+--
+
+CREATE TABLE `score` (
+  `scoreID` bigint(20) UNSIGNED NOT NULL,
+  `gameID` bigint(20) UNSIGNED NOT NULL,
+  `state` tinyint(4) NOT NULL,
+  `lastModifiedByUserID` bigint(20) UNSIGNED NOT NULL,
+  `lastModifiedTime` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `scoredetail`
+--
+
+CREATE TABLE `scoredetail` (
+  `scoreDetailID` bigint(20) UNSIGNED NOT NULL,
+  `scoreID` bigint(20) UNSIGNED NOT NULL,
+  `vertexX` tinyint(4) NOT NULL,
+  `vertexY` tinyint(4) NOT NULL,
+  `stoneGroupState` tinyint(4) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `session`
 --
 
@@ -186,7 +214,7 @@ ALTER TABLE `gamerequestpairing`
 --
 ALTER TABLE `gameresult`
   ADD PRIMARY KEY (`gameResultID`),
-  ADD KEY `gameresult_gameID` (`gameID`),
+  ADD UNIQUE KEY `gameresult_gameID` (`gameID`),
   ADD KEY `createTime` (`createTime`);
 
 --
@@ -197,6 +225,22 @@ ALTER TABLE `gamesusersmapping`
   ADD UNIQUE KEY `gameID_userID` (`gameID`,`userID`) USING BTREE,
   ADD UNIQUE KEY `gameID_stoneColor` (`gameID`,`stoneColor`) USING BTREE,
   ADD KEY `gamesusersmapping_userID` (`userID`);
+
+--
+-- Indexes for table `score`
+--
+ALTER TABLE `score`
+  ADD PRIMARY KEY (`scoreID`),
+  ADD KEY `score_gameID` (`gameID`),
+  ADD KEY `score_userID` (`lastModifiedByUserID`),
+  ADD KEY `lastModifiedTime` (`lastModifiedTime`);
+
+--
+-- Indexes for table `scoredetail`
+--
+ALTER TABLE `scoredetail`
+  ADD PRIMARY KEY (`scoreDetailID`),
+  ADD UNIQUE KEY `scoredetail_uniquestonegroup` (`scoreID`,`vertexX`,`vertexY`);
 
 --
 -- Indexes for table `session`
@@ -255,6 +299,18 @@ ALTER TABLE `gamesusersmapping`
   MODIFY `gamesusersmappingID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `score`
+--
+ALTER TABLE `score`
+  MODIFY `scoreID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `scoredetail`
+--
+ALTER TABLE `scoredetail`
+  MODIFY `scoreDetailID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `session`
 --
 ALTER TABLE `session`
@@ -302,6 +358,19 @@ ALTER TABLE `gameresult`
 ALTER TABLE `gamesusersmapping`
   ADD CONSTRAINT `gamesusersmapping_gameID` FOREIGN KEY (`gameID`) REFERENCES `game` (`gameID`),
   ADD CONSTRAINT `gamesusersmapping_userID` FOREIGN KEY (`userID`) REFERENCES `user` (`userID`);
+
+--
+-- Constraints for table `score`
+--
+ALTER TABLE `score`
+  ADD CONSTRAINT `score_gameID` FOREIGN KEY (`gameID`) REFERENCES `game` (`gameID`),
+  ADD CONSTRAINT `score_userID` FOREIGN KEY (`lastModifiedByUserID`) REFERENCES `user` (`userID`);
+
+--
+-- Constraints for table `scoredetail`
+--
+ALTER TABLE `scoredetail`
+  ADD CONSTRAINT `scoredetail_scoreID` FOREIGN KEY (`scoreID`) REFERENCES `score` (`scoreID`);
 
 --
 -- Constraints for table `session`
