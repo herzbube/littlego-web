@@ -1550,7 +1550,7 @@ namespace LittleGoWeb
             $selectStatement->bindValue(
                 $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEMOVE_GAMEID),
                 $gameID,
-                PDO::PARAM_STR);
+                PDO::PARAM_INT);
 
             $gameMoves = $this->executePdoStatementFindGameMoves($selectStatement);
             if ($gameMoves === null)
@@ -1599,7 +1599,7 @@ namespace LittleGoWeb
             $selectStatement->bindValue(
                 $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEMOVE_GAMEID),
                 $gameID,
-                PDO::PARAM_STR);
+                PDO::PARAM_INT);
 
             return $this->executePdoStatementFindGameMoves($selectStatement);
         }
@@ -1665,7 +1665,7 @@ namespace LittleGoWeb
             $selectStatement->bindValue(
                 $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEMOVE_GAMEID),
                 $gameID,
-                PDO::PARAM_STR);
+                PDO::PARAM_INT);
 
             try
             {
