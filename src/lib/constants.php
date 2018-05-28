@@ -313,6 +313,31 @@ namespace LittleGoWeb
     const DB_COLUMN_NAME_GAMEMOVE_MOVECOLOR = "moveColor";
     const DB_COLUMN_NAME_GAMEMOVE_VERTEXX = "vertexX";
     const DB_COLUMN_NAME_GAMEMOVE_VERTEXY = "vertexY";
+
+    // Database table score
+    const DB_TABLE_NAME_SCORE = "score";
+    const DB_COLUMN_NAME_SCORE_SCOREID = "scoreID";
+    const DB_COLUMN_NAME_SCORE_GAMEID = "gameID";
+    const DB_COLUMN_NAME_SCORE_STATE = "state";
+    const DB_COLUMN_NAME_SCORE_LASTMODIFIEDBYUSERID = "lastModifiedByUserID";
+    const DB_COLUMN_NAME_SCORE_LASTMODIFIEDTIME = "lastModifiedTime";
+
+    // Database table scoredetail
+    const DB_TABLE_NAME_SCOREDETAIL = "scoredetail";
+    const DB_COLUMN_NAME_SCOREDETAIL_SCOREDETAILID = "scoreDetailID";
+    const DB_COLUMN_NAME_SCOREDETAIL_SCOREID = "scoreID";
+    const DB_COLUMN_NAME_SCOREDETAIL_VERTEXX = "vertexX";
+    const DB_COLUMN_NAME_SCOREDETAIL_VERTEXY = "vertexY";
+    const DB_COLUMN_NAME_SCOREDETAIL_STONEGROUPSTATE = "stoneGroupState";
+
+    // Database table gameresult
+    const DB_TABLE_NAME_GAMERESULT = "gameresult";
+    const DB_COLUMN_NAME_GAMERESULT_GAMERESULTID = "gameResultID";
+    const DB_COLUMN_NAME_GAMERESULT_CREATETIME = "createTime";
+    const DB_COLUMN_NAME_GAMERESULT_GAMEID = "gameID";
+    const DB_COLUMN_NAME_GAMERESULT_RESULTTYPE = "resultType";
+    const DB_COLUMN_NAME_GAMERESULT_WINNINGSTONECOLOR = "winningStoneColor";
+    const DB_COLUMN_NAME_GAMERESULT_WINNINGPOINTS = "winningPoints";
 }
 
 ?>

@@ -686,6 +686,52 @@ namespace LittleGoWeb
             return $this->executePdoStatementFindGameRequests($selectStatement);
         }
 
+        // Obtains the game request data for the specified game ID from the
+        // database and returns the data as an associative array consisting
+        // of two GameRequest objects. The keys are the game requests'
+        // user IDs. Returns null if the database has no game request data
+        // for the specified game ID (either because there is no game with
+        // that ID, or because both players have already confirmed the
+        // pairing).
+        public function findGameRequestsByGameID(int $gameID): ?array
+        {
+            $tableName = DB_TABLE_NAME_GAMEREQUEST;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAMEREQUEST_GAMEREQUESTID,
+                DB_COLUMN_NAME_GAMEREQUEST_CREATETIME,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDBOARDSIZE,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSTONECOLOR,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDHANDICAP,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKOMI,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDKORULE,
+                DB_COLUMN_NAME_GAMEREQUEST_REQUESTEDSCORINGSYSTEM,
+                DB_COLUMN_NAME_GAMEREQUEST_USERID,
+                DB_COLUMN_NAME_GAMEREQUEST_STATE,
+                DB_COLUMN_NAME_GAMEREQUEST_GAMEID);
+            $whereColumnNames = array(DB_COLUMN_NAME_GAMEREQUEST_GAMEID);
+
+            $selectQueryString = $this->sqlGenerator->getSelectStatementWithWhereClause(
+                $tableName,
+                $columnNames,
+                $whereColumnNames);
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUEST_GAMEID),
+                $gameID,
+                PDO::PARAM_INT);
+
+            $gameRequests = $this->executePdoStatementFindGameRequests($selectStatement);
+            if ($gameRequests === null || count($gameRequests) === 0)
+                return null;
+
+            $gameRequestsAssociative = [];
+            foreach ($gameRequests as $gameRequest)
+                $gameRequestsAssociative[$gameRequest->getUserID()] = $gameRequest;
+            return $gameRequestsAssociative;
+        }
+
         // Obtains all game request data from the database and returns
         // the data as an array object. Returns an empty array if the
         // database has no game requests data.
@@ -1031,6 +1077,43 @@ namespace LittleGoWeb
             }
         }
 
+        // Obtains the game data for the specified game ID from the database
+        // and returns the data as a Game object. Returns null if the database
+        // has no game data for the specified game ID.
+        public function findGameByGameID(int $gameID) : ?Game
+        {
+            $tableName = DB_TABLE_NAME_GAME;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAME_GAMEID,
+                DB_COLUMN_NAME_GAME_CREATETIME,
+                DB_COLUMN_NAME_GAME_BOARDSIZE,
+                DB_COLUMN_NAME_GAME_HANDICAP,
+                DB_COLUMN_NAME_GAME_KOMI,
+                DB_COLUMN_NAME_GAME_KORULE,
+                DB_COLUMN_NAME_GAME_SCORINGSYSTEM,
+                DB_COLUMN_NAME_GAME_STATE);
+            $whereColumnNames = array(DB_COLUMN_NAME_GAME_GAMEID);
+
+            $selectQueryString = $this->sqlGenerator->getSelectStatementWithWhereClause(
+                $tableName,
+                $columnNames,
+                $whereColumnNames);
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAME_GAMEID),
+                $gameID,
+                PDO::PARAM_INT);
+
+            $games = $this->executePdoStatementFindGames($selectStatement);
+            if ($games === null)
+                return null;
+            else if (count($games) === 0)
+                return null;  // TODO: This is an error, we should throw an exception!
+            else
+                return $games[0];
+        }
+
         // Obtains the games in progress data for the specified user ID from
         // the database and returns the data as an array object. Returns an
         // empty array if the database has no games in progress data for the
@@ -1149,6 +1232,89 @@ namespace LittleGoWeb
             $selectStatement->bindValue(
                 $this->sqlGenerator->getParameterNameForColumName(DB_TABLE_NAME_GAMEREQUEST, DB_COLUMN_NAME_GAMEREQUEST_STATE),
                 GAMEREQUEST_STATE_CONFIRMEDPAIRING,
+                PDO::PARAM_INT);
+
+            return $this->executePdoStatementFindGames($selectStatement);
+        }
+
+        // Obtains the finished games data for the specified user ID from
+        // the database and returns the data as an array object. Returns an
+        // empty array if the database has no finished games data for the
+        // specified user ID.
+        //
+        // The array is ordered descending by create time (i.e. newest
+        // first), then descending by game ID.
+        //
+        // On failure, returns null.
+        public function findFinishedGamesByUserID(int $userID) : ?array
+        {
+            // The query looks like this. It joins the "gamerequest" table
+            // to filter out games for which the user has not yet confirmed
+            // the pairing.
+            //
+            // select
+            //     game.*
+            // from
+            //     game
+            //     inner join gamesusersmapping on game.gameID = gamesusersmapping.gameID
+            // where
+            //     game.state = GAME_STATE_FINISHED
+            //         and
+            //     gamesusersmapping.userID = 123
+            // order by
+            //     game.createTime desc,
+            //     game.gameID desc
+
+            $mainTableName = DB_TABLE_NAME_GAME;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAME_GAMEID,
+                DB_COLUMN_NAME_GAME_CREATETIME,
+                DB_COLUMN_NAME_GAME_BOARDSIZE,
+                DB_COLUMN_NAME_GAME_HANDICAP,
+                DB_COLUMN_NAME_GAME_KOMI,
+                DB_COLUMN_NAME_GAME_KORULE,
+                DB_COLUMN_NAME_GAME_SCORINGSYSTEM,
+                DB_COLUMN_NAME_GAME_STATE);
+            $selectQueryString = $this->sqlGenerator->getSelectStatement(
+                $mainTableName,
+                $columnNames);
+            $selectQueryString .= $this->sqlGenerator->getInnerJoinClause(
+                $mainTableName,
+                DB_TABLE_NAME_GAMESUSERSMAPPING,
+                DB_COLUMN_NAME_GAME_GAMEID);
+
+            $selectQueryString .= " where ";
+            $selectQueryString .= $this->sqlGenerator->getWhereColumnEqualsValue(
+                $mainTableName,
+                DB_COLUMN_NAME_GAME_STATE);
+
+            $selectQueryString .= SQL_OPERATOR_AND;
+
+            $selectQueryString .= $this->sqlGenerator->getWhereColumnEqualsValue(
+                DB_TABLE_NAME_GAMESUSERSMAPPING,
+                DB_COLUMN_NAME_GAMESUSERSMAPPING_USERID);
+
+            $selectQueryString .= " order by ";
+            $orderByColumnNames = array(
+                DB_COLUMN_NAME_GAME_CREATETIME,
+                DB_COLUMN_NAME_GAME_GAMEID);
+            $orderings = array(
+                false,
+                false);
+            $selectQueryString .= $this->sqlGenerator->getColumnsWithOrderings(
+                $mainTableName,
+                $orderByColumnNames,
+                $orderings);
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($mainTableName, DB_COLUMN_NAME_GAME_STATE),
+                GAME_STATE_FINISHED,
+                PDO::PARAM_INT);
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName(DB_TABLE_NAME_GAMESUSERSMAPPING, DB_COLUMN_NAME_GAMESUSERSMAPPING_USERID),
+                $userID,
                 PDO::PARAM_INT);
 
             return $this->executePdoStatementFindGames($selectStatement);
@@ -1567,6 +1733,417 @@ namespace LittleGoWeb
 
                 $gamveMoveID = intval($this->pdo->lastInsertId());
                 return $gamveMoveID;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return -1;
+            }
+        }
+
+        // Obtains the score data for the specified game ID from the
+        // database and returns the data as a Score object. Returns null if
+        // the database has no score data for the specified game ID.
+        public function findScoreByGameID(int $gameID): ?Score
+        {
+            $tableName = DB_TABLE_NAME_SCORE;
+            $columnNames = array(
+                DB_COLUMN_NAME_SCORE_SCOREID,
+                DB_COLUMN_NAME_SCORE_GAMEID,
+                DB_COLUMN_NAME_SCORE_STATE,
+                DB_COLUMN_NAME_SCORE_LASTMODIFIEDBYUSERID,
+                DB_COLUMN_NAME_SCORE_LASTMODIFIEDTIME);
+            $whereColumnNames = array(DB_COLUMN_NAME_SCORE_GAMEID);
+
+            $selectQueryString = $this->sqlGenerator->getSelectStatementWithWhereClause(
+                $tableName,
+                $columnNames,
+                $whereColumnNames);
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCORE_GAMEID),
+                $gameID,
+                PDO::PARAM_INT);
+
+            try
+            {
+                $selectStatement->execute();
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return null;
+            }
+
+            $row = $selectStatement->fetch(PDO::FETCH_ASSOC);
+            if ($row)
+            {
+                $scoreID = intval($row[DB_COLUMN_NAME_SCORE_SCOREID]);
+                $gameID = intval($row[DB_COLUMN_NAME_SCORE_GAMEID]);
+                $state = intval($row[DB_COLUMN_NAME_SCORE_STATE]);
+                $lastModifiedByUserID = intval($row[DB_COLUMN_NAME_SCORE_LASTMODIFIEDBYUSERID]);
+                $lastModifiedTime = intval($row[DB_COLUMN_NAME_SCORE_LASTMODIFIEDTIME]);
+
+                return new Score($scoreID, $gameID, $state, $lastModifiedByUserID, $lastModifiedTime);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        // Inserts a new row into the database that contains the data in the
+        // specified Score object, with the exception of the score ID.
+        // On success, returns the score ID auto-generated by the database.
+        // On failure, returns -1.
+        public function insertScore(Score $score): int
+        {
+            $tableName = DB_TABLE_NAME_SCORE;
+            $columnNames = array(
+                DB_COLUMN_NAME_SCORE_GAMEID,
+                DB_COLUMN_NAME_SCORE_STATE,
+                DB_COLUMN_NAME_SCORE_LASTMODIFIEDBYUSERID,
+                DB_COLUMN_NAME_SCORE_LASTMODIFIEDTIME);
+
+            $insertQueryString = $this->sqlGenerator->getInsertStatement(
+                $tableName,
+                $columnNames);
+
+            $insertStatement = $this->pdo->prepare($insertQueryString);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCORE_GAMEID),
+                $score->getGameID(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCORE_STATE),
+                $score->getState(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCORE_LASTMODIFIEDBYUSERID),
+                $score->getLastModifiedByUserID(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCORE_LASTMODIFIEDTIME),
+                $score->getLastModifiedTime(),
+                PDO::PARAM_INT);
+
+            try
+            {
+                $insertStatement->execute();
+
+                $scoreID = intval($this->pdo->lastInsertId());
+                return $scoreID;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return -1;
+            }
+        }
+
+        // Updates an existing row in the database with the data in the
+        // specified Score object, with the exception of the score ID.
+        // Returns true on success, false on failure (e.g. score does
+        // not exist).
+        public function updateScore(Score $score): bool
+        {
+            $tableName = DB_TABLE_NAME_SCORE;
+            // The score's game ID cannot change
+            $columnNames = array(
+                DB_COLUMN_NAME_SCORE_STATE,
+                DB_COLUMN_NAME_SCORE_LASTMODIFIEDBYUSERID,
+                DB_COLUMN_NAME_SCORE_LASTMODIFIEDTIME);
+            $whereColumnNames = array(DB_COLUMN_NAME_SCORE_SCOREID);
+
+            $updateQueryString = $this->sqlGenerator->getUpdateStatementWithWhereClause(
+                $tableName,
+                $columnNames,
+                $whereColumnNames);
+
+            $updateStatement = $this->pdo->prepare($updateQueryString);
+            $updateStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCORE_STATE),
+                $score->getState(),
+                PDO::PARAM_INT);
+            $updateStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCORE_LASTMODIFIEDBYUSERID),
+                $score->getLastModifiedByUserID(),
+                PDO::PARAM_INT);
+            $updateStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCORE_LASTMODIFIEDTIME),
+                $score->getLastModifiedTime(),
+                PDO::PARAM_INT);
+            $updateStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCORE_SCOREID),
+                $score->getScoreID(),
+                PDO::PARAM_INT);
+
+            try
+            {
+                $updateStatement->execute();
+
+                $numberOfUpdatedRows = $updateStatement->rowCount();
+                if ($numberOfUpdatedRows === 1)
+                    return true;
+                else
+                    return false;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return false;
+            }
+        }
+
+        // Obtains the score details data for the specified score ID from the
+        // database and returns the data as an array object. Returns an
+        // empty array if the database has no score details data for the
+        // specified score ID.
+        //
+        // The array has no particular order.
+        //
+        // On failure, returns null.
+        public function findScoreDetailsByScoreID(int $scoreID): ?array
+        {
+            $tableName = DB_TABLE_NAME_SCOREDETAIL;
+            $columnNames = array(
+                DB_COLUMN_NAME_SCOREDETAIL_SCOREDETAILID,
+                DB_COLUMN_NAME_SCOREDETAIL_SCOREID,
+                DB_COLUMN_NAME_SCOREDETAIL_VERTEXX,
+                DB_COLUMN_NAME_SCOREDETAIL_VERTEXY,
+                DB_COLUMN_NAME_SCOREDETAIL_STONEGROUPSTATE);
+            $whereColumnNames = array(DB_COLUMN_NAME_SCOREDETAIL_SCOREID);
+
+            $selectQueryString = $this->sqlGenerator->getSelectStatementWithWhereClause(
+                $tableName,
+                $columnNames,
+                $whereColumnNames);
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCOREDETAIL_SCOREID),
+                $scoreID,
+                PDO::PARAM_INT);
+
+            try
+            {
+                $selectStatement->execute();
+
+                $scoreDetails = [];
+
+                while ($row = $selectStatement->fetch(PDO::FETCH_ASSOC))
+                {
+                    $scoreDetailID = intval($row[DB_COLUMN_NAME_SCOREDETAIL_SCOREDETAILID]);
+                    $scoreID = intval($row[DB_COLUMN_NAME_SCORE_SCOREID]);
+                    $vertexX = intval($row[DB_COLUMN_NAME_SCOREDETAIL_VERTEXX]);
+                    $vertexY = intval($row[DB_COLUMN_NAME_SCOREDETAIL_VERTEXY]);
+                    $stoneGroupState = intval($row[DB_COLUMN_NAME_SCOREDETAIL_STONEGROUPSTATE]);
+
+                    $scoreDetail = new ScoreDetail(
+                        $scoreDetailID,
+                        $scoreID,
+                        $vertexX,
+                        $vertexY,
+                        $stoneGroupState);
+
+                    array_push($scoreDetails, $scoreDetail);
+                }
+
+                return $scoreDetails;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return null;
+            }
+        }
+
+        // Inserts a new row into the database that contains the data in the
+        // specified ScoreDetail object, with the exception of the
+        // score detail ID.  On success, returns the score detail ID
+        // auto-generated by the database. On failure, returns -1.
+        public function insertScoreDetail(ScoreDetail $scoreDetail): int
+        {
+            $tableName = DB_TABLE_NAME_SCOREDETAIL;
+            $columnNames = array(
+                DB_COLUMN_NAME_SCOREDETAIL_SCOREID,
+                DB_COLUMN_NAME_SCOREDETAIL_VERTEXX,
+                DB_COLUMN_NAME_SCOREDETAIL_VERTEXY,
+                DB_COLUMN_NAME_SCOREDETAIL_STONEGROUPSTATE);
+
+            $insertQueryString = $this->sqlGenerator->getInsertStatement(
+                $tableName,
+                $columnNames);
+
+            $insertStatement = $this->pdo->prepare($insertQueryString);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCOREDETAIL_SCOREID),
+                $scoreDetail->getScoreID(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCOREDETAIL_VERTEXX),
+                $scoreDetail->getVertexX(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCOREDETAIL_VERTEXY),
+                $scoreDetail->getVertexY(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCOREDETAIL_STONEGROUPSTATE),
+                $scoreDetail->getStoneGroupState(),
+                PDO::PARAM_INT);
+
+            try
+            {
+                $insertStatement->execute();
+
+                $scoreDetailID = intval($this->pdo->lastInsertId());
+                return $scoreDetailID;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return -1;
+            }
+        }
+
+        // Deletes all score detail data for the specified score ID from
+        // the database. Returns true on success, false on failure (i.e. no
+        // score details for the specified score ID exists).
+        public function deleteScoreDetailsByScoreID(int $scoreID): bool
+        {
+            $tableName = DB_TABLE_NAME_SCOREDETAIL;
+            $columnNames = array(
+                DB_COLUMN_NAME_SCOREDETAIL_SCOREID);
+
+            $deleteQueryString = $this->sqlGenerator->getDeleteStatementWithWhereClause(
+                $tableName,
+                $columnNames);
+
+            $deleteStatement = $this->pdo->prepare($deleteQueryString);
+            $deleteStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCOREDETAIL_SCOREID),
+                $scoreID,
+                PDO::PARAM_INT);
+
+            try
+            {
+                $deleteStatement->execute();
+
+                $numberOfDeletedRows = $deleteStatement->rowCount();
+                if ($numberOfDeletedRows > 0)
+                    return true;
+                else
+                    return false;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return false;
+            }
+        }
+
+        // Obtains the game result data for the specified game ID from the
+        // database and returns the data as a GameResult object. Returns null
+        // if the database has no game result data for the specified game ID.
+        public function findGameResultByGameID(int $gameID): ?GameResult
+        {
+            $tableName = DB_TABLE_NAME_GAMERESULT;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAMERESULT_GAMERESULTID,
+                DB_COLUMN_NAME_GAMERESULT_CREATETIME,
+                DB_COLUMN_NAME_GAMERESULT_GAMEID,
+                DB_COLUMN_NAME_GAMERESULT_RESULTTYPE,
+                DB_COLUMN_NAME_GAMERESULT_WINNINGSTONECOLOR,
+                DB_COLUMN_NAME_GAMERESULT_WINNINGPOINTS);
+            $whereColumnNames = array(DB_COLUMN_NAME_GAMERESULT_GAMEID);
+
+            $selectQueryString = $this->sqlGenerator->getSelectStatementWithWhereClause(
+                $tableName,
+                $columnNames,
+                $whereColumnNames);
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+            $selectStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMERESULT_GAMEID),
+                $gameID,
+                PDO::PARAM_INT);
+
+            try
+            {
+                $selectStatement->execute();
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return null;
+            }
+
+            $row = $selectStatement->fetch(PDO::FETCH_ASSOC);
+            if ($row)
+            {
+                $gameResultID = intval($row[DB_COLUMN_NAME_GAMERESULT_GAMERESULTID]);
+                $createTime = intval($row[DB_COLUMN_NAME_GAMERESULT_CREATETIME]);
+                $gameID = intval($row[DB_COLUMN_NAME_GAMERESULT_GAMEID]);
+                $resultType = intval($row[DB_COLUMN_NAME_GAMERESULT_RESULTTYPE]);
+                $winningStoneColor = intval($row[DB_COLUMN_NAME_GAMERESULT_WINNINGSTONECOLOR]);
+                $winningPoints = floatval($row[DB_COLUMN_NAME_GAMERESULT_WINNINGPOINTS]);
+
+                return new GameResult($gameResultID, $createTime, $gameID, $resultType, $winningStoneColor, $winningPoints);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        // Inserts a new row into the database that contains the data in the
+        // specified GameResult object, with the exception of the
+        // game result ID. On success, returns the game result ID
+        // auto-generated by the database. On failure, returns -1.
+        public function insertGameResult(GameResult $gameResult): int
+        {
+            $tableName = DB_TABLE_NAME_GAMERESULT;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAMERESULT_CREATETIME,
+                DB_COLUMN_NAME_GAMERESULT_GAMEID,
+                DB_COLUMN_NAME_GAMERESULT_RESULTTYPE,
+                DB_COLUMN_NAME_GAMERESULT_WINNINGSTONECOLOR,
+                DB_COLUMN_NAME_GAMERESULT_WINNINGPOINTS);
+
+            $insertQueryString = $this->sqlGenerator->getInsertStatement(
+                $tableName,
+                $columnNames);
+
+            $insertStatement = $this->pdo->prepare($insertQueryString);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMERESULT_CREATETIME),
+                $gameResult->getCreateTime(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMERESULT_GAMEID),
+                $gameResult->getGameID(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMERESULT_RESULTTYPE),
+                $gameResult->getResultType(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMERESULT_WINNINGSTONECOLOR),
+                $gameResult->getWinningStoneColor(),
+                PDO::PARAM_INT);
+            $insertStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMERESULT_WINNINGPOINTS),
+                $gameResult->getWinningPoints(),
+                PDO::PARAM_STR);  // PDO has no PARAM_FLOAT, float values must be bound as string :-(
+
+            try
+            {
+                $insertStatement->execute();
+
+                $gameResultID = intval($this->pdo->lastInsertId());
+                return $gameResultID;
             }
             catch (\PDOException $exception)
             {
