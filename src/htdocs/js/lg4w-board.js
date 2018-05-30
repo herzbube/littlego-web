@@ -24,11 +24,10 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // The main Go domain model object. All other domain model objects are
     // accessible via this object.
     var goGame = undefined;
-    // The following three variables help us to control alternating play
+    // The following variables help us to control alternating play
     // while the user views a game in state GAME_STATE_INPROGRESS_PLAYING
-    var isThisPlayersTurnToPlayMove = false;
-    var isMoveSubmissionInProgress = false;
     var thisPlayerCanPlayMove = false;
+    var isMoveSubmissionInProgress = false;
     // The mark mode that is in effect while the view is in
     // BOARDVIEW_MODE_SCORING
     var scoringMarkMode = SCORINGMARKMODE_DEAD;
@@ -42,12 +41,11 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // proposal for a game in state GAME_STATE_INPROGRESS_SCORING, or
     // the final score for a game in state GAME_STATE_FINISHED).
     var scoreDetails = undefined;
-    // The following three variables help us to control alternating
+    // The following variables help us to control alternating
     // submission of score proposals while the user views a game in state
     // GAME_STATE_INPROGRESS_SCORING
-    var isThisPlayersTurnToSubmitScoreProposal = false;
-    var isScoreProposalSubmissionInProgress = false;
     var thisPlayerCanSubmitScoreProposal = false;
+    var isScoreProposalSubmissionInProgress = false;
     // A kind of "dirty" flag that indicates whether the user has
     // made changes to a score proposal that the opponent submitted
     var thisPlayerHasChangedScoreProposal = false;
@@ -213,9 +211,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
                 // Invoke all updaters in order to make sure that everything
                 // is up-to-date
-                updateIsThisPlayersTurnToPlayMove();
                 updateThisPlayerCanPlayMove();
-                updateIsThisPlayersTurnToSubmitScoreProposal();
                 updateThisPlayerCanSubmitScoreProposal();
                 updateDrawingServiceUserInteraction();
 
@@ -246,42 +242,31 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     // Updaters
     // ----------------------------------------------------------------------
 
-    // Enable or disable whether it is currently this player's turn (i.e. the
-    // user logged in on this client) to play a move, depending on the state
-    // and moves of the current GoGame object that this controller operates on.
-    //
-    // This updater must be called whenever any game move is played.
-    function updateIsThisPlayersTurnToPlayMove()
-    {
-        var newIsThisPlayersTurnToPlayMove;
-        if (goGame.getNextMoveColor() === thisPlayerColor)
-            newIsThisPlayersTurnToPlayMove = true;
-        else
-            newIsThisPlayersTurnToPlayMove = false;
-
-        if (isThisPlayersTurnToPlayMove === newIsThisPlayersTurnToPlayMove)
-            return;
-        isThisPlayersTurnToPlayMove = newIsThisPlayersTurnToPlayMove;
-    }
-
     // Enable or disable whether this player (i.e. the user logged in on
     // this client) can currently play a move, depending on the value of
     // the following properties of this controller:
     //
-    // - The game state
-    // - Whether or not it's this player's turn
+    // - The game state.
+    // - Whether or not it's this player's turn (i.e. the user logged in on
+    //   this client) to play a move. This changes whenever any game move
+    //   is played.
     // - Whether or not the submission of a move by this player is
-    //   currently in progress.
-    //
-    // The latter is important because until we have received the server's
-    // response the move is not yet played, so isThisPlayersTurnToPlayMove
-    // is still true. Nevertheless the user must not be able to play more
-    // moves while we are waiting for the server's response.
+    //   currently in progress. This is important because until we have
+    //   received the server's response the move is not yet played, so
+    //   technically it's still this player's turn to play a move.
+    //   Nevertheless the user must not be able to play more moves while
+    //   we are waiting for the server's response.
     //
     // This updater must be called whenever any of these properties changes
     // its value.
     function updateThisPlayerCanPlayMove()
     {
+        var isThisPlayersTurnToPlayMove;
+        if (goGame.getNextMoveColor() === thisPlayerColor)
+            isThisPlayersTurnToPlayMove = true;
+        else
+            isThisPlayersTurnToPlayMove = false;
+
         var newThisPlayerCanPlayMove;
         if (goGame.getState() !== GAME_STATE_INPROGRESS_PLAYING)
             newThisPlayerCanPlayMove = false;
@@ -295,55 +280,41 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         thisPlayerCanPlayMove = newThisPlayerCanPlayMove;
     }
 
-    // Enable or disable whether it is currently this player's turn (i.e. the
-    // user logged in on this client) to submit a score proposal, depending on
-    // the state of the current GoGame and score objects that this
-    // controller operates on.
-    //
-    // This updater must be called whenever any game move is played or a new
-    // score proposal is received.
-    function updateIsThisPlayersTurnToSubmitScoreProposal()
-    {
-        var newIsThisPlayersTurnToSubmitScoreProposal;
-        if (score === undefined)
-        {
-            if (goGame.getNextMoveColor() === thisPlayerColor)
-                newIsThisPlayersTurnToSubmitScoreProposal = false;
-            else
-                newIsThisPlayersTurnToSubmitScoreProposal = true;
-        }
-        else
-        {
-            if (score.lastModifiedByUserID === sessionService.getUserInfo().userID)
-                newIsThisPlayersTurnToSubmitScoreProposal = false;
-            else
-                newIsThisPlayersTurnToSubmitScoreProposal = true;
-        }
-
-        if (isThisPlayersTurnToSubmitScoreProposal === newIsThisPlayersTurnToSubmitScoreProposal)
-            return;
-        isThisPlayersTurnToSubmitScoreProposal = newIsThisPlayersTurnToSubmitScoreProposal;
-    }
-
     // Enable or disable whether this player (i.e. the user logged in on
     // this client) can currently submit a score proposal, depending on the
     // value of the following properties of this controller:
     //
-    // - The game state
-    // - Whether or not it's this player's turn to submit a score proposal
+    // - The game state.
+    // - Whether or not it's this player's turn (i.e. the user logged in on
+    //   this client) to submit a score proposal. This changes whenever any
+    //   game move is played or a new score proposal is received.
     // - Whether or not the submission of a score proposal by this player is
-    //   currently in progress
-    //
-    // The latter is important because until we have received the server's
-    // response the score proposal is not yet in effect, so
-    // isThisPlayersTurnToSubmitScoreProposal is still true. Nevertheless
-    // the user must not be able to submit more score proposals while we
-    // are waiting for the server's response.
+    //   currently in progress. This is important because until we have
+    //   received the server's response the score proposal is not yet in
+    //   effect, so technically it's still this player's turn to submit a
+    //   score proposal. Nevertheless the user must not be able to submit
+    //   more score proposals while we are waiting for the server's response.
     //
     // This updater must be called whenever any of these properties changes
     // its value.
     function updateThisPlayerCanSubmitScoreProposal()
     {
+        var isThisPlayersTurnToSubmitScoreProposal;
+        if (score === undefined)
+        {
+            if (goGame.getNextMoveColor() === thisPlayerColor)
+                isThisPlayersTurnToSubmitScoreProposal = false;
+            else
+                isThisPlayersTurnToSubmitScoreProposal = true;
+        }
+        else
+        {
+            if (score.lastModifiedByUserID === sessionService.getUserInfo().userID)
+                isThisPlayersTurnToSubmitScoreProposal = false;
+            else
+                isThisPlayersTurnToSubmitScoreProposal = true;
+        }
+
         var newThisPlayerCanSubmitScoreProposal;
         if (goGame.getState() !== GAME_STATE_INPROGRESS_SCORING)
             newThisPlayerCanSubmitScoreProposal = false;
@@ -597,9 +568,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 var moveNumber = $scope.gameMoves.length + 1;
                 var gameMove = new GameMove(goMove, moveNumber);
                 $scope.gameMoves.unshift(gameMove);
-                updateIsThisPlayersTurnToPlayMove();
                 updateThisPlayerCanPlayMove();
-                updateIsThisPlayersTurnToSubmitScoreProposal();
                 updateThisPlayerCanSubmitScoreProposal();
                 updateDrawingServiceUserInteraction();
 
@@ -614,6 +583,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 if (gameState === GAME_STATE_INPROGRESS_SCORING)
                 {
                     goGame.setState(GAME_STATE_INPROGRESS_SCORING);
+
                     updateThisPlayerCanPlayMove();
                     updateThisPlayerCanSubmitScoreProposal();
                     updateDrawingServiceUserInteraction();
@@ -927,7 +897,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
             $scope.$apply(function() {
 
-                updateIsThisPlayersTurnToSubmitScoreProposal();
                 updateThisPlayerCanSubmitScoreProposal();
                 updateDrawingServiceUserInteraction();
 
