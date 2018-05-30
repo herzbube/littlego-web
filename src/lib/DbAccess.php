@@ -2031,11 +2031,18 @@ namespace LittleGoWeb
             {
                 $deleteStatement->execute();
 
-                $numberOfDeletedRows = $deleteStatement->rowCount();
-                if ($numberOfDeletedRows > 0)
-                    return true;
-                else
-                    return false;
+                // We don't check the number of deleted rows - it's actually
+                // possible that a score has no score details. This happens
+                // in two edge cases:
+                // - If there are no stone groups on the board. The game in
+                //   this case was played without handicap stones, and the
+                //   game has ended immediately after two pass moves (i.e. no
+                //   stones were placed at all).
+                // - If there *are* stone groups on the board, but all of them
+                //   are alive.
+                $deleteStatement->rowCount();
+
+                return true;
             }
             catch (\PDOException $exception)
             {
