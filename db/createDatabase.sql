@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: May 27, 2018 at 08:11 AM
+-- Generation Time: May 30, 2018 at 01:03 PM
 -- Server version: 5.7.20
 -- PHP Version: 7.1.13
 
@@ -121,6 +121,22 @@ CREATE TABLE `gamesusersmapping` (
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `highscore`
+-- (See below for the actual view)
+--
+CREATE TABLE `highscore` (
+   `userID` bigint(20) unsigned
+  ,`displayName` varchar(64)
+  ,`totalGamesWon` bigint(21)
+  ,`totalGamesLost` bigint(21)
+  ,`mostRecentWin` bigint(20)
+  ,`gamesWonAsBlack` bigint(21)
+  ,`gamesWonAsWhite` bigint(21)
+);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `score`
 --
 
@@ -171,6 +187,15 @@ CREATE TABLE `user` (
   `displayName` varchar(64) NOT NULL,
   `passwordHash` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `highscore`
+--
+DROP TABLE IF EXISTS `highscore`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `highscore`  AS  select `user`.`userID` AS `userID`,`user`.`displayName` AS `displayName`,coalesce(`totalgameswonquery`.`totalGamesWon`,0) AS `totalGamesWon`,coalesce(`totalgameslostquery`.`totalGamesLost`,0) AS `totalGamesLost`,coalesce((select `gameresult`.`createTime` AS `mostRecentWin` from (`gameresult` join `gamesusersmapping` on((`gameresult`.`gameID` = `gamesusersmapping`.`gameID`))) where (((`gameresult`.`resultType` = 0) or (`gameresult`.`resultType` = 1)) and (`gamesusersmapping`.`stoneColor` = `gameresult`.`winningStoneColor`) and (`gamesusersmapping`.`userID` = `user`.`userID`)) order by `gameresult`.`createTime` limit 1),-(1)) AS `mostRecentWin`,coalesce(`gameswonasblackquery`.`gamesWonAsBlack`,0) AS `gamesWonAsBlack`,coalesce(`gameswonaswhitequery`.`gamesWonAsWhite`,0) AS `gamesWonAsWhite` from ((((`user` left join (select `gamesusersmapping`.`userID` AS `userID`,count(`gameresult`.`gameResultID`) AS `totalGamesWon` from (`gameresult` join `gamesusersmapping` on((`gameresult`.`gameID` = `gamesusersmapping`.`gameID`))) where (((`gameresult`.`resultType` = 0) or (`gameresult`.`resultType` = 1)) and (`gamesusersmapping`.`stoneColor` = `gameresult`.`winningStoneColor`)) group by `gamesusersmapping`.`userID`) `totalgameswonquery` on((`user`.`userID` = `totalgameswonquery`.`userID`))) left join (select `gamesusersmapping`.`userID` AS `userID`,count(`gameresult`.`gameResultID`) AS `totalGamesLost` from (`gameresult` join `gamesusersmapping` on((`gameresult`.`gameID` = `gamesusersmapping`.`gameID`))) where (((`gameresult`.`resultType` = 0) or (`gameresult`.`resultType` = 1)) and (`gamesusersmapping`.`stoneColor` <> `gameresult`.`winningStoneColor`)) group by `gamesusersmapping`.`userID`) `totalgameslostquery` on((`user`.`userID` = `totalgameslostquery`.`userID`))) left join (select `gamesusersmapping`.`userID` AS `userID`,count(`gameresult`.`gameResultID`) AS `gamesWonAsBlack` from (`gameresult` join `gamesusersmapping` on((`gameresult`.`gameID` = `gamesusersmapping`.`gameID`))) where (((`gameresult`.`resultType` = 0) or (`gameresult`.`resultType` = 1)) and (`gameresult`.`winningStoneColor` = 0) and (`gamesusersmapping`.`stoneColor` = `gameresult`.`winningStoneColor`)) group by `gamesusersmapping`.`userID`) `gameswonasblackquery` on((`user`.`userID` = `gameswonasblackquery`.`userID`))) left join (select `gamesusersmapping`.`userID` AS `userID`,count(`gameresult`.`gameResultID`) AS `gamesWonAsWhite` from (`gameresult` join `gamesusersmapping` on((`gameresult`.`gameID` = `gamesusersmapping`.`gameID`))) where (((`gameresult`.`resultType` = 0) or (`gameresult`.`resultType` = 1)) and (`gameresult`.`winningStoneColor` = 1) and (`gamesusersmapping`.`stoneColor` = `gameresult`.`winningStoneColor`)) group by `gamesusersmapping`.`userID`) `gameswonaswhitequery` on((`user`.`userID` = `gameswonaswhitequery`.`userID`))) order by `totalGamesWon` desc,`totalGamesLost`,`mostRecentWin` desc,`user`.`displayName` ;
 
 --
 -- Indexes for dumped tables
