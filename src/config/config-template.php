@@ -58,6 +58,14 @@ declare(strict_types=1);
 // $config->sessionValidityDuration = 86400 * 30;
 
 // ----------------------------------------------------------------------
+// App configuration
+// ----------------------------------------------------------------------
+
+// Specify how many highscore entries should be displayed on the
+// "highscores" tab.
+// $config->highscoreLimit = 10;
+
+// ----------------------------------------------------------------------
 // Debugging/development configuration
 // ----------------------------------------------------------------------
 

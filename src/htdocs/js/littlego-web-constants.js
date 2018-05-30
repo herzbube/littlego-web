@@ -261,6 +261,7 @@ const WEBSOCKET_REQUEST_TYPE_SUBMITNEWSCOREPROPOSAL = "c2sSubmitNewScoreProposal
 const WEBSOCKET_REQUEST_TYPE_ACCEPTSCOREPROPOSAL = "c2sAcceptScoreProposalRequest";
 const WEBSOCKET_REQUEST_TYPE_GETFINISHEDGAMES = "c2sGetFinishedGamesRequest";
 const WEBSOCKET_REQUEST_TYPE_RESIGNGAME = "c2sResignGameRequest";
+const WEBSOCKET_REQUEST_TYPE_GETHIGHSCORES = "c2sGetHighscoresRequest";
 
 // WebSocket responses (server outgoing/client incoming messages)
 const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
@@ -279,6 +280,7 @@ const WEBSOCKET_RESPONSE_TYPE_SUBMITNEWSCOREPROPOSAL = "s2cSubmitNewScoreProposa
 const WEBSOCKET_RESPONSE_TYPE_ACCEPTSCOREPROPOSAL = "s2cAcceptScoreProposalResponse";
 const WEBSOCKET_RESPONSE_TYPE_GETFINISHEDGAMES = "s2cGetFinishedGamesResponse";
 const WEBSOCKET_RESPONSE_TYPE_RESIGNGAME = "s2cResignGameResponse";
+const WEBSOCKET_RESPONSE_TYPE_GETHIGHSCORES = "s2cGetHighscoresResponse";
 
 // WebSocket messages proactively sent by the server to a client who didn't
 // request anything (server outgoing/client incoming messages)

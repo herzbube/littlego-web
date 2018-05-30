@@ -189,31 +189,46 @@ var FinishedGame = (function ()
 })();
 
 // ----------------------------------------------------------------------
-// The DataItemAction class represents an action that the user can take in
-// the UI and that operates on a data item.
+// The Highscore class represents a server-side highscore. Highscore
+// objects are view model objects whose values are suitable for displaying in
+// the UI. Highscore objects are created from JSON objects that were
+// transmitted by the server. A Highscore object uses the same property
+// names that are specified in the JSON format.
+//
+// This is the JSON format:
+//
+// var jsonObject =
+// {
+//   "userID" : 12345,               // a unique ID
+//   "displayName" : 123457890,      // the player's display name
+//   "totalGamesWon" : 19,           // valid values: >= 0
+//   "totalGamesLost" : 7,           // valid values: >= 0
+//   "mostRecentWin" : 123457890,    // milliseconds since the epoch, or -1 if the user has never won a game
+//   "gamesWonAsBlack" : 1,          // valid values: >= 0
+//   "gamesWonAsWhite" : 3,          // valid values: >= 0
+// };
 // ----------------------------------------------------------------------
-var DataItemAction = (function ()
+var Highscore = (function ()
 {
     "use strict";
 
-    // Creates a new DataItemAction object with the specified operation type,
-    // data item, title string and action type.
-    //
-    // The action performs the operation of the specified type on the
-    // specified data item.
-    //
-    // The action is represented in the UI by the title string. The action
-    // type defines the visual style with which the action is rendered in
-    // the UI.
-    function DataItemAction(operationType, dataItem, actionTitle, actionType)
+    // Creates a new Highscore object from the data in the specified
+    // JSON object.
+    function Highscore(jsonObject)
     {
-        this.operationType = operationType;
-        this.dataItem = dataItem;
-        this.actionTitle = actionTitle;
-        this.actionType = actionType;
+        this.userID = jsonObject.userID;
+        this.displayName = jsonObject.displayName;
+        this.totalGamesWon = jsonObject.totalGamesWon;
+        this.totalGamesLost = jsonObject.totalGamesLost;
+        if (-1 === jsonObject.mostRecentWin)
+            this.mostRecentWin = mostRecentWinToString(jsonObject.mostRecentWin);
+        else
+            this.mostRecentWin = mostRecentWinToString(jsonObject.mostRecentWin * 1000);
+        this.gamesWonAsBlack = jsonObject.gamesWonAsBlack;
+        this.gamesWonAsWhite = jsonObject.gamesWonAsWhite;
     }
 
-    return DataItemAction;
+    return Highscore;
 })();
 
 // ----------------------------------------------------------------------

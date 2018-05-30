@@ -1,3 +1,30 @@
 <div class="container-fluid">
-    <p>High scores are not yet available.</p>
+    <!-- md, lg and xl should have sufficient space to not need scrolling -->
+    <table class="table table-striped table-bordered table-hover table-responsive-md">
+        <caption>List of top {{ highscores.length }} players</caption>
+        <thead class="thead-dark">
+            <tr><th>Player name</th><th>Total games won</th><th>Total games lost</th><th>Most recent win</th><th>Games won as black</th><th>Games won as white</th></tr>
+        </thead>
+        <tbody>
+        <tr ng-show="isPlaceHolderMessageShown()">
+            <td class="data-placeholder" colspan="9" ng-class="{ 'error-message': placeHolderMessageIsErrorMessage }">{{ placeHolderMessage }}</td>
+        </tr>
+        <tr ng-repeat="highscore in highscores">
+            <td>{{ highscore.displayName }}</td>
+            <td>{{ highscore.totalGamesWon }}</td>
+            <td>{{ highscore.totalGamesLost }}</td>
+            <td>{{ highscore.mostRecentWin }}</td>
+            <td>{{ highscore.gamesWonAsBlack }}</td>
+            <td>{{ highscore.gamesWonAsWhite }}</td>
+        </tr>
+        </tbody>
+    </table>
+    <p>Notes on the ranking algorithm:</p>
+    <ol>
+        <li>The top player is the one with the largest number of games won.</li>
+        <li>If two players have the same number of games won, then the player with less games lost has the higher rank.</li>
+        <li>If two players have the same number of games won and lost, the player who won more recently has the higher rank.</li>
+        <li>In the unlikely case that two players have the same values for all of the above criteria, highscores are sorted alphabetically by player name.</li>
+    </ol>
+
 </div>

@@ -173,9 +173,6 @@ lg4wApp.run(["$location", ANGULARNAME_SERVICE_SESSION, function($location, sessi
 
 }]);
 
-lg4wApp.controller("lg4wHighscoresController", ["$scope", function($scope) {
-}]);
-
 lg4wApp.directive("lg4wModals", [ANGULARNAME_CONSTANT_URLBASEPATH, function(urlBasePath) {
     var directiveObject = {
         restrict : "E",

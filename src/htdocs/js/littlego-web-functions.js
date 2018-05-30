@@ -206,6 +206,16 @@ function endTimeToString(endTimeInMilliseconds)
     }
 }
 
+// Converts the specified end time value into a string that is suitable for
+// displaying in the UI. Throws an Error object for invalid values.
+function mostRecentWinToString(mostRecentWinTimeInMilliseconds)
+{
+    if (mostRecentWinTimeInMilliseconds === -1)
+        return "Player has not yet won any games";
+
+    return endTimeToString(mostRecentWinTimeInMilliseconds);
+}
+
 // Converts the content of the specified game result object into a string that
 // is suitable for displaying in the UI. Throws an Error object for invalid
 // values.

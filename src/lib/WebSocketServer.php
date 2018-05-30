@@ -129,10 +129,13 @@ namespace LittleGoWeb
                     $this->handleAcceptScoreProposal($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
                     break;
                 case WEBSOCKET_REQUEST_TYPE_GETFINISHEDGAMES:
-                    $this->handleGetFinishedGames($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
+                    $this->handleGetFinishedGames($webSocketClient, $webSocketResponseType);
                     break;
                 case WEBSOCKET_REQUEST_TYPE_RESIGNGAME:
                     $this->handleResignGame($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
+                    break;
+                case WEBSOCKET_REQUEST_TYPE_GETHIGHSCORES:
+                    $this->handleGetHighscores($webSocketClient, $webSocketResponseType);
                     break;
                 default:
                     echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
@@ -189,6 +192,8 @@ namespace LittleGoWeb
                     return WEBSOCKET_RESPONSE_TYPE_GETFINISHEDGAMES;
                 case WEBSOCKET_REQUEST_TYPE_RESIGNGAME:
                     return WEBSOCKET_RESPONSE_TYPE_RESIGNGAME;
+                case WEBSOCKET_REQUEST_TYPE_GETHIGHSCORES:
+                    return WEBSOCKET_RESPONSE_TYPE_GETHIGHSCORES;
                 default:
                     throw new \Exception("Unsupported request type $webSocketRequestType");
             }
@@ -1244,7 +1249,7 @@ namespace LittleGoWeb
                 $webSocketClient);
         }
 
-        private function handleGetFinishedGames(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType) : void
+        private function handleGetFinishedGames(WebSocketClient $webSocketClient, string $webSocketResponseType) : void
         {
             $dbAccess = new DbAccess($this->config);
 
@@ -1405,6 +1410,31 @@ namespace LittleGoWeb
                 $gameID,
                 $dbAccess,
                 $webSocketClient);
+        }
+
+        private function handleGetHighscores(WebSocketClient $webSocketClient, string $webSocketResponseType) : void
+        {
+            $dbAccess = new DbAccess($this->config);
+
+            $highscores = $dbAccess->findHighscores($this->config->highscoreLimit);
+            if ($highscores === null)
+            {
+                $errorMessage = "Failed to retrieve highscores data from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $highscoresJSON = array();
+            foreach ($highscores as $highscore)
+                array_push($highscoresJSON, $highscore->toJsonObject());
+
+            $webSocketResponseData =
+                [
+                    WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
+                    WEBSOCKET_MESSAGEDATA_KEY_HIGHSCORES=> $highscoresJSON
+                ];
+            $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+            $webSocketClient->send($webSocketMessage);
         }
 
         private function getGameInProgressWithoutAdditionalData(

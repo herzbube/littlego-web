@@ -174,6 +174,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         acceptScoreProposal: [],
         getFinishedGames: [],
         resignGame: [],
+        getHighscores: [],
         gameRequestPairingFound: []
     };
 
@@ -368,6 +369,17 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         var index = eventListeners.getFinishedGames.indexOf(listener);
         if (-1 !== index)
             eventListeners.getFinishedGames.splice(index, 1);
+    };
+
+    this.addGetHighscoresListener = function(listener) {
+        eventListeners.getHighscores.push(listener);
+    };
+
+    this.removeGetHighscoresListener = function(listener)
+    {
+        var index = eventListeners.getHighscores.indexOf(listener);
+        if (-1 !== index)
+            eventListeners.getHighscores.splice(index, 1);
     };
 
     this.addGameRequestPairingFoundListener = function(listener) {
@@ -572,6 +584,12 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         sendWebSocketMessage(theWebSocket, messageType, messageData);
     };
 
+    this.getHighscores = function() {
+        var messageType = WEBSOCKET_REQUEST_TYPE_GETHIGHSCORES;
+        var messageData = { };
+        sendWebSocketMessage(theWebSocket, messageType, messageData);
+    };
+
     // ----------------------------------------------------------------------
     // Process incoming messages
     // ----------------------------------------------------------------------
@@ -759,6 +777,17 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.game,
+                        webSocketMessage.data.errorMessage);
+                });
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_GETHIGHSCORES:
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.getHighscores.slice(0);
+                listenersCopy.forEach(function(listener) {
+                    listener(
+                        webSocketMessage.data.success,
+                        webSocketMessage.data.highscores,
                         webSocketMessage.data.errorMessage);
                 });
                 break;

@@ -24,6 +24,9 @@ namespace LittleGoWeb
         // Session configuration
         public $sessionValidityDuration = SESSION_VALIDITIY_DURATION_DEFAULT;
 
+        // App configuration
+        public $highscoreLimit = APP_HIGHSCORE_LIMIT_DEFAULT;
+
         // Debugging/development configuration
         public $webSocketMessageSendDelayInMilliseconds = WEBSOCKET_MESSAGESENDDELAYINMILLISECONDS_DEFAULT;
         public $webSocketMessageReceiveDelayInMilliseconds = WEBSOCKET_MESSAGERECEIVEDELAYINMILLISECONDS_DEFAULT;
