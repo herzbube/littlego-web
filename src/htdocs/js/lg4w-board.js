@@ -508,9 +508,9 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             return true;  // we get here on page reload: goGame does not exist yet
     };
 
-    $scope.isResignButtonDisabled = function() {
+    $scope.isResignButtonPlayModeDisabled = function() {
         if ($scope.isBoardShown())
-            return ! thisPlayerCanPlayMove;  // TODO: Player should be able to resign in scoring mode
+            return ! thisPlayerCanPlayMove;
         else
             return true;  // we get here on page reload: goGame does not exist yet
     };
@@ -703,6 +703,36 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         // proposal to revert to.
         if ($scope.isSubmitScoreProposalButtonShown())
             return (score !== undefined);
+        else
+            return false;
+    };
+
+    $scope.isResignButtonScoringModeDisabled = function() {
+        if ($scope.isSubmitScoreProposalButtonShown())
+        {
+            if ($scope.isSubmitScoreProposalButtonDisabled())
+                return true;
+            else
+                return false;
+        }
+        else if ($scope.isAcceptScoreProposalButtonShown())
+        {
+            if ($scope.isAcceptScoreProposalButtonDisabled())
+                return true;
+            else
+                return false;
+        }
+        else
+        {
+            return false;
+        }
+    };
+
+    $scope.isResignButtonScoringModeShown = function() {
+        if ($scope.isSubmitScoreProposalButtonShown())
+            return true;
+        else if ($scope.isAcceptScoreProposalButtonShown())
+            return true;
         else
             return false;
     };
