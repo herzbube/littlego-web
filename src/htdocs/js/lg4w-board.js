@@ -614,7 +614,9 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
             // though the WebSocket error response data does not include
             // a game ID, we know that the server only sends us an error
             // response after we made a request
-            isMoveSubmissionInProgress = false;
+            $scope.$apply(function() {
+                isMoveSubmissionInProgress = false;
+            });
         }
     }
 
@@ -1026,7 +1028,9 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
             // though the WebSocket error response data does not include
             // a game ID, we know that the server only sends us an error
             // response after we made a request
-            isScoreProposalSubmissionInProgress = false;
+            $scope.$apply(function() {
+                isScoreProposalSubmissionInProgress = false;
+            });
         }
     }
 
@@ -1135,7 +1139,9 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
             // though the WebSocket error response data does not include
             // a game ID, we know that the server only sends us an error
             // response after we made a request
-            isScoreProposalSubmissionInProgress = false;
+            $scope.$apply(function() {
+                isScoreProposalSubmissionInProgress = false;
+            });
         }
     }
 

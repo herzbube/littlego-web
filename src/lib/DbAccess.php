@@ -632,7 +632,7 @@ namespace LittleGoWeb
             if ($gameRequests === null)
                 return null;
             else if (count($gameRequests) === 0)
-                return null;
+                return null;  // TODO: This is an error, we should throw an exception!
             else
                 return $gameRequests[0];
         }
@@ -882,7 +882,7 @@ namespace LittleGoWeb
             if ($gameRequestPairings === null)
                 return null;
             else if (count($gameRequestPairings) === 0)
-                return null;
+                return null;  // TODO: This is an error, we should throw an exception!
             else
                 return $gameRequestPairings[0];
         }
@@ -1150,7 +1150,8 @@ namespace LittleGoWeb
             //         )
             //     )
             // order by
-            //     game.createTime desc
+            //     game.createTime desc,
+            //     game.gameID desc
 
             $mainTableName = DB_TABLE_NAME_GAME;
             $columnNames = array(
@@ -1563,7 +1564,7 @@ namespace LittleGoWeb
             if ($gameMoves === null)
                 return null;
             else if (count($gameMoves) === 0)
-                return null;
+                return null;  // TODO: This is an error, we should throw an exception!
             else
                 return $gameMoves[0];
         }
@@ -2087,7 +2088,6 @@ namespace LittleGoWeb
                 //   stones were placed at all).
                 // - If there *are* stone groups on the board, but all of them
                 //   are alive.
-                $deleteStatement->rowCount();
 
                 return true;
             }

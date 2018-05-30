@@ -21,7 +21,7 @@
 //   "requestedHandicap" : 0,        // valid values: see GameInProgress
 //   "requestedKomi" : 7.5,          // valid values: see GameInProgress
 //   "requestedKoRule" : 0,          // valid values: see GameInProgress
-//   "requestedScoringSystem": 0,    // valid values: see GameInProgress
+//   "requestedScoringSystem" : 0,   // valid values: see GameInProgress
 // };
 //
 // All "requested..." properties can also have the value -1, which
@@ -94,7 +94,7 @@ var GameRequest = (function ()
 //   "handicap" : 0,               // valid values: 0, 2-9
 //   "komi" : 7.5,                 // valid values: 0, 0.5, 5.0, 5.5, [...], 8.0
 //   "koRule" : 0,                 // valid values: 0 (= simple ko), 1 (= positional superko), 2 (= situational superko)
-//   "scoringSystem": 0,           // valid values: 0 (= area scoring), 1 (= territory scoring)
+//   "scoringSystem" : 0,          // valid values: 0 (= area scoring), 1 (= territory scoring)
 //   "numberOfMovesPlayed" : 32,   // valid values: 0-n
 //   "state" : 0,                  // valid values: 0 (= in progress & playing), 1 (= in progress & scoring)
 //   "nextMoveColor" : 1,          // valid values: 0 (= black), 1 (= white), -1 (= undefined, only allowed if state === 1)
