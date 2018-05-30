@@ -1005,7 +1005,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 goGame.setState(GAME_STATE_FINISHED);
 
                 updateThisPlayerCanPlayMove();
-                updateThisPlayerCanSubmitScoreProposal
+                updateThisPlayerCanSubmitScoreProposal();
                 updateDrawingServiceUserInteraction();
             });
         }
