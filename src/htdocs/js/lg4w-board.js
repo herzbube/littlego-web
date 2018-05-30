@@ -737,20 +737,27 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             return false;
     };
 
-    $scope.isSubmitScoreProposalButtonDisabled= function() {
+    $scope.isSubmitScoreProposalButtonDisabled = function() {
         if ($scope.isSubmitScoreProposalButtonShown())
             return (! thisPlayerCanSubmitScoreProposal);
         else
             return true;
     };
 
-    $scope.isSubmitScoreProposalButtonShown= function() {
-        if ($scope.isAcceptScoreProposalButtonShown())
-            return false;  // don't show accept and submit button at the same time
-        else if ($scope.isBoardShown())
-            return true;
+    $scope.isSubmitScoreProposalButtonShown = function() {
+        if ($scope.isBoardShown())
+        {
+            if (goGame.getState() !== GAME_STATE_INPROGRESS_SCORING)
+                return false;
+            else if ($scope.isAcceptScoreProposalButtonShown())
+                return false;  // don't show accept and submit button at the same time
+            else
+                return true;
+        }
         else
-            return false;  // accept and submit button can be hidden at the same time
+        {
+            return false;
+        }
     };
 
     $scope.isAcceptScoreProposalButtonDisabled = function() {
@@ -762,9 +769,16 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
     $scope.isAcceptScoreProposalButtonShown = function() {
         if ($scope.isBoardShown())
-            return (score !== undefined && ! thisPlayerHasChangedScoreProposal);
+        {
+            if (goGame.getState() !== GAME_STATE_INPROGRESS_SCORING)
+                return false;
+            else
+                return (score !== undefined && ! thisPlayerHasChangedScoreProposal);
+        }
         else
+        {
             return false;
+        }
     };
 
     $scope.isScoringModeNotActivated = function() {
