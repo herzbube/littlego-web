@@ -178,6 +178,24 @@ namespace LittleGoWeb {
             return $queryString;
         }
 
+        // Generates a full query string (including the terminating ";") that
+        // contains a SELECT statement including a LIMIT clause.
+        //
+        // The first specified array lists the column names that should appear
+        // in the SELECT part of the query.
+        //
+        // The second parameter value specifies the value to use for the LIMIT
+        // clause.
+        public function getSelectStatementWithLimitClause(string $tableName, array $columnNames, int $limit): string
+        {
+            $queryString = $this->getSelectStatement($tableName, $columnNames);
+            $queryString .= " limit ";
+            $queryString .= $limit;
+            $queryString .= ";";
+
+            return $queryString;
+        }
+
         // Generates a query fragment that contains a SELECT statement without
         // a WHERE or any other clauses.
         //

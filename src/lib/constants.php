@@ -372,6 +372,16 @@ namespace LittleGoWeb
     const DB_COLUMN_NAME_GAMERESULT_RESULTTYPE = "resultType";
     const DB_COLUMN_NAME_GAMERESULT_WINNINGSTONECOLOR = "winningStoneColor";
     const DB_COLUMN_NAME_GAMERESULT_WINNINGPOINTS = "winningPoints";
+
+    // Database view highscores
+    const DB_VIEW_NAME_HIGHSCORE = "highscore";
+    const DB_COLUMN_NAME_HIGHSCORE_USERID = "userID";
+    const DB_COLUMN_NAME_HIGHSCORE_DISPLAYNAME = "displayName";
+    const DB_COLUMN_NAME_HIGHSCORE_TOTALGAMESWON = "totalGamesWon";
+    const DB_COLUMN_NAME_HIGHSCORE_TOTALGAMESLOST = "totalGamesLost";
+    const DB_COLUMN_NAME_HIGHSCORE_MOSTRECENTWIN = "mostRecentWin";
+    const DB_COLUMN_NAME_HIGHSCORE_GAMESWONASBLACK = "gamesWonAsBlack";
+    const DB_COLUMN_NAME_HIGHSCORE_GAMESWONASWHITE = "gamesWonAsWhite";
 }
 
 ?>

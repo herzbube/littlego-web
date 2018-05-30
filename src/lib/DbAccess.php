@@ -2205,5 +2205,226 @@ namespace LittleGoWeb
                 return -1;
             }
         }
+
+        // Obtains the highscore data for a number of top-ranking players from
+        // the database and returns the data as an array of Highscore objects.
+        //
+        // The array is ordered in descending order, with the highest rank
+        // appearing first.
+        //
+        // The maximum number of Highscore objects that this function returns
+        // depends on the specified limit.
+        //
+        // If less highscore entries exist than the specified maximum, this
+        // function returns the number of existing entries. If no highscore
+        // data is available, this function returns an empty array.
+        //
+        // On failure, returns null.
+        //
+        // The ranking mechanism is hard-coded in this functions. It works like
+        // this:
+        // - A higher number of games won results in a higher rank.
+        // - If two players have the same number of games won, then the player
+        //   with less games lost has the higher rank.
+        // - If two players have the same number of games won and lost, the
+        //   player who won more recently has the higher rank.
+        // - In the unlikely case that two players have the same values for
+        //   all of the above criteria, highscores are sorted alphabetically
+        //   by player name.
+        public function findHighscores(int $limit): ?array
+        {
+            // This is the query behind the view. This duplicate exists as a
+            // comment because the view definition in the database creation
+            // script is not human readable.
+            //
+            // select
+            //     user.userID,
+            //     user.displayName,
+            //     coalesce(totalGamesWonQuery.totalGamesWon, 0) as totalGamesWon,
+            //     coalesce(totalGamesLostQuery.totalGamesLost, 0) as totalGamesLost,
+            //     coalesce((
+            //         select
+            //             gameresult.createTime as mostRecentWin
+            //         from
+            //             gameresult
+            //             inner join gamesusersmapping on gameresult.gameID = gamesusersmapping.gameID
+            //         where
+            //             (gameresult.resultType = 0 or gameresult.resultType = 1)
+            //                 and
+            //             gamesusersmapping.stoneColor = gameresult.winningStoneColor
+            //                 and
+            //             gamesusersmapping.userID = user.userID
+            //         order by
+            //             gameresult.createTime
+            //         limit 1
+            //     ), -1) as mostRecentWin,
+            //     coalesce(gamesWonAsBlackQuery.gamesWonAsBlack, 0) as gamesWonAsBlack,
+            //     coalesce(gamesWonAsWhiteQuery.gamesWonAsWhite, 0) as gamesWonAsWhite
+            //
+            // from
+            //     user
+            //
+            //     -- totalGamesWon
+            //     left join
+            //     (
+            //         select
+            //             gamesusersmapping.userID,
+            //             count(gameresult.gameResultID) as totalGamesWon
+            //         from
+            //             gameresult
+            //             inner join gamesusersmapping on gameresult.gameID = gamesusersmapping.gameID
+            //         where
+            //             (gameresult.resultType = 0 or gameresult.resultType = 1)
+            //                 and
+            //             gamesusersmapping.stoneColor = gameresult.winningStoneColor
+            //         group by
+            //             gamesusersmapping.userID
+            //     ) as totalGamesWonQuery
+            //     on user.userID = totalGamesWonQuery.userID
+            //
+            //     -- totalGamesLost
+            //     left join
+            //     (
+            //         select
+            //             gamesusersmapping.userID,
+            //             count(gameresult.gameResultID) as totalGamesLost
+            //         from
+            //             gameresult
+            //             inner join gamesusersmapping on gameresult.gameID = gamesusersmapping.gameID
+            //         where
+            //             (gameresult.resultType = 0 or gameresult.resultType = 1)
+            //                 and
+            //             gamesusersmapping.stoneColor != gameresult.winningStoneColor
+            //         group by
+            //             gamesusersmapping.userID
+            //     ) as totalGamesLostQuery
+            //     on user.userID = totalGamesLostQuery.userID
+            //
+            //     -- gamesWonAsBlack
+            //     left join
+            //     (
+            //         select
+            //             gamesusersmapping.userID,
+            //             count(gameresult.gameResultID) as gamesWonAsBlack
+            //         from
+            //             gameresult
+            //             inner join gamesusersmapping on gameresult.gameID = gamesusersmapping.gameID
+            //         where
+            //             (gameresult.resultType = 0 or gameresult.resultType = 1)
+            //                 and
+            //             gameresult.winningStoneColor = 0
+            //                 and
+            //             gamesusersmapping.stoneColor = gameresult.winningStoneColor
+            //         group by
+            //             gamesusersmapping.userID
+            //     ) as gamesWonAsBlackQuery
+            //     on user.userID = gamesWonAsBlackQuery.userID
+            //
+            //     -- gamesWonAsWhite
+            //     left join
+            //     (
+            //         select
+            //             gamesusersmapping.userID,
+            //             count(gameresult.gameResultID) as gamesWonAsWhite
+            //         from
+            //             gameresult
+            //             inner join gamesusersmapping on gameresult.gameID = gamesusersmapping.gameID
+            //         where
+            //             (gameresult.resultType = 0 or gameresult.resultType = 1)
+            //                 and
+            //             gameresult.winningStoneColor = 1
+            //                 and
+            //             gamesusersmapping.stoneColor = gameresult.winningStoneColor
+            //         group by
+            //             gamesusersmapping.userID
+            //     ) as gamesWonAsWhiteQuery
+            //     on user.userID = gamesWonAsWhiteQuery.userID
+            //
+            // order by
+            //     totalGamesWon desc,
+            //     totalGamesLost asc,
+            //     mostRecentWin desc,
+            //     user.displayName asc
+
+            $viewName = DB_VIEW_NAME_HIGHSCORE;
+            $columnNames = array(
+                DB_COLUMN_NAME_HIGHSCORE_USERID,
+                DB_COLUMN_NAME_HIGHSCORE_DISPLAYNAME,
+                DB_COLUMN_NAME_HIGHSCORE_TOTALGAMESWON,
+                DB_COLUMN_NAME_HIGHSCORE_TOTALGAMESLOST,
+                DB_COLUMN_NAME_HIGHSCORE_MOSTRECENTWIN,
+                DB_COLUMN_NAME_HIGHSCORE_GAMESWONASBLACK,
+                DB_COLUMN_NAME_HIGHSCORE_GAMESWONASWHITE);
+
+            // No WHERE or ORDER BY clauses - the view contains all that
+            $selectQueryString = $this->sqlGenerator->getSelectStatementWithLimitClause(
+                $viewName,
+                $columnNames,
+                $limit);
+
+            // TODO: Fix the following ugly hack!
+            // Why do we have to select a database? This is due to what
+            // appears to be a MySQL bug when it comes to selecting from
+            // a view while no default database has been selected. The
+            // following was found to be true for MySQL 5.7.20 running
+            // in in a Bitnami MAMP stack.
+            //
+            // Compare this statement which works perfectly fine when it
+            // is executed on a table, even when no default database has
+            // been selected:
+            //   SELECT tableName.column1 FROM `databaseName`.tableName
+            //
+            // If we use a view name, however, the statement fails when
+            // no default database has been selected:
+            //   SELECT viewName.column1 FROM `databaseName`.viewName
+            //
+            // To make the view statement work without a default database,
+            // we can fully-qualify the column names:
+            //   SELECT `databaseName`.viewName.column1 FROM `databaseName`.viewName
+            //
+            // The problem is that the SqlGenerator cannot generate such
+            // column lists with fully qualified column names, because in
+            // other contexts the view name could also be a table name
+            // alias.
+            $this->pdo->query("use mysql");
+
+            $selectStatement = $this->pdo->prepare($selectQueryString);
+
+            try
+            {
+                $selectStatement->execute();
+
+                $highscores = [];
+
+                while ($row = $selectStatement->fetch(PDO::FETCH_ASSOC))
+                {
+                    $userID = intval($row[DB_COLUMN_NAME_HIGHSCORE_USERID]);
+                    $displayName = $row[DB_COLUMN_NAME_HIGHSCORE_DISPLAYNAME];
+                    $totalGamesWon = intval($row[DB_COLUMN_NAME_HIGHSCORE_TOTALGAMESWON]);
+                    $totalGamesLost = intval($row[DB_COLUMN_NAME_HIGHSCORE_TOTALGAMESLOST]);
+                    $mostRecentWin = intval($row[DB_COLUMN_NAME_HIGHSCORE_MOSTRECENTWIN]);
+                    $gamesWonAsBlack = intval($row[DB_COLUMN_NAME_HIGHSCORE_GAMESWONASBLACK]);
+                    $gamesWonAsWhite = intval($row[DB_COLUMN_NAME_HIGHSCORE_GAMESWONASWHITE]);
+
+                    $highscore = new Highscore(
+                        $userID,
+                        $displayName,
+                        $totalGamesWon,
+                        $totalGamesLost,
+                        $mostRecentWin,
+                        $gamesWonAsBlack,
+                        $gamesWonAsWhite);
+
+                    array_push($highscores, $highscore);
+                }
+
+                return $highscores;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return null;
+            }
+        }
     }
 }
