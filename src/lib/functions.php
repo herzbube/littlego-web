@@ -138,7 +138,6 @@ namespace LittleGoWeb
     <!-- Library scripts -->
     <script src="${urlBasePath}/js/littlego-web-constants.js"></script>
     <script src="${urlBasePath}/js/littlego-web-functions.js"></script>
-    <script src="${urlBasePath}/js/littlego-web-data-generator.js"></script>
     <script src="${urlBasePath}/js/littlego-web-viewmodel.js"></script>
     <script src="${urlBasePath}/js/littlego-web-go.js"></script>
 
