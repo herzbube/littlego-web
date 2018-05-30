@@ -866,7 +866,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             // currently logged in user is playing, but we are interested
             // only in those score proposals that are for the game that
             // the user is currently viewing
-            if (score.gameID !== gameID)
+            if (scoreJsonObject.gameID !== gameID)
                 return;
 
             // Clear the submission flag only if the response is for the
