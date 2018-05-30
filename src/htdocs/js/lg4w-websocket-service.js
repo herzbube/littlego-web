@@ -747,7 +747,8 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                 listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
-                        webSocketMessage.data.gameID);
+                        webSocketMessage.data.gameID,
+                        webSocketMessage.data.errorMessage);
                 });
                 break;
 
