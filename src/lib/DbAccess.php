@@ -1242,8 +1242,9 @@ namespace LittleGoWeb
         // empty array if the database has no finished games data for the
         // specified user ID.
         //
-        // The array is ordered descending by create time (i.e. newest
-        // first), then descending by game ID.
+        // The array is ordered descending by create time of the game's
+        // result (i.e. games that have finished most recently first),
+        // then descending by game ID.
         //
         // On failure, returns null.
         public function findFinishedGamesByUserID(int $userID) : ?array
@@ -1257,12 +1258,13 @@ namespace LittleGoWeb
             // from
             //     game
             //     inner join gamesusersmapping on game.gameID = gamesusersmapping.gameID
+            //     inner join gameresult on game.gameID = gameresult.gameID
             // where
             //     game.state = GAME_STATE_FINISHED
             //         and
             //     gamesusersmapping.userID = 123
             // order by
-            //     game.createTime desc,
+            //     gameresult.createTime desc,
             //     game.gameID desc
 
             $mainTableName = DB_TABLE_NAME_GAME;
@@ -1282,6 +1284,10 @@ namespace LittleGoWeb
                 $mainTableName,
                 DB_TABLE_NAME_GAMESUSERSMAPPING,
                 DB_COLUMN_NAME_GAME_GAMEID);
+            $selectQueryString .= $this->sqlGenerator->getInnerJoinClause(
+                $mainTableName,
+                DB_TABLE_NAME_GAMERESULT,
+                DB_COLUMN_NAME_GAME_GAMEID);
 
             $selectQueryString .= " where ";
             $selectQueryString .= $this->sqlGenerator->getWhereColumnEqualsValue(
@@ -1295,16 +1301,17 @@ namespace LittleGoWeb
                 DB_COLUMN_NAME_GAMESUSERSMAPPING_USERID);
 
             $selectQueryString .= " order by ";
-            $orderByColumnNames = array(
+            $selectQueryString .= $this->sqlGenerator->getColumnWithOrdering(
+                DB_TABLE_NAME_GAMERESULT,
                 DB_COLUMN_NAME_GAME_CREATETIME,
-                DB_COLUMN_NAME_GAME_GAMEID);
-            $orderings = array(
-                false,
                 false);
-            $selectQueryString .= $this->sqlGenerator->getColumnsWithOrderings(
+
+            $selectQueryString .= SQL_OPERATOR_COMMA;
+
+            $selectQueryString .= $this->sqlGenerator->getColumnWithOrdering(
                 $mainTableName,
-                $orderByColumnNames,
-                $orderings);
+                DB_COLUMN_NAME_GAME_GAMEID,
+                false);
 
             $selectStatement = $this->pdo->prepare($selectQueryString);
 
