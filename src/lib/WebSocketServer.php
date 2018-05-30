@@ -609,6 +609,14 @@ namespace LittleGoWeb
                 return;
             }
 
+            $userID = $webSocketClient->getSession()->getUserID();
+            if ($gameRequest->getUserID() !== $userID)
+            {
+                $errorMessage = "Game request is by another user";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
             // Must delete pairings (active and rejected) first before we can
             // delete the game request itself
             // TODO: Add transaction that spans all database operations
@@ -650,6 +658,15 @@ namespace LittleGoWeb
             $whitePlayer = $dbAccess->findUserByID($whitePlayerGameRequest->getUserID());
             $gameRequestPairing->setWhitePlayer($whitePlayer);
 
+            $userID = $webSocketClient->getSession()->getUserID();
+            if ($blackPlayerGameRequest->getUserID() !== $userID &&
+                $whitePlayerGameRequest->getUserID() !== $userID)
+            {
+                $errorMessage = "Access to game request pairing data denied, user is not one of the players of the game";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
             $webSocketResponseData =
                 [
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
@@ -669,6 +686,14 @@ namespace LittleGoWeb
             if ($gameRequest === null)
             {
                 $errorMessage = "Failed to retrieve game request data from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $userID = $webSocketClient->getSession()->getUserID();
+            if ($gameRequest->getUserID() !== $userID)
+            {
+                $errorMessage = "Game request is by another user";
                 $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
                 return;
             }
@@ -887,14 +912,40 @@ namespace LittleGoWeb
                 return;
             }
 
+            // Validate that the user is authorized to access the game
+            $success = $this->addUsersToGame(
+                $webSocketClient,
+                $webSocketResponseType,
+                $gameInProgress,
+                $dbAccess);
+            if (! $success)
+                return;  // helper function has already sent WebSocket error message
+            if ($gameInProgress->getBlackPlayer()->getUserID() !== $userID &&
+                $gameInProgress->getWhitePlayer()->getUserID() !== $userID)
+            {
+                $errorMessage = "Game move submission denied, user is not one of the players of the game";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
             // Validate that it's the player's turn to move
-            // TODO The current validation allows a user to submit a move for the other player!
-            // TODO Validate the USER, not the COLOR.
             $lastGameMove = $dbAccess->findLastGameMove($gameInProgress->getGameID());
             $nextMoveColor = $this->getNextMoveColor($gameInProgress, $lastGameMove);
+            if ($nextMoveColor === COLOR_BLACK)
+                $nextMoveUserID = $gameInProgress->getBlackPlayer()->getUserID();
+            else
+                $nextMoveUserID = $gameInProgress->getWhitePlayer()->getUserID();
+            if ($nextMoveUserID !== $userID)
+            {
+                $errorMessage = "Game move submission denied, not this player's turn to move";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            // Validate that the supplied move color matches the next move color
             if ($nextMoveColor !== $moveColor)
             {
-                $errorMessage = "Not this player's turn to move";
+                $errorMessage = "Game move submission denied, move is played by the wrong color";
                 $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
                 return;
             }
