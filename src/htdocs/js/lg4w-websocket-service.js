@@ -303,11 +303,11 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
             eventListeners.getGamesInProgress.splice(index, 1);
     };
 
-    this.addGetGame = function(listener) {
+    this.addGetGameListener = function(listener) {
         eventListeners.getGame.push(listener);
     };
 
-    this.removeGetGame = function(listener)
+    this.removeGetGameListener = function(listener)
     {
         var index = eventListeners.getGame.indexOf(listener);
         if (-1 !== index)
@@ -326,44 +326,44 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
     };
 
 
-    this.addSubmitNewScoreProposal = function(listener) {
+    this.addSubmitNewScoreProposalListener = function(listener) {
         eventListeners.submitNewScoreProposal.push(listener);
     };
 
-    this.removeSubmitNewScoreProposal = function(listener)
+    this.removeSubmitNewScoreProposalListener = function(listener)
     {
         var index = eventListeners.submitNewScoreProposal.indexOf(listener);
         if (-1 !== index)
             eventListeners.submitNewScoreProposal.splice(index, 1);
     };
 
-    this.addGetScoreProposal = function(listener) {
+    this.addGetScoreProposalListener = function(listener) {
         eventListeners.getScoreProposal.push(listener);
     };
 
-    this.removeGetScoreProposal = function(listener)
+    this.removeGetScoreProposalListener = function(listener)
     {
         var index = eventListeners.getScoreProposal.indexOf(listener);
         if (-1 !== index)
             eventListeners.getScoreProposal.splice(index, 1);
     };
 
-    this.addAcceptScoreProposal = function(listener) {
+    this.addAcceptScoreProposalListener = function(listener) {
         eventListeners.acceptScoreProposal.push(listener);
     };
 
-    this.removeAcceptScoreProposal = function(listener)
+    this.removeAcceptScoreProposalListener = function(listener)
     {
         var index = eventListeners.acceptScoreProposal.indexOf(listener);
         if (-1 !== index)
             eventListeners.acceptScoreProposal.splice(index, 1);
     };
 
-    this.addGetFinishedGames = function(listener) {
+    this.addGetFinishedGamesListener = function(listener) {
         eventListeners.getFinishedGames.push(listener);
     };
 
-    this.removeGetFinishedGames = function(listener)
+    this.removeGetFinishedGamesListener = function(listener)
     {
         var index = eventListeners.getFinishedGames.indexOf(listener);
         if (-1 !== index)

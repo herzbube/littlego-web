@@ -117,7 +117,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         webSocketService.getGame(gameIDFromRoute);
     }
 
-    webSocketService.addGetGame(handleGetGame);
+    webSocketService.addGetGameListener(handleGetGame);
     function handleGetGame(success, gameJsonObject, gameMovesJsonObjects, scoreJsonObject, scoreDetailsJsonObject, errorMessage) {
         $scope.$apply(function() {
             if (success)
@@ -871,7 +871,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         webSocketService.submitNewScoreProposal(gameID, scoreDetails);
     };
 
-    webSocketService.addSubmitNewScoreProposal(handleSubmitNewScoreProposal);
+    webSocketService.addSubmitNewScoreProposalListener(handleSubmitNewScoreProposal);
     function handleSubmitNewScoreProposal(success, scoreJsonObject, scoreDetailsJsonObject, errorMessage) {
 
         if (success)
@@ -986,7 +986,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         updateDrawingServiceUserInteraction();
     };
 
-    webSocketService.addAcceptScoreProposal(handleAcceptScoreProposal);
+    webSocketService.addAcceptScoreProposalListener(handleAcceptScoreProposal);
     function handleAcceptScoreProposal(success, responseGameID, errorMessage) {
         if (success)
         {
@@ -1058,10 +1058,10 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
     $scope.$on("$destroy", function() {
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
-        webSocketService.removeGetGame(handleGetGame);
+        webSocketService.removeGetGameListener(handleGetGame);
         webSocketService.removeSubmitNewGameMoveListener(handleSubmitNewGameMove);
-        webSocketService.removeSubmitNewScoreProposal(handleSubmitNewScoreProposal);
-        webSocketService.removeAcceptScoreProposal(handleAcceptScoreProposal);
+        webSocketService.removeSubmitNewScoreProposalListener(handleSubmitNewScoreProposal);
+        webSocketService.removeAcceptScoreProposalListener(handleAcceptScoreProposal);
         drawingService.removeDidClickOnIntersectionListener(handleDidClickOnIntersection);
     })
 }]);
