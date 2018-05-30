@@ -972,7 +972,8 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             $scope.$apply(function() {
                 goGame.setState(GAME_STATE_FINISHED);
 
-                updateIsThisPlayersTurnToSubmitScoreProposal();
+                updateThisPlayerCanPlayMove();
+                updateThisPlayerCanSubmitScoreProposal
 
                 $scope.activateAnalyzeMode();
             });
