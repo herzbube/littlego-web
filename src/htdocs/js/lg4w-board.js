@@ -544,8 +544,11 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
 
         // TODO: If the user confirms we must be able to set the following
         // two flags so that the user cannot submit any more moves/score proposals
-        // isMoveSubmissionInProgress = true;
-        // isScoreProposalSubmissionInProgress = true;
+        //isMoveSubmissionInProgress = true;
+        //isScoreProposalSubmissionInProgress = true;
+        //updateThisPlayerCanPlayMove();
+        //updateThisPlayerCanSubmitScoreProposal();
+        //updateDrawingServiceUserInteraction();
     };
 
     webSocketService.addSubmitNewGameMoveListener(handleSubmitNewGameMove);
@@ -1061,8 +1064,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
 
     $scope.acceptScoreProposal = function () {
 
-        // TODO Ask for confirmation. Show $scope.scoreFinalScore in the modal.
-
         var resultType;
         var winningStoneColor;
         var winningPoints;
@@ -1087,7 +1088,8 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
                 throw new Error("Unknown score result " + goGame.goScore.result);
         }
 
-        webSocketService.acceptScoreProposal(
+        $rootScope.$broadcast(
+            ANGULARNAME_EVENT_SHOWCONFIRMACCEPTSCOREPROPOSALMODAL,
             gameID,
             resultType,
             winningStoneColor,
@@ -1095,9 +1097,11 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
 
         // Accepting a proposal is just another form of
         // score proposal submission
-        isScoreProposalSubmissionInProgress = true;
-        updateThisPlayerCanSubmitScoreProposal();
-        updateDrawingServiceUserInteraction();
+        // TODO: If the user confirms we must be able to set the following
+        // flag so that the user cannot submit any more score proposals
+        //isScoreProposalSubmissionInProgress = true;
+        //updateThisPlayerCanSubmitScoreProposal();
+        //updateDrawingServiceUserInteraction();
     };
 
     webSocketService.addAcceptScoreProposalListener(handleAcceptScoreProposal);
