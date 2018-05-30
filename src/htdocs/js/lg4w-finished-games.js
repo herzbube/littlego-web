@@ -16,20 +16,10 @@ lg4wApp.controller("lg4wFinishedGamesController", ["$scope", "$location", ANGULA
         $scope.placeHolderMessageIsErrorMessage = false;
         $scope.finishedGames = [];
 
-        // TODO: Uncomment when web socket request is implemented
-        //webSocketService.getFinishedGames();
-
-        // We fake the asynchronous data retrieval process by generating an
-        // artificial delay. Then we generate static fake data.
-        var timeoutInMilliseconds = 1000;
-        setTimeout(function() {
-            var finishedGamesJsonObjects = createFinishedGamesJsonObjects();
-            handleGetFinishedGames(true, finishedGamesJsonObjects, undefined);
-        }, timeoutInMilliseconds);
+        webSocketService.getFinishedGames();
     }
 
-    // TODO: Uncomment when web socket request is implemented
-    //webSocketService.addGetFinishedGamesListener(handleGetFinishedGames);
+    webSocketService.addGetFinishedGamesListener(handleGetFinishedGames);
     function handleGetFinishedGames(success, finishedGamesJsonObjects, errorMessage) {
         $scope.$apply(function() {
             if (success)
@@ -88,7 +78,6 @@ lg4wApp.controller("lg4wFinishedGamesController", ["$scope", "$location", ANGULA
 
     $scope.$on("$destroy", function() {
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
-        // TODO: Uncomment when web socket request is implemented
-        //webSocketService.removeGetFinishedGamesListener(handleGetFinishedGames);
+        webSocketService.removeGetFinishedGamesListener(handleGetFinishedGames);
     })
 }]);

@@ -1274,7 +1274,7 @@ namespace LittleGoWeb
             $webSocketResponseData =
                 [
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
-                    WEBSOCKET_MESSAGEDATA_KEY_GAMESINPROGRESS => $finishedGamesJSON
+                    WEBSOCKET_MESSAGEDATA_KEY_FINISHEDGAMES => $finishedGamesJSON
                 ];
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
             $webSocketClient->send($webSocketMessage);

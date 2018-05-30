@@ -132,23 +132,31 @@ var GameInProgress = (function ()
 // FinishedGame objects are view model objects whose values are suitable for
 // displaying in the UI. FinishedGame objects are created from JSON
 // objects that were transmitted by the server. A FinishedGame object
-// uses the same property names that are specified in the JSON format.
-// A FinishedGame object in addition has a property named "result" which
-// contains the human-readable game result string.
+// mostly uses the same property names that are specified in the JSON format.
+// A FinishedGame object replaces the "createTime" JSON property with
+// the property "endTime" (contains the gameResult's "createTime" property
+// value) and the "gameResult" sub-object with the property "result" (contains
+// the human-readable game result string).
 //
 // This is the JSON format:
 //
 // var jsonObject =
 // {
-//   "id" : 12345,                 // a unique ID
-//   "endTime" : 123457890,        // milliseconds since the epoch
+//   "gameID" : 12345,             // a unique ID
+//   "createTime" : 123457890,     // milliseconds since the epoch
 //   "boardSize" : 19,             // valid values: see GameInProgress
 //   "handicap" : 0,               // valid values: see GameInProgress
 //   "komi" : 7.5,                 // valid values: see GameInProgress
 //   "koRule" : 0,                 // valid values: see GameInProgress
-//   "scoringSystem": 0,           // valid values: see GameInProgress
-//   "winningColor" : 0,           // valid values: 0 (= black), 1 (= white), -1 (= game is a draw)
-//   "score" : 32.5,               // valid values: 1-n, 0 (= game is a draw), -1 (= the other player resigned)
+//   "scoringSystem" : 0,          // valid values: see GameInProgress
+//   "gameResult" : {
+//     "gameResultID" : 12345,     // a unique ID
+//     "createTime" : 123457890,   // milliseconds since the epoch, the time when the game's end result became known
+//     "gameID" : 12345,           // the same unique ID as on the top-level
+//     "resultType" : 0,           // valid values: 0 (= game won by points), 1 (= game is a draw), 2 (= game won by resignation)
+//     "winningStoneColor" : 0,    // valid values: 0 (= black), 1 (= white), -1 (= game is a draw)
+//     "winningPoints" : 32.5,     // valid values: 0.5-n, 0 (= game is a draw), -1 (= the other player resigned)
+//   },
 // };
 // ----------------------------------------------------------------------
 var FinishedGame = (function ()
@@ -159,17 +167,22 @@ var FinishedGame = (function ()
     // JSON object.
     function FinishedGame(jsonObject)
     {
-        this.id = jsonObject.id;
+        this.gameID = jsonObject.gameID;
 
-        this.endTime = endTimeToString(jsonObject.endTime);
         this.boardSize = boardSizeToString(jsonObject.boardSize);
         this.handicap = handicapToString(jsonObject.handicap);
         this.komi = komiToString(jsonObject.komi);
         this.koRule = koRuleToString(jsonObject.koRule);
         this.scoringSystem = scoringSystemToString(jsonObject.scoringSystem);
-        this.winningColor = jsonObject.winningColor;
-        this.score = jsonObject.score;
-        this.result = winningColorAndScoreToString(this.winningColor, this.score);
+
+        var gameResult = jsonObject.gameResult;
+
+        // For finished games the user is not interested in when the game
+        // was created, she wants to know when the game ended. So let's
+        // ignore jsonObject.createTime and instead add the property "endTime".
+        this.endTime = endTimeToString(gameResult.createTime * 1000);
+
+        this.result = gameResultToString(gameResult);
     }
 
     return FinishedGame;

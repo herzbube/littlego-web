@@ -206,34 +206,32 @@ function endTimeToString(endTimeInMilliseconds)
     }
 }
 
-// Converts the specified winning color and score values into a string that is
-// suitable for displaying in the UI. Throws an Error object for invalid values.
-function winningColorAndScoreToString(winningColor, score)
+// Converts the content of the specified game result object into a string that
+// is suitable for displaying in the UI. Throws an Error object for invalid
+// values.
+function gameResultToString(gameResult)
 {
     var resultString;
 
-    switch (winningColor)
+    switch (gameResult.resultType)
     {
-        case COLOR_BLACK:
-            resultString = "B";
+        case GAMERESULT_RESULTTYPE_WINBYPOINTS:
+        case GAMERESULT_RESULTTYPE_WINBYRESIGNATION:
+            if (gameResult.winningStoneColor === COLOR_BLACK)
+                resultString = "B+";
+            else
+                resultString = "W+";
+            if (gameResult.resultType === GAMERESULT_RESULTTYPE_WINBYPOINTS)
+                resultString += fractionalNumberToString(gameResult.winningPoints);
+            else
+                resultString += "Resign";
             break;
-        case COLOR_WHITE:
-            resultString = "W";
+        case GAMERESULT_RESULTTYPE_DRAW:
+            resultString = "Draw";
             break;
-        case COLOR_NONE:
-            return "Draw";  // immediately return, no string concatenation necessary
         default:
-            throw new Error("Unsupported winning color value: " + winningColor);
+            throw new Error("Unknown game result type " + gameResult.resultType);
     }
-
-    resultString += "+";
-
-    if (score === -1)
-        resultString += "Resign";
-    else if (score > 0)
-        resultString += fractionalNumberToString(score);
-    else
-        throw new Error("Unsupported score value: " + score);
 
     return resultString;
 }
