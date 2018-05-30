@@ -262,8 +262,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         if (isThisPlayersTurnToPlayMove === newIsThisPlayersTurnToPlayMove)
             return;
         isThisPlayersTurnToPlayMove = newIsThisPlayersTurnToPlayMove;
-
-        updateThisPlayerCanPlayMove();
     }
 
     // Enable or disable whether this player (i.e. the user logged in on
@@ -295,8 +293,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         if (thisPlayerCanPlayMove === newThisPlayerCanPlayMove)
             return;
         thisPlayerCanPlayMove = newThisPlayerCanPlayMove;
-
-        updateDrawingServiceUserInteraction();
     }
 
     // Enable or disable whether it is currently this player's turn (i.e. the
@@ -327,8 +323,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         if (isThisPlayersTurnToSubmitScoreProposal === newIsThisPlayersTurnToSubmitScoreProposal)
             return;
         isThisPlayersTurnToSubmitScoreProposal = newIsThisPlayersTurnToSubmitScoreProposal;
-
-        updateThisPlayerCanSubmitScoreProposal();
     }
 
     // Enable or disable whether this player (i.e. the user logged in on
@@ -361,8 +355,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         if (thisPlayerCanSubmitScoreProposal === newThisPlayerCanSubmitScoreProposal)
             return;
         thisPlayerCanSubmitScoreProposal = newThisPlayerCanSubmitScoreProposal;
-
-        updateDrawingServiceUserInteraction();
     }
 
     // Enable or disable user interaction in the drawing service, depending
@@ -585,7 +577,10 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 var gameMove = new GameMove(goMove, moveNumber);
                 $scope.gameMoves.unshift(gameMove);
                 updateIsThisPlayersTurnToPlayMove();
+                updateThisPlayerCanPlayMove();
                 updateIsThisPlayersTurnToSubmitScoreProposal();
+                updateThisPlayerCanSubmitScoreProposal();
+                updateDrawingServiceUserInteraction();
 
                 // At least the number of captured stones in territory scoring
                 // must be updated
@@ -600,6 +595,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                     goGame.setState(GAME_STATE_INPROGRESS_SCORING);
                     updateThisPlayerCanPlayMove();
                     updateThisPlayerCanSubmitScoreProposal();
+                    updateDrawingServiceUserInteraction();
 
                     $scope.activateScoringMode();
                     dataTypeShown = BOARDVIEW_DATATYPE_SCORE;
@@ -867,6 +863,8 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
             $scope.$apply(function() {
 
                 updateIsThisPlayersTurnToSubmitScoreProposal();
+                updateThisPlayerCanSubmitScoreProposal();
+                updateDrawingServiceUserInteraction();
 
                 goGame.goScore.calculate();
                 updateScoringData();
@@ -974,6 +972,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
                 updateThisPlayerCanPlayMove();
                 updateThisPlayerCanSubmitScoreProposal
+                updateDrawingServiceUserInteraction();
 
                 $scope.activateAnalyzeMode();
             });
