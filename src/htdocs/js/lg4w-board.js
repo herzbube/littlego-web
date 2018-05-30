@@ -994,8 +994,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 updateThisPlayerCanPlayMove();
                 updateThisPlayerCanSubmitScoreProposal
                 updateDrawingServiceUserInteraction();
-
-                $scope.activateAnalyzeMode();
             });
         }
         else
