@@ -125,9 +125,6 @@ namespace LittleGoWeb
                 case WEBSOCKET_REQUEST_TYPE_SUBMITNEWSCOREPROPOSAL:
                     $this->handleSubmitNewScoreProposal($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
                     break;
-                case WEBSOCKET_REQUEST_TYPE_GETSCOREPROPOSAL:
-                    $this->handleGetScoreProposal($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
-                    break;
                 case WEBSOCKET_REQUEST_TYPE_ACCEPTSCOREPROPOSAL:
                     $this->handleAcceptScoreProposal($webSocketClient, $webSocketMessage->getData(), $webSocketResponseType);
                     break;
@@ -186,8 +183,6 @@ namespace LittleGoWeb
                     return WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEMOVE;
                 case WEBSOCKET_REQUEST_TYPE_SUBMITNEWSCOREPROPOSAL:
                     return WEBSOCKET_RESPONSE_TYPE_SUBMITNEWSCOREPROPOSAL;
-                case WEBSOCKET_REQUEST_TYPE_GETSCOREPROPOSAL:
-                    return WEBSOCKET_RESPONSE_TYPE_GETSCOREPROPOSAL;
                 case WEBSOCKET_REQUEST_TYPE_ACCEPTSCOREPROPOSAL:
                     return WEBSOCKET_RESPONSE_TYPE_ACCEPTSCOREPROPOSAL;
                 case WEBSOCKET_REQUEST_TYPE_GETFINISHEDGAMES:
@@ -1121,44 +1116,6 @@ namespace LittleGoWeb
                 $gameID,
                 $dbAccess,
                 $webSocketClient);
-        }
-
-        private function handleGetScoreProposal(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType) : void
-        {
-            $gameID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEID];
-
-            $dbAccess = new DbAccess($this->config);
-
-            $score = $dbAccess->findScoreByGameID($gameID);
-            $scoreDetailsJSON = array();
-            if ($score === null)
-            {
-                // A score is optional: Initially, when the game progresses
-                // from state "playing" to state "scoring", a score proposal
-                // does not exist yet.
-                $scoreID = SCORE_SCOREID_DEFAULT;
-                $gameID = SCORE_GAMEID_DEFAULT;
-                $state = SCORE_STATE_DEFAULT;
-                $lastModifiedByUserID = SCORE_LASTMODIFIEDBYUSERID_DEFAULT;
-                $lastModifiedTime = SCORE_LASTMODIFIEDTIME_DEFAULT;
-                $score = new Score($scoreID, $gameID, $state, $lastModifiedByUserID, $lastModifiedTime);
-            }
-            else
-            {
-                $scoreDetails = $dbAccess->findScoreDetailsByScoreID($score->getScoreID());
-
-                foreach ($scoreDetails as $scoreDetail)
-                    array_push($scoreDetailsJSON, $scoreDetail->toJsonObject());
-            }
-
-            $webSocketResponseData =
-                [
-                    WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
-                    WEBSOCKET_MESSAGEDATA_KEY_SCORE => $score->toJsonObject(),
-                    WEBSOCKET_MESSAGEDATA_KEY_SCOREDETAILS => $scoreDetailsJSON
-                ];
-            $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
-            $webSocketClient->send($webSocketMessage);
         }
 
         private function handleAcceptScoreProposal(WebSocketClient $webSocketClient, array $messageData, string $webSocketResponseType) : void

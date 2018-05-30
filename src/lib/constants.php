@@ -30,7 +30,6 @@ namespace LittleGoWeb
     const WEBSOCKET_REQUEST_TYPE_GETGAME = "c2sGetGameRequest";
     const WEBSOCKET_REQUEST_TYPE_SUBMITNEWGAMEMOVE = "c2sSubmitNewGameMoveRequest";
     const WEBSOCKET_REQUEST_TYPE_SUBMITNEWSCOREPROPOSAL = "c2sSubmitNewScoreProposalRequest";
-    const WEBSOCKET_REQUEST_TYPE_GETSCOREPROPOSAL = "c2sGetScoreProposalRequest";
     const WEBSOCKET_REQUEST_TYPE_ACCEPTSCOREPROPOSAL = "c2sAcceptScoreProposalRequest";
     const WEBSOCKET_REQUEST_TYPE_GETFINISHEDGAMES = "c2sGetFinishedGamesRequest";
     const WEBSOCKET_REQUEST_TYPE_RESIGNGAME = "c2sResignGameRequest";
@@ -49,7 +48,6 @@ namespace LittleGoWeb
     const WEBSOCKET_RESPONSE_TYPE_GETGAME = "s2cGetGameResponse";
     const WEBSOCKET_RESPONSE_TYPE_SUBMITNEWGAMEMOVE = "s2cSubmitNewGameMoveResponse";
     const WEBSOCKET_RESPONSE_TYPE_SUBMITNEWSCOREPROPOSAL = "s2cSubmitNewScoreProposalResponse";
-    const WEBSOCKET_RESPONSE_TYPE_GETSCOREPROPOSAL = "s2cGetScoreProposalResponse";
     const WEBSOCKET_RESPONSE_TYPE_ACCEPTSCOREPROPOSAL = "s2cAcceptScoreProposalResponse";
     const WEBSOCKET_RESPONSE_TYPE_GETFINISHEDGAMES = "s2cGetFinishedGamesResponse";
     const WEBSOCKET_RESPONSE_TYPE_RESIGNGAME = "s2cResignGameResponse";

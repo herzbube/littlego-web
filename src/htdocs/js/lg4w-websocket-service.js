@@ -171,7 +171,6 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         getGame: [],
         submitNewGameMove: [],
         submitNewScoreProposal: [],
-        getScoreProposal: [],
         acceptScoreProposal: [],
         getFinishedGames: [],
         resignGame: [],
@@ -336,17 +335,6 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         var index = eventListeners.submitNewScoreProposal.indexOf(listener);
         if (-1 !== index)
             eventListeners.submitNewScoreProposal.splice(index, 1);
-    };
-
-    this.addGetScoreProposalListener = function(listener) {
-        eventListeners.getScoreProposal.push(listener);
-    };
-
-    this.removeGetScoreProposalListener = function(listener)
-    {
-        var index = eventListeners.getScoreProposal.indexOf(listener);
-        if (-1 !== index)
-            eventListeners.getScoreProposal.splice(index, 1);
     };
 
     this.addAcceptScoreProposalListener = function(listener) {
@@ -557,15 +545,6 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         sendWebSocketMessage(theWebSocket, messageType, messageData);
     };
 
-    this.getScoreProposal = function(gameID) {
-        var messageType = WEBSOCKET_REQUEST_TYPE_GETSCOREPROPOSAL;
-        var messageData =
-            {
-                gameID: gameID
-            };
-        sendWebSocketMessage(theWebSocket, messageType, messageData);
-    };
-
     this.acceptScoreProposal = function(gameID, resultType, winningStoneColor, winningPoints) {
         var messageType = WEBSOCKET_REQUEST_TYPE_ACCEPTSCOREPROPOSAL;
         var messageData =
@@ -743,17 +722,6 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
             case WEBSOCKET_RESPONSE_TYPE_SUBMITNEWSCOREPROPOSAL:
                 // Iterate over a copy in case the handler wants to remove itself
                 var listenersCopy = eventListeners.submitNewScoreProposal.slice(0);
-                listenersCopy.forEach(function(listener) {
-                    listener(
-                        webSocketMessage.data.success,
-                        webSocketMessage.data.score,
-                        webSocketMessage.data.scoreDetails);
-                });
-                break;
-
-            case WEBSOCKET_RESPONSE_TYPE_GETSCOREPROPOSAL:
-                // Iterate over a copy in case the handler wants to remove itself
-                var listenersCopy = eventListeners.getScoreProposal.slice(0);
                 listenersCopy.forEach(function(listener) {
                     listener(
                         webSocketMessage.data.success,
