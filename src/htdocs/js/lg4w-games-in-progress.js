@@ -4,7 +4,7 @@
 
 "use strict";
 
-lg4wApp.controller("lg4wGamesInProgressController", ["$scope", "$location", ANGULARNAME_SERVICE_WEBSOCKET, function($scope, $location, webSocketService) {
+lg4wApp.controller("lg4wGamesInProgressController", ["$scope", "$rootScope", "$location", ANGULARNAME_SERVICE_WEBSOCKET, function($scope, $rootScope, $location, webSocketService) {
 
     $scope.placeHolderMessage = "Waiting for server connection ...";
     $scope.placeHolderMessageIsErrorMessage = false;
@@ -55,8 +55,9 @@ lg4wApp.controller("lg4wGamesInProgressController", ["$scope", "$location", ANGU
     };
 
     $scope.resign = function(gameInProgress) {
-        // TODO: Don't use jQuery
-        $("#" + ID_MODAL_NOT_YET_IMPLEMENTED).modal()
+        $rootScope.$broadcast(ANGULARNAME_EVENT_SHOWCONFIRMGAMERESIGNMODAL, gameInProgress.gameID);
+
+        // TODO: If the user confirms we must update our game list
     };
 
     if (webSocketService.isReady())

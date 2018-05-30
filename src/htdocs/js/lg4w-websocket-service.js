@@ -174,6 +174,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         getScoreProposal: [],
         acceptScoreProposal: [],
         getFinishedGames: [],
+        resignGame: [],
         gameRequestPairingFound: []
     };
 
@@ -364,6 +365,17 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
     };
 
     this.removeGetFinishedGamesListener = function(listener)
+    {
+        var index = eventListeners.getFinishedGames.indexOf(listener);
+        if (-1 !== index)
+            eventListeners.getFinishedGames.splice(index, 1);
+    };
+
+    this.addResignGameListener = function(listener) {
+        eventListeners.resignGame.push(listener);
+    };
+
+    this.removeResignGameListener = function(listener)
     {
         var index = eventListeners.getFinishedGames.indexOf(listener);
         if (-1 !== index)
@@ -572,6 +584,15 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         sendWebSocketMessage(theWebSocket, messageType, messageData);
     };
 
+    this.resignGame = function(gameID) {
+        var messageType = WEBSOCKET_REQUEST_TYPE_RESIGNGAME;
+        var messageData =
+            {
+                gameID: gameID
+            };
+        sendWebSocketMessage(theWebSocket, messageType, messageData);
+    };
+
     // ----------------------------------------------------------------------
     // Process incoming messages
     // ----------------------------------------------------------------------
@@ -759,6 +780,17 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.finishedGames,
+                        webSocketMessage.data.errorMessage);
+                });
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_RESIGNGAME:
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.resignGame.slice(0);
+                listenersCopy.forEach(function(listener) {
+                    listener(
+                        webSocketMessage.data.success,
+                        webSocketMessage.data.game,
                         webSocketMessage.data.errorMessage);
                 });
                 break;

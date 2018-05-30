@@ -5,7 +5,7 @@
 
 "use strict";
 
-lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME_SERVICE_WEBSOCKET, ANGULARNAME_SERVICE_SESSION, ANGULARNAME_SERVICE_DRAWING, ANGULARNAME_SERVICE_ERRORHANDLING, function($scope, $routeParams, webSocketService, sessionService, drawingService, errorHandlingService) {
+lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams", ANGULARNAME_SERVICE_WEBSOCKET, ANGULARNAME_SERVICE_SESSION, ANGULARNAME_SERVICE_DRAWING, ANGULARNAME_SERVICE_ERRORHANDLING, function($scope, $rootScope, $routeParams, webSocketService, sessionService, drawingService, errorHandlingService) {
 
     // ----------------------------------------------------------------------
     // Private data not available via the $scope
@@ -188,7 +188,10 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                         scoreDetails = scoreDetailsJsonObject;
 
                         if (goGame.getState() === GAME_STATE_FINISHED)
+                        {
                             gameResult = gameJsonObject.gameResult;
+                            updateGameResult();
+                        }
 
                         updateBeforeEnteringScoringMode();
                         if (scoreDetails !== undefined)
@@ -537,8 +540,12 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     };
 
     $scope.resign = function() {
-        // TODO: Don't use jQuery
-        $("#" + ID_MODAL_NOT_YET_IMPLEMENTED).modal()
+        $rootScope.$broadcast(ANGULARNAME_EVENT_SHOWCONFIRMGAMERESIGNMODAL, gameID);
+
+        // TODO: If the user confirms we must be able to set the following
+        // two flags so that the user cannot submit any more moves/score proposals
+        // isMoveSubmissionInProgress = true;
+        // isScoreProposalSubmissionInProgress = true;
     };
 
     webSocketService.addSubmitNewGameMoveListener(handleSubmitNewGameMove);
@@ -637,6 +644,108 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
                 break;
             default:
                 throw new Error("Invalid move type " + gameMoveJsonObject.moveType);
+        }
+    }
+
+    webSocketService.addResignGameListener(handleResignGame);
+    function handleResignGame(success, gameJsonObject, errorMessage) {
+
+        if (success)
+        {
+            // The server sends us resignations for all games that the currently
+            // logged in user is playing, but we are interested only if the
+            // resignation is for the game that the user is currently viewing
+            if (gameJsonObject.gameID !== gameID)
+                return;
+
+            // Clear the submission flag only if the response is for the
+            // game that the user is currently viewing
+            isMoveSubmissionInProgress = false;
+            isScoreProposalSubmissionInProgress = false;
+
+            $scope.$apply(function() {
+                // A resigned game has no score
+                score = undefined;
+                scoreDetails = undefined
+                applyScoreDetails();
+                thisPlayerHasChangedScoreProposal = false;
+
+                gameResult = gameJsonObject.gameResult;
+                updateGameResult();
+
+                if (goGame.getState() === GAME_STATE_INPROGRESS_PLAYING)
+                {
+                    $scope.activateScoringMode();
+                    dataTypeShown = BOARDVIEW_DATATYPE_SCORE;
+                }
+                else
+                {
+                    // For the remaining states scoring mode is already
+                    // activated
+                }
+
+                goGame.goScore.calculate();
+                updateScoringData();
+
+                goGame.setState(GAME_STATE_FINISHED);
+
+                updateThisPlayerCanPlayMove();
+                updateThisPlayerCanSubmitScoreProposal();
+                updateDrawingServiceUserInteraction();
+
+                drawingService.drawGoBoardAfterScoreChange();
+            });
+        }
+        else
+        {
+            errorHandlingService.showServerError(errorMessage);
+
+            // We can confidently clear the submission flag because even
+            // though the WebSocket error response data does not include
+            // a game ID, we know that the server only sends us an error
+            // response after we made a request
+            $scope.$apply(function() {
+                isMoveSubmissionInProgress = false;
+                isScoreProposalSubmissionInProgress = false;
+            });
+        }
+    }
+
+    function updateGameResult() {
+        if (gameResult === undefined)
+        {
+            $scope.gameResult = "Game result not available.";
+        }
+        else
+        {
+            var otherPlayerDisplayName;
+            if (thisPlayerColor === COLOR_BLACK)
+                otherPlayerDisplayName = $scope.boardPlayerInfoWhite.userInfo.displayName;
+            else
+                otherPlayerDisplayName = $scope.boardPlayerInfoBlack.userInfo.displayName;
+
+            switch (gameResult.resultType)
+            {
+                case GAMERESULT_RESULTTYPE_WINBYPOINTS:
+                    if (gameResult.winningStoneColor === thisPlayerColor)
+                        $scope.gameResult = otherPlayerDisplayName + " has won by ";
+                    else
+                        $scope.gameResult = "You have won by ";
+                    $scope.gameResult += fractionalNumberToString(gameResult.winningPoints);
+                    $scope.gameResult += " points.";
+                    break;
+                case GAMERESULT_RESULTTYPE_DRAW:
+                    $scope.gameResult = "The game is a draw.";
+                    break;
+                case GAMERESULT_RESULTTYPE_WINBYRESIGNATION:
+                    if (gameResult.winningStoneColor === thisPlayerColor)
+                        $scope.gameResult = otherPlayerDisplayName + " has resigned.";
+                    else
+                        $scope.gameResult = "You have resigned.";
+                    break;
+                default:
+                    throw new Error("Unknown game result type " + gameResult.resultType);
+            }
         }
     }
 
@@ -928,6 +1037,11 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
 
         });
 
+        // Skip pass 2 if we have no score details. This is possible
+        // for resigned games
+        if (scoreDetails === undefined)
+            return;
+
         // Pass 2: Apply the dead/seki state for which we have explicit
         // information. Stone groups that have been marked as alive
         // in pass 1 are now turned again.
@@ -1041,6 +1155,27 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         return (dataTypeShown === BOARDVIEW_DATATYPE_SCORE);
     };
 
+    $scope.isScoringTableShown = function() {
+        if (dataTypeShown !== BOARDVIEW_DATATYPE_SCORE)
+            return false;
+        else if (gameResult !== undefined && gameResult.resultType === GAMERESULT_RESULTTYPE_WINBYRESIGNATION)
+            return false;
+        else
+            return true;
+    };
+
+    $scope.isGameResultShown = function() {
+        if (dataTypeShown !== BOARDVIEW_DATATYPE_SCORE)
+            return false;
+        // Show the game result only for games won by resignation,
+        // because for those games there is no score and displaying
+        // the scoring table therefore does not make much sense
+        else if (gameResult !== undefined && gameResult.resultType === GAMERESULT_RESULTTYPE_WINBYRESIGNATION)
+            return true;
+        else
+            return false;
+    };
+
     // ----------------------------------------------------------------------
     // Controller initialization and destruction
     // ----------------------------------------------------------------------
@@ -1060,6 +1195,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
         webSocketService.removeGetGameListener(handleGetGame);
         webSocketService.removeSubmitNewGameMoveListener(handleSubmitNewGameMove);
+        webSocketService.removeResignGameListener(handleResignGame);
         webSocketService.removeSubmitNewScoreProposalListener(handleSubmitNewScoreProposal);
         webSocketService.removeAcceptScoreProposalListener(handleAcceptScoreProposal);
         drawingService.removeDidClickOnIntersectionListener(handleDidClickOnIntersection);

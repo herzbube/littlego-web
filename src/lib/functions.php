@@ -158,6 +158,7 @@ namespace LittleGoWeb
     <script src="${urlBasePath}/js/lg4w-finished-games.js"></script>
     <script src="${urlBasePath}/js/lg4w-new-game-request.js"></script>
     <script src="${urlBasePath}/js/lg4w-confirm-game-request-pairing.js"></script>
+    <script src="${urlBasePath}/js/lg4w-confirm-game-resign.js"></script>
     <script src="${urlBasePath}/js/lg4w-board.js"></script>
     <script src="${urlBasePath}/js/lg4w-drawing-library.js"></script>
     <script src="${urlBasePath}/js/lg4w-drawing-service.js"></script>

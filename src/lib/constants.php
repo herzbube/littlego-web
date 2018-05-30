@@ -33,6 +33,7 @@ namespace LittleGoWeb
     const WEBSOCKET_REQUEST_TYPE_GETSCOREPROPOSAL = "c2sGetScoreProposalRequest";
     const WEBSOCKET_REQUEST_TYPE_ACCEPTSCOREPROPOSAL = "c2sAcceptScoreProposalRequest";
     const WEBSOCKET_REQUEST_TYPE_GETFINISHEDGAMES = "c2sGetFinishedGamesRequest";
+    const WEBSOCKET_REQUEST_TYPE_RESIGNGAME = "c2sResignGameRequest";
 
     // WebSocket responses (server outgoing/client incoming messages)
     const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
@@ -51,6 +52,7 @@ namespace LittleGoWeb
     const WEBSOCKET_RESPONSE_TYPE_GETSCOREPROPOSAL = "s2cGetScoreProposalResponse";
     const WEBSOCKET_RESPONSE_TYPE_ACCEPTSCOREPROPOSAL = "s2cAcceptScoreProposalResponse";
     const WEBSOCKET_RESPONSE_TYPE_GETFINISHEDGAMES = "s2cGetFinishedGamesResponse";
+    const WEBSOCKET_RESPONSE_TYPE_RESIGNGAME = "s2cResignGameResponse";
 
     // WebSocket messages proactively sent by the server to a client who didn't
     // request anything (server outgoing/client incoming messages)

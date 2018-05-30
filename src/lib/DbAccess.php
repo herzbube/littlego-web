@@ -1896,6 +1896,46 @@ namespace LittleGoWeb
             }
         }
 
+        // Deletes data for the session with the specified session key from
+        // the database. Returns true on success, false on failure (i.e. no
+        // session for the specified session key exists).
+
+        // Deletes data for the score with the specified score ID from the
+        // database. Returns true on success, false on failure (i.e. no score
+        // with the specified ID exists).
+        public function deleteScoreByScoreID(int $scoreID) : bool
+        {
+            $tableName = DB_TABLE_NAME_SCORE;
+            $columnNames = array(
+                DB_COLUMN_NAME_SCORE_SCOREID);
+
+            $deleteQueryString = $this->sqlGenerator->getDeleteStatementWithWhereClause(
+                $tableName,
+                $columnNames);
+
+            $deleteStatement = $this->pdo->prepare($deleteQueryString);
+            $deleteStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_SCORE_SCOREID),
+                $scoreID,
+                PDO::PARAM_INT);
+
+            try
+            {
+                $deleteStatement->execute();
+
+                $numberOfDeletedRows = $deleteStatement->rowCount();
+                if ($numberOfDeletedRows === 1)
+                    return true;
+                else
+                    return false;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return false;
+            }
+        }
+
         // Obtains the score details data for the specified score ID from the
         // database and returns the data as an array object. Returns an
         // empty array if the database has no score details data for the

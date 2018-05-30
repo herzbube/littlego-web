@@ -111,7 +111,7 @@
                                         </div>
                                         <div>
                                             <button class="btn btn-secondary" title="Discard the current score and revert to your opponent's proposed score" ng-click="revertToOpponentScoreProposal()" ng-disabled="isRevertToOpponentScoreProposalButtonDisabled()" ng-show="isRevertToOpponentScoreProposalButtonShown()">Revert</button>
-                                            <button class="btn btn-outline-danger" title="Resign the game" data-toggle="modal" data-target="#notYetImplemented" ng-disabled="isResignButtonScoringModeDisabled()" ng-show="isResignButtonScoringModeShown()">Resign</button>
+                                            <button class="btn btn-outline-danger" title="Resign the game" ng-click="resign()" ng-disabled="isResignButtonScoringModeDisabled()" ng-show="isResignButtonScoringModeShown()">Resign</button>
                                             <button class="btn btn-success" title="Propose the current score as the final result to your opponent" ng-click="submitScoreProposal()" ng-disabled="isSubmitScoreProposalButtonDisabled()" ng-show="isSubmitScoreProposalButtonShown()">Submit</button>
                                             <button class="btn btn-success" title="Accept the proposed score as the final result and end the game" ng-click="acceptScoreProposal()" ng-disabled="isAcceptScoreProposalButtonDisabled()" ng-show="isAcceptScoreProposalButtonShown()">Accept</button>
                                         </div>
@@ -155,7 +155,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div ng-show="isScoreShown()">
+                                <div ng-show="isScoringTableShown()">
                                     <table id="scoringDataTable" class="table table-striped table-bordered table-hover table-responsive-md">
                                         <thead class="thead-dark">
                                             <tr><th>Black</th><th></th><th>White</th></tr>
@@ -174,6 +174,9 @@
                                     <p ng-show="isScoringModeNotActivated()">
                                         <small><span ng-show="isAreaScoring()">Stone count</span><span ng-show="isTerritoryScoring()">Dead stone count</span> and territory score are not available because you are not in scoring mode.</small>
                                     </p>
+                                </div>
+                                <div ng-show="isGameResultShown()">
+                                    <p>{{ gameResult }}</p>
                                 </div>
                             </div>
                         </div>

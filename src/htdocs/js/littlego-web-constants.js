@@ -9,6 +9,7 @@ const ANGULARNAME_SERVICE_SESSION = "SessionService";
 const ANGULARNAME_SERVICE_ERRORHANDLING = "ErrorHandlingService";
 const ANGULARNAME_SERVICE_DRAWING = "DrawingService";
 const ANGULARNAME_EVENT_SHOWCONFIRMGAMEREQUESTPAIRINGMODAL = "showConfirmGameRequestPairingModal";
+const ANGULARNAME_EVENT_SHOWCONFIRMGAMERESIGNMODAL = "showConfirmGameResignModal";
 
 const STORAGEKEY_SESSIONKEY = "sessionKey";
 
@@ -228,6 +229,7 @@ const ID_SVG_TOGGLEINDICATOR = "toggle-indicator";
 
 // Modals
 const ID_MODAL_NOT_YET_IMPLEMENTED = "notYetImplemented";
+const ID_MODAL_CONFIRM_GAME_RESIGN = "confirm-game-resign-modal";
 
 
 // ----------------------------------------------------------------------
@@ -257,6 +259,7 @@ const WEBSOCKET_REQUEST_TYPE_SUBMITNEWSCOREPROPOSAL = "c2sSubmitNewScoreProposal
 const WEBSOCKET_REQUEST_TYPE_GETSCOREPROPOSAL = "c2sGetScoreProposalRequest";
 const WEBSOCKET_REQUEST_TYPE_ACCEPTSCOREPROPOSAL = "c2sAcceptScoreProposalRequest";
 const WEBSOCKET_REQUEST_TYPE_GETFINISHEDGAMES = "c2sGetFinishedGamesRequest";
+const WEBSOCKET_REQUEST_TYPE_RESIGNGAME = "c2sResignGameRequest";
 
 // WebSocket responses (server outgoing/client incoming messages)
 const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
@@ -275,6 +278,7 @@ const WEBSOCKET_RESPONSE_TYPE_SUBMITNEWSCOREPROPOSAL = "s2cSubmitNewScoreProposa
 const WEBSOCKET_RESPONSE_TYPE_GETSCOREPROPOSAL = "s2cGetScoreProposalResponse";
 const WEBSOCKET_RESPONSE_TYPE_ACCEPTSCOREPROPOSAL = "s2cAcceptScoreProposalResponse";
 const WEBSOCKET_RESPONSE_TYPE_GETFINISHEDGAMES = "s2cGetFinishedGamesResponse";
+const WEBSOCKET_RESPONSE_TYPE_RESIGNGAME = "s2cResignGameResponse";
 
 // WebSocket messages proactively sent by the server to a client who didn't
 // request anything (server outgoing/client incoming messages)
