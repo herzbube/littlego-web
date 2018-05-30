@@ -78,13 +78,13 @@
                             <div class="board-right-hand-side-subsection">
                                 <ul class="nav nav-tabs">
                                     <li class="nav-item">
-                                        <button class="nav-link btn btn-link" ng-class="{ 'active': isPlayModeActivated() }" ng-click="activatePlayMode()">Play Mode</button>
+                                        <button class="nav-link btn btn-link" ng-class="{ 'active': isPlayModeActivated() }" ng-click="activatePlayMode()" ng-show="isPlayModeShown()">Play Mode</button>
                                     </li>
                                     <li class="nav-item">
-                                        <button class="nav-link btn btn-link" ng-class="{ 'active': isAnalyzeModeActivated() }" ng-click="activateAnalyzeMode()">Analyze Mode</button>
+                                        <button class="nav-link btn btn-link" ng-class="{ 'active': isAnalyzeModeActivated() }" ng-click="activateAnalyzeMode()" ng-show="isAnalyzeModeShown()">Analyze Mode</button>
                                     </li>
                                     <li class="nav-item">
-                                        <button class="nav-link btn btn-link" ng-class="{ 'active': isScoringModeActivated() }" ng-click="activateScoringMode()">Scoring Mode</button>
+                                        <button class="nav-link btn btn-link" ng-class="{ 'active': isScoringModeActivated() }" ng-click="activateScoringMode()" ng-show="isScoringModeShown()">Scoring Mode</button>
                                     </li>
                                 </ul>
                             </div>

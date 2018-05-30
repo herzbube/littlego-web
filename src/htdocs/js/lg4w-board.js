@@ -468,12 +468,33 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         return (boardViewMode === BOARDVIEW_MODE_PLAY);
     };
 
+    $scope.isPlayModeShown = function() {
+        if ($scope.isBoardShown())
+            return (goGame.getState() === GAME_STATE_INPROGRESS_PLAYING);
+        else
+            return false;
+    };
+
     $scope.isAnalyzeModeActivated = function() {
         return (boardViewMode === BOARDVIEW_MODE_ANALYZE);
     };
 
+    $scope.isAnalyzeModeShown = function() {
+        if ($scope.isBoardShown())
+            return (goGame.getState() !== GAME_STATE_FINISHED);
+        else
+            return false;
+    };
+
     $scope.isScoringModeActivated = function() {
         return (boardViewMode === BOARDVIEW_MODE_SCORING);
+    };
+
+    $scope.isScoringModeShown = function() {
+        if ($scope.isBoardShown())
+            return true;
+        else
+            return false;
     };
 
     // ----------------------------------------------------------------------
