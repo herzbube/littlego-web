@@ -51,8 +51,7 @@ lg4wApp.controller("lg4wFinishedGamesController", ["$scope", "$location", ANGULA
     };
 
     $scope.view = function(finishedGame) {
-        // TODO: Don't use jQuery
-        $("#" + ID_MODAL_NOT_YET_IMPLEMENTED).modal()
+        $location.path(ANGULARROUTE_PATH_BOARD + "/" + finishedGame.gameID);
     };
 
     $scope.emailResult = function(finishedGame) {
