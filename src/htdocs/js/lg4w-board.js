@@ -527,10 +527,11 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         }
         else if ($scope.isPlayModeActivated())
         {
-            isMoveSubmissionInProgress = true;
-            // TODO: Shouldn't this be in a $score.$apply() context
-            updateThisPlayerCanPlayMove();
-            updateDrawingServiceUserInteraction();
+            $scope.$apply(function() {
+                isMoveSubmissionInProgress = true;
+                updateThisPlayerCanPlayMove();
+                updateDrawingServiceUserInteraction();
+            });
 
             webSocketService.submitNewGameMovePlay(
                 gameID,
@@ -543,7 +544,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
     $scope.pass = function() {
 
         isMoveSubmissionInProgress = true;
-        // TODO: Shouldn't this be in a $score.$apply() context
         updateThisPlayerCanPlayMove();
         updateDrawingServiceUserInteraction();
 
@@ -834,7 +834,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         // If they are the same, let the user know
 
         isScoreProposalSubmissionInProgress = true;
-        // TODO: Shouldn't this be in a $score.$apply() context
         updateThisPlayerCanSubmitScoreProposal();
         updateDrawingServiceUserInteraction();
 
@@ -951,7 +950,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$routeParams", ANGULARNAME
         // Accepting a proposal is just another form of
         // score proposal submission
         isScoreProposalSubmissionInProgress = true;
-        // TODO: Shouldn't this be in a $score.$apply() context
         updateThisPlayerCanSubmitScoreProposal();
         updateDrawingServiceUserInteraction();
     };
