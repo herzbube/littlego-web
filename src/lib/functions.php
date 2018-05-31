@@ -148,6 +148,7 @@ namespace LittleGoWeb
     <script src="${urlBasePath}/js/lg4w-websocket-service.js"></script>
     <script src="${urlBasePath}/js/lg4w-session-service.js"></script>
     <script src="${urlBasePath}/js/lg4w-error-handling-service.js"></script>
+    <script src="${urlBasePath}/js/lg4w-please-wait-service.js"></script>
     <script src="${urlBasePath}/js/lg4w-login-form.js"></script>
     <script src="${urlBasePath}/js/lg4w-registration-form.js"></script>
     <script src="${urlBasePath}/js/lg4w-navigation.js"></script>

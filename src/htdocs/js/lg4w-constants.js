@@ -8,6 +8,7 @@ const ANGULARNAME_SERVICE_WEBSOCKET = "WebSocketService";
 const ANGULARNAME_SERVICE_SESSION = "SessionService";
 const ANGULARNAME_SERVICE_ERRORHANDLING = "ErrorHandlingService";
 const ANGULARNAME_SERVICE_DRAWING = "DrawingService";
+const ANGULARNAME_SERVICE_PLEASEWAIT = "PleaseWaitService";
 const ANGULARNAME_EVENT_SHOWCONFIRMGAMEREQUESTPAIRINGMODAL = "showConfirmGameRequestPairingModal";
 const ANGULARNAME_EVENT_SHOWCONFIRMGAMERESIGNMODAL = "showConfirmGameResignModal";
 const ANGULARNAME_EVENT_SHOWCONFIRMACCEPTSCOREPROPOSALMODAL = "showConfirmAcceptScoreProposalModal";
@@ -232,6 +233,7 @@ const ID_SVG_TOGGLEINDICATOR = "toggle-indicator";
 const ID_MODAL_NOT_YET_IMPLEMENTED = "notYetImplemented";
 const ID_MODAL_CONFIRM_GAME_RESIGN = "confirm-game-resign-modal";
 const ID_MODAL_CONFIRM_ACCEPT_SCORE_PROPOSAL = "confirm-accept-score-proposal-modal";
+const ID_MODAL_PLEASE_WAIT = "please-wait-modal";
 
 
 // ----------------------------------------------------------------------
