@@ -1097,20 +1097,22 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
                 throw new Error("Unknown score result " + goGame.goScore.result);
         }
 
-        $rootScope.$broadcast(
-            ANGULARNAME_EVENT_SHOWCONFIRMACCEPTSCOREPROPOSALMODAL,
-            gameID,
-            resultType,
-            winningStoneColor,
-            winningPoints);
+        $rootScope.$broadcast(ANGULARNAME_EVENT_SHOWCONFIRMACCEPTSCOREPROPOSALMODAL, function() {
 
-        // Accepting a proposal is just another form of
-        // score proposal submission
-        // TODO: If the user confirms we must be able to set the following
-        // flag so that the user cannot submit any more score proposals
-        //isScoreProposalSubmissionInProgress = true;
-        //updateThisPlayerCanSubmitScoreProposal();
-        //updateDrawingServiceUserInteraction();
+            // Accepting a proposal is just another form of
+            // score proposal submission
+            isScoreProposalSubmissionInProgress = true;
+            updateThisPlayerCanSubmitScoreProposal();
+            updateDrawingServiceUserInteraction();
+
+            webSocketService.acceptScoreProposal(
+                gameID,
+                resultType,
+                winningStoneColor,
+                winningPoints);
+
+            // TODO: Add "waiting for server response" modal
+        });
     };
 
     webSocketService.addAcceptScoreProposalListener(handleAcceptScoreProposal);
