@@ -175,6 +175,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         getFinishedGames: [],
         resignGame: [],
         getHighscores: [],
+        emailHighscores: [],
         gameRequestPairingFound: []
     };
 
@@ -380,6 +381,17 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         var index = eventListeners.getHighscores.indexOf(listener);
         if (-1 !== index)
             eventListeners.getHighscores.splice(index, 1);
+    };
+
+    this.addEmailHighscoresListener = function(listener) {
+        eventListeners.emailHighscores.push(listener);
+    };
+
+    this.removeEmailHighscoresListener = function(listener)
+    {
+        var index = eventListeners.emailHighscores.indexOf(listener);
+        if (-1 !== index)
+            eventListeners.emailHighscores.splice(index, 1);
     };
 
     this.addGameRequestPairingFoundListener = function(listener) {
@@ -590,6 +602,12 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
         sendWebSocketMessage(theWebSocket, messageType, messageData);
     };
 
+    this.emailHighscores = function() {
+        var messageType = WEBSOCKET_REQUEST_TYPE_EMAILHIGHSCORES;
+        var messageData = { };
+        sendWebSocketMessage(theWebSocket, messageType, messageData);
+    };
+
     // ----------------------------------------------------------------------
     // Process incoming messages
     // ----------------------------------------------------------------------
@@ -788,6 +806,16 @@ lg4wApp.service(ANGULARNAME_SERVICE_WEBSOCKET, [ANGULARNAME_CONSTANT_WEBSOCKETCO
                     listener(
                         webSocketMessage.data.success,
                         webSocketMessage.data.highscores,
+                        webSocketMessage.data.errorMessage);
+                });
+                break;
+
+            case WEBSOCKET_RESPONSE_TYPE_EMAILHIGHSCORES:
+                // Iterate over a copy in case the handler wants to remove itself
+                var listenersCopy = eventListeners.emailHighscores.slice(0);
+                listenersCopy.forEach(function(listener) {
+                    listener(
+                        webSocketMessage.data.success,
                         webSocketMessage.data.errorMessage);
                 });
                 break;

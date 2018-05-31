@@ -66,6 +66,31 @@ declare(strict_types=1);
 // $config->highscoreLimit = 10;
 
 // ----------------------------------------------------------------------
+// PHPMailer configuration
+// ----------------------------------------------------------------------
+
+// Specify the settings to use for sending mails via PHPMailer. Usually you
+// will want to specify at least the SMTP server, a username and a password.
+// Typically you also need to specify a valid from address that matches your
+// SMTP login.
+//
+// Note: The settings are passed directly to PHPMailer, so refer to
+// PHPMailer's documentation if you are unsure what to specify here.
+
+// $config->phpMailerHost = "smtp1.example.com;smtp2.example.com";     // Specify main and backup SMTP servers
+// $config->phpMailerSMTPAuth = true;                                  // Enable SMTP authentication
+// $config->phpMailerUsername = "user@example.com";                    // SMTP username
+// $config->phpMailerPassword = "secret";                              // SMTP password
+// $config->phpMailerSMTPSecure = "tls";                               // Enable TLS encryption, "ssl" also accepted
+// $config->phpMailerPort = 25;                                        // TCP port to connect to
+// $config->phpMailerFromAddress = "noreply@example.com";              // Specify sender address
+// $config->phpMailerFromName = "Do not reply to this e-mail (Little Go for Web Mailer)";     // Specify sender name
+// $config->phpMailerReplyToAddress = "noreply@example.com";           // Specify reply-to address
+// $config->phpMailerReplyToName = "Do not reply to this e-mail (Little Go for Web Mailer)";  // Specify reply-to name
+// $config->phpMailerSubject = "Little Go for Web highscores";         // Specify email subject line
+// $config->phpMailerSMTPDebug = 0;                                    // Debug output verbosity level 0-4 (0 = no output)
+
+// ----------------------------------------------------------------------
 // Debugging/development configuration
 // ----------------------------------------------------------------------
 

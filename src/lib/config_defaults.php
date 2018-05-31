@@ -27,6 +27,20 @@ namespace LittleGoWeb
         // App configuration
         public $highscoreLimit = APP_HIGHSCORE_LIMIT_DEFAULT;
 
+        // PHPMailer configuration
+        public $phpMailerHost = PHPMAILER_HOST_DEFAULT;
+        public $phpMailerSMTPAuth = PHPMAILER_SMTPAUTH_DEFAULT;
+        public $phpMailerUsername = PHPMAILER_USERNAME_DEFAULT;
+        public $phpMailerPassword = PHPMAILER_PASSWORD_DEFAULT;
+        public $phpMailerSMTPSecure = PHPMAILER_SMTPSECURE_DEFAULT;
+        public $phpMailerPort = PHPMAILER_PORT_DEFAULT;
+        public $phpMailerFromAddress = PHPMAILER_FROMADDRESS_DEFAULT;
+        public $phpMailerFromName = PHPMAILER_FROMNAME_DEFAULT;
+        public $phpMailerReplyToAddress = PHPMAILER_REPLYTOADDRESS_DEFAULT;
+        public $phpMailerReplyToName = PHPMAILER_REPLYTONAME_DEFAULT;
+        public $phpMailerSubject = PHPMAILER_SUBJECT_DEFAULT;
+        public $phpMailerSMTPDebug = PHPMAILER_SMTPDEBUG_DEFAULT;
+
         // Debugging/development configuration
         public $webSocketMessageSendDelayInMilliseconds = WEBSOCKET_MESSAGESENDDELAYINMILLISECONDS_DEFAULT;
         public $webSocketMessageReceiveDelayInMilliseconds = WEBSOCKET_MESSAGERECEIVEDELAYINMILLISECONDS_DEFAULT;

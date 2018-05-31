@@ -137,6 +137,9 @@ namespace LittleGoWeb
                 case WEBSOCKET_REQUEST_TYPE_GETHIGHSCORES:
                     $this->handleGetHighscores($webSocketClient, $webSocketResponseType);
                     break;
+                case WEBSOCKET_REQUEST_TYPE_EMAILHIGHSCORES:
+                    $this->handleEmailHighscores($webSocketClient, $webSocketResponseType);
+                    break;
                 default:
                     echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
             }
@@ -194,6 +197,8 @@ namespace LittleGoWeb
                     return WEBSOCKET_RESPONSE_TYPE_RESIGNGAME;
                 case WEBSOCKET_REQUEST_TYPE_GETHIGHSCORES:
                     return WEBSOCKET_RESPONSE_TYPE_GETHIGHSCORES;
+                case WEBSOCKET_REQUEST_TYPE_EMAILHIGHSCORES:
+                    return WEBSOCKET_RESPONSE_TYPE_EMAILHIGHSCORES;
                 default:
                     throw new \Exception("Unsupported request type $webSocketRequestType");
             }
@@ -1484,6 +1489,48 @@ namespace LittleGoWeb
                 [
                     WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
                     WEBSOCKET_MESSAGEDATA_KEY_HIGHSCORES=> $highscoresJSON
+                ];
+            $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
+            $webSocketClient->send($webSocketMessage);
+        }
+
+        private function handleEmailHighscores(WebSocketClient $webSocketClient, string $webSocketResponseType) : void
+        {
+            $dbAccess = new DbAccess($this->config);
+
+            $userID = $webSocketClient->getSession()->getUserID();
+            $user = $dbAccess->findUserByID($userID);
+            if ($user === null)
+            {
+                $errorMessage = "Failed to retrieve user data from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $highscores = $dbAccess->findHighscores($this->config->highscoreLimit);
+            if ($highscores === null)
+            {
+                $errorMessage = "Failed to retrieve highscores data from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            // Mail is sent synchronously, so this will take a moment if the
+            // admin did not configure a local mail server...
+            $mailer = new Mailer($this->config, $dbAccess);
+            $errorMessage = $mailer->sendHighscoreEmail(
+                $user->getEmailAddress(),
+                $user->getDisplayName(),
+                $highscores);
+            if ($errorMessage !== null)
+            {
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $webSocketResponseData =
+                [
+                    WEBSOCKET_MESSAGEDATA_KEY_SUCCESS => true,
                 ];
             $webSocketMessage = new WebSocketMessage($webSocketResponseType, $webSocketResponseData);
             $webSocketClient->send($webSocketMessage);

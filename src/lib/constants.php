@@ -34,6 +34,7 @@ namespace LittleGoWeb
     const WEBSOCKET_REQUEST_TYPE_GETFINISHEDGAMES = "c2sGetFinishedGamesRequest";
     const WEBSOCKET_REQUEST_TYPE_RESIGNGAME = "c2sResignGameRequest";
     const WEBSOCKET_REQUEST_TYPE_GETHIGHSCORES = "c2sGetHighscoresRequest";
+    const WEBSOCKET_REQUEST_TYPE_EMAILHIGHSCORES = "c2sEmailHighscoresRequest";
 
     // WebSocket responses (server outgoing/client incoming messages)
     const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
@@ -53,6 +54,7 @@ namespace LittleGoWeb
     const WEBSOCKET_RESPONSE_TYPE_GETFINISHEDGAMES = "s2cGetFinishedGamesResponse";
     const WEBSOCKET_RESPONSE_TYPE_RESIGNGAME = "s2cResignGameResponse";
     const WEBSOCKET_RESPONSE_TYPE_GETHIGHSCORES = "s2cGetHighscoresResponse";
+    const WEBSOCKET_RESPONSE_TYPE_EMAILHIGHSCORES = "s2cEmailHighscoresResponse";
 
     // WebSocket messages proactively sent by the server to a client who didn't
     // request anything (server outgoing/client incoming messages)
@@ -132,6 +134,20 @@ namespace LittleGoWeb
 
     // App configuration
     const APP_HIGHSCORE_LIMIT_DEFAULT = 10;
+
+    // PHPMailer configuration
+    const PHPMAILER_HOST_DEFAULT = "";
+    const PHPMAILER_SMTPAUTH_DEFAULT = true;
+    const PHPMAILER_USERNAME_DEFAULT = "";
+    const PHPMAILER_PASSWORD_DEFAULT = "";
+    const PHPMAILER_SMTPSECURE_DEFAULT = "tls";
+    const PHPMAILER_PORT_DEFAULT = 25;
+    const PHPMAILER_FROMADDRESS_DEFAULT =  "";
+    const PHPMAILER_FROMNAME_DEFAULT = "Do not reply to this e-mail (Little Go for Web Mailer)";
+    const PHPMAILER_REPLYTOADDRESS_DEFAULT =  "";
+    const PHPMAILER_REPLYTONAME_DEFAULT = PHPMAILER_FROMNAME_DEFAULT;
+    const PHPMAILER_SUBJECT_DEFAULT =  "Little Go for Web highscores";
+    const PHPMAILER_SMTPDEBUG_DEFAULT = 0;
 
     // SQL query generation
     const PREPARED_STATEMENT_PARAMETER_PREFIX = ":";

@@ -233,6 +233,7 @@ const ID_SVG_TOGGLEINDICATOR = "toggle-indicator";
 const ID_MODAL_NOT_YET_IMPLEMENTED = "notYetImplemented";
 const ID_MODAL_CONFIRM_GAME_RESIGN = "confirm-game-resign-modal";
 const ID_MODAL_CONFIRM_ACCEPT_SCORE_PROPOSAL = "confirm-accept-score-proposal-modal";
+const ID_MODAL_HIGHSCORES_HAVE_BEEN_EMAILED = "highscores-have-been-emailed-modal";
 const ID_MODAL_PLEASE_WAIT = "please-wait-modal";
 
 
@@ -264,6 +265,7 @@ const WEBSOCKET_REQUEST_TYPE_ACCEPTSCOREPROPOSAL = "c2sAcceptScoreProposalReques
 const WEBSOCKET_REQUEST_TYPE_GETFINISHEDGAMES = "c2sGetFinishedGamesRequest";
 const WEBSOCKET_REQUEST_TYPE_RESIGNGAME = "c2sResignGameRequest";
 const WEBSOCKET_REQUEST_TYPE_GETHIGHSCORES = "c2sGetHighscoresRequest";
+const WEBSOCKET_REQUEST_TYPE_EMAILHIGHSCORES = "c2sEmailHighscoresRequest";
 
 // WebSocket responses (server outgoing/client incoming messages)
 const WEBSOCKET_RESPONSE_TYPE_LOGIN = "s2cLoginResponse";
@@ -283,6 +285,7 @@ const WEBSOCKET_RESPONSE_TYPE_ACCEPTSCOREPROPOSAL = "s2cAcceptScoreProposalRespo
 const WEBSOCKET_RESPONSE_TYPE_GETFINISHEDGAMES = "s2cGetFinishedGamesResponse";
 const WEBSOCKET_RESPONSE_TYPE_RESIGNGAME = "s2cResignGameResponse";
 const WEBSOCKET_RESPONSE_TYPE_GETHIGHSCORES = "s2cGetHighscoresResponse";
+const WEBSOCKET_RESPONSE_TYPE_EMAILHIGHSCORES = "s2cEmailHighscoresResponse";
 
 // WebSocket messages proactively sent by the server to a client who didn't
 // request anything (server outgoing/client incoming messages)

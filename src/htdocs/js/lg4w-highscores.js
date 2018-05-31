@@ -4,7 +4,7 @@
 
 "use strict";
 
-lg4wApp.controller("lg4wHighscoresController", ["$scope", ANGULARNAME_SERVICE_WEBSOCKET, function($scope, webSocketService) {
+lg4wApp.controller("lg4wHighscoresController", ["$scope", ANGULARNAME_SERVICE_WEBSOCKET, ANGULARNAME_SERVICE_ERRORHANDLING, ANGULARNAME_SERVICE_PLEASEWAIT, function($scope, webSocketService, errorHandlingService, pleaseWaitService) {
 
     $scope.placeHolderMessage = "Waiting for server connection ...";
     $scope.placeHolderMessageIsErrorMessage = false;
@@ -50,6 +50,29 @@ lg4wApp.controller("lg4wHighscoresController", ["$scope", ANGULARNAME_SERVICE_WE
         return ($scope.highscores.length === 0);
     };
 
+    $scope.emailHighscores = function() {
+
+        pleaseWaitService.showPleaseWaitModal();
+
+        webSocketService.emailHighscores();
+    };
+
+    webSocketService.addEmailHighscoresListener(handleEmailHighscores);
+    function handleEmailHighscores(success, errorMessage) {
+
+        pleaseWaitService.hidePleaseWaitModal();
+
+        if (success)
+        {
+            // TODO Don't use jQuery
+            $("#" + ID_MODAL_HIGHSCORES_HAVE_BEEN_EMAILED).modal()
+        }
+        else
+        {
+            errorHandlingService.showServerError(errorMessage);
+        }
+    }
+
     if (webSocketService.isReady())
         getHighscores();
     else
@@ -63,6 +86,7 @@ lg4wApp.controller("lg4wHighscoresController", ["$scope", ANGULARNAME_SERVICE_WE
 
     $scope.$on("$destroy", function() {
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
+        webSocketService.removeEmailHighscoresListener(handleEmailHighscores);
         webSocketService.removeGetHighscoresListener(handleGetHighscores);
     })
 }]);
