@@ -136,10 +136,10 @@ namespace LittleGoWeb
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-route.js"></script>
 
     <!-- Library scripts -->
-    <script src="${urlBasePath}/js/littlego-web-constants.js"></script>
-    <script src="${urlBasePath}/js/littlego-web-functions.js"></script>
-    <script src="${urlBasePath}/js/littlego-web-viewmodel.js"></script>
-    <script src="${urlBasePath}/js/littlego-web-go.js"></script>
+    <script src="${urlBasePath}/js/lg4w-constants.js"></script>
+    <script src="${urlBasePath}/js/lg4w-functions.js"></script>
+    <script src="${urlBasePath}/js/lg4w-go.js"></script>
+    <script src="${urlBasePath}/js/lg4w-viewmodel.js"></script>
 
     <!-- Main script that starts the application -->
     <script src="${urlBasePath}/js/lg4w-main.js"></script>
