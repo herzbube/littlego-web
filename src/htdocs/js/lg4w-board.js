@@ -925,7 +925,7 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
                 $scope.scoreFinalScore = "White wins by " + fractionalNumberToString(score);
                 break;
             case GAMERESULT_TIE:
-                $scope.scoreFinalScore = "Game is a tie";
+                $scope.scoreFinalScore = "Game is a draw";
                 break;
             default:
                 throw new Error("Unknown game result " + goGame.goScore.result);
