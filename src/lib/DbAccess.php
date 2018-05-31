@@ -1040,6 +1040,43 @@ namespace LittleGoWeb
             }
         }
 
+        // Deletes data for the game request pairing with the specified
+        // game request pairing ID from the database. Returns true on
+        // success, false on failure (i.e. no game request pairing with the
+        // specified ID exists).
+        public function deleteGameRequestPairingByGameRequestPairingID(int $gameRequestPairingID) : bool
+        {
+            $tableName = DB_TABLE_NAME_GAMEREQUESTPAIRING;
+            $columnNames = array(
+                DB_COLUMN_NAME_GAMEREQUESTPAIRING_GAMEREQUESTPAIRINGID);
+
+            $deleteQueryString = $this->sqlGenerator->getDeleteStatementWithWhereClause(
+                $tableName,
+                $columnNames);
+
+            $deleteStatement = $this->pdo->prepare($deleteQueryString);
+            $deleteStatement->bindValue(
+                $this->sqlGenerator->getParameterNameForColumName($tableName, DB_COLUMN_NAME_GAMEREQUESTPAIRING_GAMEREQUESTPAIRINGID),
+                $gameRequestPairingID,
+                PDO::PARAM_INT);
+
+            try
+            {
+                $deleteStatement->execute();
+
+                $numberOfDeletedRows = $deleteStatement->rowCount();
+                if ($numberOfDeletedRows === 1)
+                    return true;
+                else
+                    return false;
+            }
+            catch (\PDOException $exception)
+            {
+                echo "PDOException: {$exception->getMessage()}\n";
+                return false;
+            }
+        }
+
         // Deletes all game request pairings for the game request with the
         // specified game request ID from the database.
         public function deleteGameRequestPairingsByGameRequestID(int $gameRequestID) : void

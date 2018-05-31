@@ -617,10 +617,6 @@ namespace LittleGoWeb
                 return;
             }
 
-            // Must delete pairings (active and rejected) first before we can
-            // delete the game request itself
-            // TODO: Add transaction that spans all database operations
-            $dbAccess->deleteGameRequestPairingsByGameRequestID($gameRequestID);
             $success = $dbAccess->deleteGameRequestByGameRequestID($gameRequestID);
             if ($success)
             {
@@ -698,6 +694,34 @@ namespace LittleGoWeb
                 return;
             }
 
+            if ($gameRequest->getState() !== GAMEREQUEST_STATE_UNCONFIRMEDPAIRING)
+            {
+                $errorMessage = "Game request is not in a state that allows pairing confirmation";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            $gameRequestPairing = $dbAccess->findGameRequestPairingByGameRequestID($gameRequestID);
+            if ($gameRequestPairing === null)
+            {
+                $errorMessage = "Failed to retrieve game request pairing data from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
+            if ($gameRequestPairing->getBlackPlayerGameRequestID() == $gameRequestID)
+                $pairedGameRequestID = $gameRequestPairing->getWhitePlayerGameRequestID();
+            else
+                $pairedGameRequestID = $gameRequestPairing->getBlackPlayerGameRequestID();
+            $pairedGameRequest = $dbAccess->findGameRequestByGameRequestID($pairedGameRequestID);
+            if ($pairedGameRequest === null)
+            {
+                // If this happens there's an error in our business logic
+                $errorMessage = "Failed to retrieve paired game request from database";
+                $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                return;
+            }
+
             $gameRequest->setState(GAMEREQUEST_STATE_CONFIRMEDPAIRING);
 
             $success = $dbAccess->updateGameRequest($gameRequest);
@@ -706,6 +730,34 @@ namespace LittleGoWeb
                 $errorMessage = "Failed to update game request data in database";
                 $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
                 return;
+            }
+
+            // If the pairing has been confirmed by the users of both game
+            // requests, then the pairing and the game requests are no longer
+            // needed and we can get rid of them.
+            if ($pairedGameRequest->getState() === GAMEREQUEST_STATE_CONFIRMEDPAIRING)
+            {
+                $dbAccess->deleteGameRequestPairingByGameRequestPairingID($gameRequestPairing->getGameRequestPairingID());
+                if (! $success)
+                {
+                    $errorMessage = "Failed to delete game request pairing";
+                    $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                    return;
+                }
+
+                $gameRequestIDsToDelete = array(
+                    $gameRequestID,
+                    $pairedGameRequestID);
+                foreach ($gameRequestIDsToDelete as $gameRequestIDToDelete)
+                {
+                    $success = $dbAccess->deleteGameRequestByGameRequestID($gameRequestIDToDelete);
+                    if (! $success)
+                    {
+                        $errorMessage = "Failed to delete game request";
+                        $this->sendErrorMessage($webSocketClient, $webSocketResponseType, $errorMessage);
+                        return;
+                    }
+                }
             }
 
             $this->findAndSendGameRequests($webSocketClient, $webSocketResponseType, $dbAccess);
