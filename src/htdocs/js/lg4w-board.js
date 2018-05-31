@@ -539,18 +539,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
             goGame.getNextMoveColor());
     };
 
-    $scope.resign = function() {
-        $rootScope.$broadcast(ANGULARNAME_EVENT_SHOWCONFIRMGAMERESIGNMODAL, gameID);
-
-        // TODO: If the user confirms we must be able to set the following
-        // two flags so that the user cannot submit any more moves/score proposals
-        //isMoveSubmissionInProgress = true;
-        //isScoreProposalSubmissionInProgress = true;
-        //updateThisPlayerCanPlayMove();
-        //updateThisPlayerCanSubmitScoreProposal();
-        //updateDrawingServiceUserInteraction();
-    };
-
     webSocketService.addSubmitNewGameMoveListener(handleSubmitNewGameMove);
     function handleSubmitNewGameMove(success, gameMoveJsonObject, gameState, errorMessage) {
 
@@ -651,6 +639,23 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
                 throw new Error("Invalid move type " + gameMoveJsonObject.moveType);
         }
     }
+
+    $scope.resign = function() {
+        $rootScope.$broadcast(ANGULARNAME_EVENT_SHOWCONFIRMGAMERESIGNMODAL, function() {
+
+            // Prevent any further interaction until we receive
+            // the server response
+            isMoveSubmissionInProgress = true;
+            isScoreProposalSubmissionInProgress = true;
+            updateThisPlayerCanPlayMove();
+            updateThisPlayerCanSubmitScoreProposal();
+            updateDrawingServiceUserInteraction();
+
+            webSocketService.resignGame(gameID);
+
+            // TODO: Add "waiting for server response" modal
+        });
+    };
 
     webSocketService.addResignGameListener(handleResignGame);
     function handleResignGame(success, gameJsonObject, errorMessage) {

@@ -55,9 +55,13 @@ lg4wApp.controller("lg4wGamesInProgressController", ["$scope", "$rootScope", "$l
     };
 
     $scope.resign = function(gameInProgress) {
-        $rootScope.$broadcast(ANGULARNAME_EVENT_SHOWCONFIRMGAMERESIGNMODAL, gameInProgress.gameID);
+        $rootScope.$broadcast(ANGULARNAME_EVENT_SHOWCONFIRMGAMERESIGNMODAL, function() {
 
-        // TODO: If the user confirms we must update our game list
+            webSocketService.resignGame(gameInProgress.gameID);
+
+            // TODO: Update our game list
+
+        });
     };
 
     if (webSocketService.isReady())
