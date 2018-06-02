@@ -166,8 +166,8 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         //this.erasedSymbolsLayer();
         //this.drawStonesLayer();
         //this.drawSymbolsLayer();
-        if (scoringMode)
-            drawScoringLayer();
+        //if (scoringMode)
+        //    drawScoringLayer();
         this.drawGoBoard();
     };
 
