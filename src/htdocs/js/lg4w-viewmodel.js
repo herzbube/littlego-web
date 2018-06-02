@@ -193,7 +193,7 @@ var FinishedGame = (function ()
 
     // Creates a new FinishedGame object from the data in the specified
     // JSON object.
-    function FinishedGame(jsonObject)
+    function FinishedGame(jsonObject, userID)
     {
         this.gameID = jsonObject.gameID;
 
@@ -209,6 +209,38 @@ var FinishedGame = (function ()
         // was created, she wants to know when the game ended. So let's
         // ignore jsonObject.createTime and instead add the property "endTime".
         this.endTime = endTimeToString(gameResult.createTime * 1000);
+
+        if (jsonObject.blackPlayer.userID === userID)
+        {
+            this.blackPlayerName = "You";
+            this.whitePlayerName = jsonObject.whitePlayer.displayName;
+            this.blackPlayerIsThisPlayer = true;
+            this.whitePlayerIsThisPlayer = false;
+        }
+        else
+        {
+            this.blackPlayerName = jsonObject.blackPlayer.displayName;
+            this.whitePlayerName = "You";
+            this.blackPlayerIsThisPlayer = false;
+            this.whitePlayerIsThisPlayer = true;
+        }
+        switch (gameResult.winningStoneColor)
+        {
+            case COLOR_BLACK:
+                this.blackPlayerIsWinningPlayer = true;
+                this.whitePlayerIsWinningPlayer = false;
+                break;
+            case COLOR_WHITE:
+                this.blackPlayerIsWinningPlayer = false;
+                this.whitePlayerIsWinningPlayer = true;
+                break;
+            case COLOR_NONE:
+                this.blackPlayerIsWinningPlayer = false;
+                this.whitePlayerIsWinningPlayer = false;
+                break;
+            default:
+                throw new Error("Unknown stone color: " + gameResult.winningStoneColor);
+        }
 
         this.result = gameResultToString(gameResult);
     }

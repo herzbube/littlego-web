@@ -3,11 +3,11 @@
     <table class="table table-striped table-bordered table-hover table-responsive-md">
         <caption>List of finished games</caption>
         <thead class="thead-dark">
-            <tr><th>End date</th><th>Game ID</th><th>Board size</th><th>Handicap</th><th>Komi</th><th>Ko rule</th><th>Scoring system</th><th>Result</th><th>Actions</th></tr>
+            <tr><th>End date</th><th>Game ID</th><th>Board size</th><th>Handicap</th><th>Komi</th><th>Ko rule</th><th>Scoring system</th><th>Black</th><th>White</th><th>Result</th><th>Actions</th></tr>
         </thead>
         <tbody>
             <tr ng-show="isPlaceHolderMessageShown()">
-                <td class="data-placeholder" colspan="9" ng-class="{ 'error-message': placeHolderMessageIsErrorMessage }">{{ placeHolderMessage }}</td>
+                <td class="data-placeholder" colspan="11" ng-class="{ 'error-message': placeHolderMessageIsErrorMessage }">{{ placeHolderMessage }}</td>
             </tr>
             <tr ng-repeat="finishedGame in finishedGames">
                 <td>{{ finishedGame.endTime }}</td>
@@ -17,6 +17,8 @@
                 <td>{{ finishedGame.komi }}</td>
                 <td>{{ finishedGame.koRule }}</td>
                 <td>{{ finishedGame.scoringSystem }}</td>
+                <td ng-class="{ 'finished-game-winning-player': finishedGame.blackPlayerIsWinningPlayer, 'finished-game-this-player': finishedGame.blackPlayerIsThisPlayer }">{{ finishedGame.blackPlayerName }}</td>
+                <td ng-class="{ 'finished-game-winning-player': finishedGame.whitePlayerIsWinningPlayer, 'finished-game-this-player': finishedGame.whitePlayerIsThisPlayer }">{{ finishedGame.whitePlayerName }}</td>
                 <td>{{ finishedGame.result }}</td>
                 <td>
                     <button class="btn btn-sm btn-block btn-outline-primary" ng-click="view(finishedGame)">View</button>
@@ -26,5 +28,9 @@
             </tr>
         </tbody>
     </table>
-    <p><small>Result codes: B+n = Black wins by n points, B+Resign = Black wins by resignation, W+n = White wins by n points, W+Resign = White wins by resignation.</small></p>
+    <p>
+        <small>Result codes: B+n = Black wins by n points, B+Resign = Black wins by resignation, W+n = White wins by n points, W+Resign = White wins by resignation.</small>
+        <br/>
+        <small>The player who won the game is marked up <span class="finished-game-winning-player">like this</span>.</small>
+    </p>
 </div>
