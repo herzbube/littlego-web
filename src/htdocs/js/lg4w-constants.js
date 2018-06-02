@@ -152,6 +152,9 @@ const BOARDVIEW_MODE_SCORING = 3;
 const BOARDVIEW_DATATYPE_GAMEMOVES = 0;
 const BOARDVIEW_DATATYPE_SCORE = 1;
 
+const RESIZE_FRAMES_PER_SECOND = 15;
+const RESIZE_INTERVAL_IN_MILLISECONDS = Math.floor(1000 / RESIZE_FRAMES_PER_SECOND);
+
 // ----------------------------------------------------------------------
 // Drawing constants
 // ----------------------------------------------------------------------
@@ -200,8 +203,10 @@ const ID_INPUT_LOGIN_EMAIL_ADDRESS = "login-email-address";
 // Registration form
 const ID_INPUT_REGISTRATION_EMAIL_ADDRESS = "registration-email-address";
 
-// Main app
-const ID_CONTAINER_BOARD = PREFIX_ID_CONTAINER + "board";
+// Board view
+const ID_BOARD_LEFT_HAND_SIDE = "board-left-hand-side";
+const ID_CONTAINER_BOARD = "container-board";
+const ID_BOARD_LINE_BREAK = "board-line-break";
 
 // Server error modal
 const ID_SERVER_ERROR_MODAL = "server-error-modal";

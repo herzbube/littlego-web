@@ -14,8 +14,14 @@
             the right-hand-side elements.
         -->
         <div id="board-left-hand-side" class="col-12 col-md-8">
-            <div id="container-board" />
-            <!-- Content is filled in dynamically -->
+            <div class="container-fluid">
+                <!-- TODO: Vertical centering with align-items-center does not work -->
+                <div class="row justify-content-center align-items-center">
+                    <div id="container-board">
+                        <!-- Content is filled in dynamically -->
+                    </div>
+                </div>
+            </div>
         </div>
         <!--
             The next div causes a line break when it is in effect.
@@ -27,7 +33,7 @@
             elements therefore are vertically stacked (in this case
             "right-hand-side" is a misnomer).
         -->
-        <div class="w-100 d-md-none"></div>
+        <div id="board-line-break" class="w-100 d-md-none"></div>
         <!--
             On xs and md we use all 12 columns, i.e. the entire width,
             because the board and the right-hand-side elements are

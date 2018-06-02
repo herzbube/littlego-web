@@ -233,6 +233,17 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
 
         if ($scope.isBoardShown())
         {
+            // We can't use updateCanvasDimensionAndDrawGoBoardIfChanged
+            // because the drawing service might still be configured with
+            // the correct canvas dimension, and in that case wouldn't
+            // draw the board because the dimension hasn't changed.
+            //
+            // Instead we have to explicitly invoke drawGoBoard() to
+            // force the drawing service to draw the board. We must still
+            // update the canvas dimension, though, because it might have
+            // changed. But we use the simpler updateCanvasDimension
+            // to prevent two full drawings.
+            updateCanvasDimension();
             // Start drawing the board AFTER the play area has been made
             // visible, as per requirement of the drawing service. The
             // play area becomes visible only after $scope.$apply() has
@@ -1194,6 +1205,173 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
     };
 
     // ----------------------------------------------------------------------
+    // Compute board dimension & handle window resizes
+    // ----------------------------------------------------------------------
+
+    // Resize throttling solution from
+    // https://developer.mozilla.org/en-US/docs/Web/Events/resize
+    var resizeTimeoutID = undefined;
+    window.addEventListener("resize", resizeThrottler);
+    function resizeThrottler() {
+        // Ignore the resize event if a call to actualResizeHandler is
+        // already scheduled.
+        if (resizeTimeoutID !== undefined)
+            return;
+
+        // Schedule a call to actualResizeHandler
+        resizeTimeoutID = setTimeout(function() {
+            resizeTimeoutID = undefined;
+            actualResizeHandler();
+        }, RESIZE_INTERVAL_IN_MILLISECONDS);
+    }
+
+    function actualResizeHandler() {
+        if (! $scope.isBoardShown())
+            return;
+
+        updateCanvasDimensionAndDrawGoBoardIfChanged();
+
+        // TODO Calculate height of game move table
+    }
+
+    function updateCanvasDimension() {
+        var canvasDimension = calculateCanvasDimension();
+        drawingService.setCanvasDimension(canvasDimension);
+    }
+
+    function updateCanvasDimensionAndDrawGoBoardIfChanged() {
+        var canvasDimension = calculateCanvasDimension();
+        drawingService.setCanvasDimensionAndDrawGoBoardIfChanged(canvasDimension);
+    }
+
+    // The board view appears in one of two layouts:
+    // 1) The left and right side are displayed side-by-side. This layout
+    //    is in effect as long as the browser window has sufficient width.
+    //    In this layout the main goal is that the canvas remains visible
+    //    within the browser window without scrolling.
+    // 2) The left and right side are displayed vertically stacked. This
+    //    layout is in effect when the browser window becomes too narrow.
+    //    In this layout the canvas is not vertically constrained.
+    //    Horizontally, though, it must fit into the browser window.
+    //
+    // The algorithm works like this:
+    // 1. Determine canvas container content width.
+    // 2. Do we have layout 2?
+    //    >>> Yes: The canvas dimension is the container content width
+    //        from step 1. The algorithm ends.
+    //    >>> No: Continue with step 3.
+    // 3. Determine maximum possible height so that the canvas vertically
+    //    still fits into the browser window.
+    // 4. The canvas dimension is the smaller of the two values
+    //    - Canvas container content width (step 1)
+    //    - Maximum possible canvas height (step 3)
+    //
+    // Manual testing:
+    // - Game with no moves
+    // - Game with many moves
+    // - Very wide browser window. The canvas is capped by the browser window
+    //   height. The canvas is horizontally centered. There's a small gap
+    //   between the canvas bottom and the browser window bottom edge.
+    // - Medium wide browser window. The canvas is capped by the container
+    //   content width. The canvas is vertically centered.
+    // - Narrow browser window. The canvas is capped by the browser window
+    //   width. The canvas is horizontally centered. There's a small gap
+    //   between the canvas bottom and the user info section.
+    // - Reload the page
+    // - Navigate to the page from the "games in progress" or
+    //   the "finished games" tab
+    // - Resize browser window while the window is scrolled down
+    function calculateCanvasDimension()
+    {
+        // TODO: Don't use jQuery
+        var jQueryObjectContainerCanvas = $("#" + ID_BOARD_LEFT_HAND_SIDE);
+        var domElementContainerCanvas = jQueryObjectContainerCanvas.get(0);
+        var jQueryObjectLineBreak = $("#" + ID_BOARD_LINE_BREAK);
+        var domElementLineBreak = jQueryObjectLineBreak.get(0);
+
+        // Here we find out which of the two layouts currently is in effect.
+        // If the "line break" element is not visible, i.e. has display "none",
+        // then layout 1 is in effect. Otherwise layout 2 is in effect.
+        var styleLineBreak = window.getComputedStyle(domElementLineBreak);
+        var verticallyStackedLayout = (styleLineBreak.display !== "none");
+
+        // Usually offsetWidth and offsetHeight are the same as the dimensions
+        // of the rectangle returned by getBoundingClientRect(). This
+        // information is from
+        // https://developer.mozilla.org/en-US/docs/Web/API/CSS_Object_Model/Determining_the_dimensions_of_elements
+        //
+        // Experimentally determined in Firefox and Safari, though, that
+        // offsetWidth and offsetHeight are rounded values, whereas the
+        // bounding rectangle contains exact values. Rounded values are bad
+        // because rounding up yields values that are too high. Exact values
+        // are preferrable because those can be truncated with Math.floor().
+        // This way it is guaranteed that the board always fits within its
+        // container.
+        //
+        // Important notes:
+        // - The bounding rectangle includes border and padding, but excludes
+        //   margin.
+        // - The bounding rectangle is not affected by the value of the
+        //   box-sizing CSS property.
+        // - The bounding rectangle coordinates are relative to the window's
+        //   current scroll position. So if the user has scrolled down the
+        //   document, the top position of the rectangle might very well be
+        //   a negative value. For calculating the rectangle's width and
+        //   height, though, this does not matter.
+        var boundingClientRect = domElementContainerCanvas.getBoundingClientRect();
+        var containerCanvasContentWidthIncludingBorderAndPadding = (boundingClientRect.right - boundingClientRect.left);
+        var containerCanvasContentHeightIncludingBorderAndPadding = (boundingClientRect.bottom - boundingClientRect.top);
+
+        // We have to determine border and padding to subtract them from the
+        // bounding rectangle. It appears as if getComputedStyle is the only
+        // way to do this. Alas, getComputedStyle yields values such as
+        // "123.45px", so we have to use parseFloat to extract the numeric
+        // value.
+        // https://developer.mozilla.org/en-US/docs/Web/API/Window/getComputedStyle
+        var styleContainerCanvas = window.getComputedStyle(domElementContainerCanvas);
+
+        var horizontalBorder = parseFloat(styleContainerCanvas.borderLeftWidth) + parseFloat(styleContainerCanvas.borderRightWidth);
+        var horizontalPadding = parseFloat(styleContainerCanvas.paddingLeft) + parseFloat(styleContainerCanvas.paddingRight);
+        var verticalBorder = parseFloat(styleContainerCanvas.borderTopWidth) + parseFloat(styleContainerCanvas.borderTopWidth);
+        var verticalPadding = parseFloat(styleContainerCanvas.paddingTop) + parseFloat(styleContainerCanvas.paddingBottom);
+        var marginBottom = parseFloat(styleContainerCanvas.marginBottom);
+
+        // Here we have a theoretical canvas width/height that would fit into
+        // the container's current content box.
+        // This is step 1 of the algorithm outlined in the method
+        // documentation.
+        var containerCanvasContentWidth =  Math.floor(containerCanvasContentWidthIncludingBorderAndPadding - horizontalBorder - horizontalPadding);
+        var containerCanvasContentHeight =  Math.floor(containerCanvasContentHeightIncludingBorderAndPadding - verticalBorder - verticalPadding);
+
+        // This is step 2 of the algorithm outlined in the method
+        // documentation.
+        // Note: The gap after the canvas bottom is achieved by a CSS rule
+        // that defines a bottom margin.
+        if (verticallyStackedLayout)
+            return containerCanvasContentWidth;
+
+        // This is step 3 of the algorithm outlined in the method
+        // documentation.
+        // Important: We can't use the container content box height because
+        // this could be very low - if the game moves table on the right-hand
+        // side doesn't contain anything, the document body will not extend
+        // down to the bottom of the browser window, therefore the container
+        // will also have a height that is too small.
+        var absoluteTopPosition = (boundingClientRect.top + window.scrollY);
+        var maximumPossibleHeight = window.innerHeight - absoluteTopPosition;
+        // We have to incorporate the bottom margin defined by one of our
+        // CSS rules into the calculation, otherwise the canvas will vertically
+        // overflow its container and touch the browser window bottom.
+        maximumPossibleHeight -= parseFloat(styleContainerCanvas.marginBottom);
+        maximumPossibleHeight = Math.floor(maximumPossibleHeight);
+
+        // This is step 4 of the algorithm outlined in the method
+        // documentation.
+        var cappedCanvasDimension = Math.min(containerCanvasContentWidth, maximumPossibleHeight);
+        return cappedCanvasDimension;
+    }
+
+    // ----------------------------------------------------------------------
     // Controller initialization and destruction
     // ----------------------------------------------------------------------
 
@@ -1216,5 +1394,6 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
         webSocketService.removeSubmitNewScoreProposalListener(handleSubmitNewScoreProposal);
         webSocketService.removeAcceptScoreProposalListener(handleAcceptScoreProposal);
         drawingService.removeDidClickOnIntersectionListener(handleDidClickOnIntersection);
+        window.removeEventListener("resize", resizeThrottler);
     });
 }]);

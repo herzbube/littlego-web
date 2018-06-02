@@ -73,21 +73,21 @@
         color: red;
     }
 
-    #container-board {
-        position: relative;
-        /* Make the board container square. */
-        width: 100%;
-        padding-top: 100%;
-        /* Horizontally center the container within its parent */
-        margin: auto;
+    #board-left-hand-side {
+        /*
+            Same margin as the nav element's bottom margin.
+            - If the left-hand-side and the right-hand-side are shown
+              vertically stacked, this will create a margin between
+              them.
+            - If the left-hand-side and the right-hand-side are shown
+              side-by-side, this has no effect. It's the board canvas
+              size calculation's job to make sure that the left-hand-side
+              does not touch the bottom window border.
+         */
+        margin-bottom: 1em;
     }
 
     #board {
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 100%;
-        height: 100%;
         background-image: url(../image/wooden-background-tile.png);
     }
 

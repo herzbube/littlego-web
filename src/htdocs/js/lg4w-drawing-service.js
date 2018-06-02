@@ -11,6 +11,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
     // Private variables
     // ----------------------------------------------------------------------
 
+    var canvasDimension;
     var goGame;
     var thisPlayerColor;
     var boardViewMetrics;
@@ -71,6 +72,19 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
 
         goGame = newGoGame;
         thisPlayerColor = newThisPlayerColor;
+    };
+
+    this.setCanvasDimension = function(newCanvasDimension) {
+        canvasDimension = newCanvasDimension;
+    };
+
+    this.setCanvasDimensionAndDrawGoBoardIfChanged = function(newCanvasDimension) {
+        if (canvasDimension === newCanvasDimension)
+            return;
+
+        canvasDimension = newCanvasDimension;
+
+        this.drawGoBoard();
     };
 
     // Configure the drawing service for scoring mode user interaction.
@@ -199,24 +213,7 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
     function createPaper(jQueryObjectContainerCanvas)
     {
         var domElementContainerCanvas = jQueryObjectContainerCanvas.get(0);
-
-        var canvasWidth = domElementContainerCanvas.clientWidth;
-        var canvasHeight = domElementContainerCanvas.clientHeight;
-
-        if (canvasWidth !== canvasHeight)
-        {
-            var canvasDimension = Math.min(canvasWidth, canvasHeight);
-            $log.warn("Canvas was not square, original width / height = " + canvasWidth + " / " + canvasHeight + ", new dimension is " + canvasDimension);
-            canvasWidth = canvasDimension;
-            canvasHeight = canvasDimension;
-        }
-
-        if (canvasWidth === 0)
-        {
-            $log.error("Canvas width / height is zero!");
-        }
-
-        var paper = Raphael(domElementContainerCanvas, canvasWidth, canvasHeight);
+        var paper = Raphael(domElementContainerCanvas, canvasDimension, canvasDimension);
 
         // This is required so that CSS properties are applied (e.g. the background)
         paper.canvas.id = ID_SVG_BOARD;
@@ -783,5 +780,4 @@ lg4wApp.service(ANGULARNAME_SERVICE_DRAWING, ["$log", function($log) {
         var intersectionNearCoordinates = boardViewMetrics.getIntersectionNearCoordinates(coordinates);
         return intersectionNearCoordinates;
     }
-
 }]);
