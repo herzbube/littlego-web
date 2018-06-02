@@ -73,5 +73,5 @@ lg4wApp.controller("lg4wRegistrationFormController", ["$scope", "$location", ANG
     $scope.$on("$destroy", function() {
         webSocketService.removeRegisterAccountListener(handleRegisterAccount);
         sessionService.removeValidationCompleteListener(handleValidationComplete);
-    })
+    });
 }]);

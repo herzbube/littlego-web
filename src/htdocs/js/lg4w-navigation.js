@@ -124,6 +124,5 @@ lg4wApp.controller("lg4wNavigationController", ["$scope", "$location", ANGULARNA
     $scope.$on("$destroy", function() {
         sessionService.removeValidationCompleteListener(handleValidationComplete);
         webSocketService.removeGameRequestPairingFoundListener(handleGameRequestPairingFound);
-    })
-
+    });
 }]);

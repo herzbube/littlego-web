@@ -88,5 +88,5 @@ lg4wApp.controller("lg4wHighscoresController", ["$scope", ANGULARNAME_SERVICE_WE
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
         webSocketService.removeEmailHighscoresListener(handleEmailHighscores);
         webSocketService.removeGetHighscoresListener(handleGetHighscores);
-    })
+    });
 }]);

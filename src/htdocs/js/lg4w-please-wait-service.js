@@ -59,5 +59,5 @@ lg4wApp.controller("lg4wPleaseWaitController", ["$scope", ANGULARNAME_SERVICE_PL
     $scope.$on("$destroy", function() {
         pleaseWaitService.removeShowPleaseWaitModalHandler();
         pleaseWaitService.removeHidePleaseWaitModalHandler();
-    })
+    });
 }]);

@@ -212,6 +212,5 @@ lg4wApp.controller("lg4wMainController", ["$scope", ANGULARNAME_SERVICE_SESSION,
 
     $scope.$on("$destroy", function() {
         sessionService.removeValidationCompleteListener(handleValidationComplete);
-    })
-
+    });
 }]);

@@ -29,5 +29,5 @@ lg4wApp.controller("lg4wConfirmAcceptScoreProposalController", ["$scope", "$root
         // If we had registered on our own $scope we wouldn't need to
         // unregister. But we registered on $rootScope.
         unregisterShowConfirmAcceptScoreProposalModal();
-    })
+    });
 }]);

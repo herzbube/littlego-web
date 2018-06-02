@@ -78,5 +78,5 @@ lg4wApp.controller("lg4wGamesInProgressController", ["$scope", "$rootScope", "$l
     $scope.$on("$destroy", function() {
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
         webSocketService.removeGetGamesInProgressListener(handleGetGamesInProgress);
-    })
+    });
 }]);

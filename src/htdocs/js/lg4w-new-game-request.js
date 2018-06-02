@@ -95,7 +95,7 @@ lg4wApp.controller("lg4wNewGameRequestController", ["$scope", "$rootScope", ANGU
     function handleSubmitNewGameRequest(success, gameRequestPairing, errorMessage) {
 
         // TODO Don't use jQuery
-        $("#" + ID_NEW_GAME_REQUEST_MODAL).modal('hide');
+        $("#" + ID_NEW_GAME_REQUEST_MODAL).modal("hide");
 
         if (success)
         {
@@ -112,5 +112,5 @@ lg4wApp.controller("lg4wNewGameRequestController", ["$scope", "$rootScope", ANGU
 
     $scope.$on("$destroy", function() {
         webSocketService.removeSubmitNewGameRequestListener(handleSubmitNewGameRequest);
-    })
+    });
 }]);

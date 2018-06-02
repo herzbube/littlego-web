@@ -78,5 +78,5 @@ lg4wApp.controller("lg4wFinishedGamesController", ["$scope", "$location", ANGULA
     $scope.$on("$destroy", function() {
         webSocketService.removeServiceIsReadyListener(handleWebSocketServiceIsReady);
         webSocketService.removeGetFinishedGamesListener(handleGetFinishedGames);
-    })
+    });
 }]);

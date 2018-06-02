@@ -1216,5 +1216,5 @@ lg4wApp.controller("lg4wBoardController", ["$scope", "$rootScope", "$routeParams
         webSocketService.removeSubmitNewScoreProposalListener(handleSubmitNewScoreProposal);
         webSocketService.removeAcceptScoreProposalListener(handleAcceptScoreProposal);
         drawingService.removeDidClickOnIntersectionListener(handleDidClickOnIntersection);
-    })
+    });
 }]);

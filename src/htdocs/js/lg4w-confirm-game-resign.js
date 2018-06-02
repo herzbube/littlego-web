@@ -29,5 +29,5 @@ lg4wApp.controller("lg4wConfirmGameResignController", ["$scope", "$rootScope", f
         // If we had registered on our own $scope we wouldn't need to
         // unregister. But we registered on $rootScope.
         unregisterShowConfirmGameResignModal();
-    })
+    });
 }]);

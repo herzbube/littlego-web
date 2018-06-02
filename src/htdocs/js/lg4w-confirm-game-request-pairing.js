@@ -56,7 +56,7 @@ lg4wApp.controller("lg4wConfirmGameRequestPairingController", ["$scope", "$rootS
     function handleConfirmGameRequestPairing(success, gameRequestsJsonObjects, errorMessage) {
 
         // TODO Don't use jQuery
-        $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL).modal('hide');
+        $("#" + ID_CONFIRM_GAME_REQUEST_PAIRING_MODAL).modal("hide");
 
         if (success)
         {
@@ -75,5 +75,5 @@ lg4wApp.controller("lg4wConfirmGameRequestPairingController", ["$scope", "$rootS
         // If we had registered on our own $scope we wouldn't need to
         // unregister. But we registered on $rootScope.
         unregisterShowConfirmGameRequestPairingModal();
-    })
+    });
 }]);

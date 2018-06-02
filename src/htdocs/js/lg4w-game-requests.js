@@ -168,5 +168,5 @@ lg4wApp.controller("lg4wGameRequestsController", ["$scope", "$rootScope", "$loca
         webSocketService.removeSubmitNewGameRequestListener(handleSubmitNewGameRequest);
         webSocketService.removeConfirmGameRequestPairingListener(handleConfirmGameRequestPairing);
         webSocketService.removeGameRequestPairingFoundListener(handleGameRequestPairingFound);
-    })
+    });
 }]);
