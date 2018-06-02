@@ -88,16 +88,24 @@ var GameRequest = (function ()
 //
 // var jsonObject =
 // {
-//   "gameID" : 12345,             // a unique ID
-//   "createTime" : 123457890,     // milliseconds since the epoch
-//   "boardSize" : 19,             // valid values: 7, 9, 11, 13, 15, 17, 19
-//   "handicap" : 0,               // valid values: 0, 2-9
-//   "komi" : 7.5,                 // valid values: 0, 0.5, 5.0, 5.5, [...], 8.0
-//   "koRule" : 0,                 // valid values: 0 (= simple ko), 1 (= positional superko), 2 (= situational superko)
-//   "scoringSystem" : 0,          // valid values: 0 (= area scoring), 1 (= territory scoring)
-//   "numberOfMovesPlayed" : 32,   // valid values: 0-n
-//   "state" : 0,                  // valid values: 0 (= in progress & playing), 1 (= in progress & scoring)
-//   "nextMoveColor" : 1,          // valid values: 0 (= black), 1 (= white), -1 (= undefined, only allowed if state === 1)
+//   "gameID" : 12345,                        // a unique ID
+//   "createTime" : 123457890,                // milliseconds since the epoch
+//   "boardSize" : 19,                        // valid values: 7, 9, 11, 13, 15, 17, 19
+//   "handicap" : 0,                          // valid values: 0, 2-9
+//   "komi" : 7.5,                            // valid values: 0, 0.5, 5.0, 5.5, [...], 8.0
+//   "koRule" : 0,                            // valid values: 0 (= simple ko), 1 (= positional superko), 2 (= situational superko)
+//   "scoringSystem" : 0,                     // valid values: 0 (= area scoring), 1 (= territory scoring)
+//   "numberOfMovesPlayed" : 32,              // valid values: 0-n
+//   "state" : 0,                             // valid values: 0 (= in progress & playing), 1 (= in progress & scoring)
+//   "nextActionColor" : 1,                   // valid values: 0 (= black), 1 (= white)
+//   "blackPlayer" : {                        // a UserInfo object that describes the black player
+//     "userID" : 12345,
+//     "displayName" : "foo"
+//   },
+//   "whitePlayer" : {                        // a UserInfo object that describes the white player
+//     "userID" : 12345,
+//     "displayName" : "bar"
+//   }
 // };
 // ----------------------------------------------------------------------
 var GameInProgress = (function ()
@@ -105,8 +113,8 @@ var GameInProgress = (function ()
     "use strict";
 
     // Creates a new GameInProgress object from the data in the specified
-    // JSON object.
-    function GameInProgress(jsonObject)
+    // JSON object. The specified user ID refers to the logged in user.
+    function GameInProgress(jsonObject, userID)
     {
         this.gameID = jsonObject.gameID;
 
@@ -117,11 +125,31 @@ var GameInProgress = (function ()
         this.koRule = koRuleToString(jsonObject.koRule);
         this.scoringSystem = scoringSystemToString(jsonObject.scoringSystem);
         this.numberOfMovesPlayed = numberOfMovesPlayedToString(jsonObject.numberOfMovesPlayed);
-        this.state = jsonObject.state;
-        if (this.state === GAME_STATE_INPROGRESS_PLAYING)
-            this.nextMoveColor = colorToString(jsonObject.nextMoveColor);
+        if (jsonObject.blackPlayer.userID === userID)
+        {
+            this.blackPlayerName = "You";
+            this.whitePlayerName = jsonObject.whitePlayer.displayName;
+            this.blackPlayerIsThisPlayer = true;
+            this.whitePlayerIsThisPlayer = false;
+        }
         else
-            this.nextMoveColor = "Scoring in progress";
+        {
+            this.blackPlayerName = jsonObject.blackPlayer.displayName;
+            this.whitePlayerName = "You";
+            this.blackPlayerIsThisPlayer = false;
+            this.whitePlayerIsThisPlayer = true;
+        }
+        this.gameState = gameStateToString(jsonObject.state);
+        if (jsonObject.nextActionColor === COLOR_BLACK)
+        {
+            this.blackPlayerIsActivePlayer = true;
+            this.whitePlayerIsActivePlayer = false;
+        }
+        else
+        {
+            this.blackPlayerIsActivePlayer = false;
+            this.whitePlayerIsActivePlayer = true;
+        }
     }
 
     return GameInProgress;

@@ -24,7 +24,7 @@ namespace LittleGoWeb
         private $blackPlayer = null;
         private $whitePlayer = null;
         private $numberOfMovesPlayed = GAME_NUMBEROFMOVESPLAYED_DEFAULT;
-        private $nextMoveColor = GAME_NEXTMOVECOLOR_DEFAULT;
+        private $nextActionColor = GAME_NEXTACTIONCOLOR_DEFAULT;
         private $gameResult = null;
 
         public function __construct(
@@ -157,14 +157,14 @@ namespace LittleGoWeb
             $this->numberOfMovesPlayed = $numberOfMovesPlayed;
         }
 
-        public function getNextMoveColor(): int
+        public function getNextActionColor(): int
         {
-            return $this->nextMoveColor;
+            return $this->nextActionColor;
         }
 
-        public function setNextMoveColor(int $nextMoveColor): void
+        public function setNextActionColor(int $nextActionColor): void
         {
-            $this->nextMoveColor = $nextMoveColor;
+            $this->nextActionColor = $nextActionColor;
         }
 
         public function getGameResult(): GameResult
@@ -194,8 +194,8 @@ namespace LittleGoWeb
 
             if ($this->numberOfMovesPlayed !== GAME_NUMBEROFMOVESPLAYED_DEFAULT)
                 $jsonData[WEBSOCKET_MESSAGEDATA_KEY_NUMBEROFMOVESPLAYED] = $this->numberOfMovesPlayed;
-            if ($this->nextMoveColor !== GAME_NEXTMOVECOLOR_DEFAULT)
-                $jsonData[WEBSOCKET_MESSAGEDATA_KEY_NEXTMOVECOLOR] = $this->nextMoveColor;
+            if ($this->nextActionColor !== GAME_NEXTACTIONCOLOR_DEFAULT)
+                $jsonData[WEBSOCKET_MESSAGEDATA_KEY_NEXTACTIONCOLOR] = $this->nextActionColor;
             if ($this->gameResult !== null)
                 $jsonData[WEBSOCKET_MESSAGEDATA_KEY_GAMERESULT] = $this->gameResult->toJsonObject();
 

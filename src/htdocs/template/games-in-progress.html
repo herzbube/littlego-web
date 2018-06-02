@@ -3,11 +3,11 @@
     <table class="table table-striped table-bordered table-hover table-responsive-md">
         <caption>List of games in progress</caption>
         <thead class="thead-dark">
-            <tr><th>Started</th><th>Game ID</th><th>Board size</th><th>Handicap</th><th>Komi</th><th>Ko rule</th><th>Scoring system</th><th>Moves played</th><th>Next move</th><th>Actions</th></tr>
+            <tr><th>Started</th><th>Game ID</th><th>Board size</th><th>Handicap</th><th>Komi</th><th>Ko rule</th><th>Scoring system</th><th>Moves played</th><th>Black</th><th>White</th><th>Game state</th><th>Actions</th></tr>
         </thead>
         <tbody>
             <tr ng-show="isPlaceHolderMessageShown()">
-                <td class="data-placeholder" colspan="11" ng-class="{ 'error-message': placeHolderMessageIsErrorMessage }">{{ placeHolderMessage }}</td>
+                <td class="data-placeholder" colspan="12" ng-class="{ 'error-message': placeHolderMessageIsErrorMessage }">{{ placeHolderMessage }}</td>
             </tr>
             <tr ng-repeat="gameInProgress in gamesInProgress">
                 <td>{{ gameInProgress.createTime }}</td>
@@ -18,7 +18,9 @@
                 <td>{{ gameInProgress.koRule }}</td>
                 <td>{{ gameInProgress.scoringSystem }}</td>
                 <td>{{ gameInProgress.numberOfMovesPlayed }}</td>
-                <td>{{ gameInProgress.nextMoveColor }}</td>
+                <td ng-class="{ 'game-in-progress-active-player': gameInProgress.blackPlayerIsActivePlayer, 'game-in-progress-this-player': gameInProgress.blackPlayerIsThisPlayer }">{{ gameInProgress.blackPlayerName }}</td>
+                <td ng-class="{ 'game-in-progress-active-player': gameInProgress.whitePlayerIsActivePlayer, 'game-in-progress-this-player': gameInProgress.whitePlayerIsThisPlayer }">{{ gameInProgress.whitePlayerName }}</td>
+                <td>{{ gameInProgress.gameState }}</td>
                 <td>
                     <button class="btn btn-sm btn-block btn-outline-primary" ng-click="resume(gameInProgress)">Resume</button>
                     <button class="btn btn-sm btn-block btn-outline-danger" ng-click="resign(gameInProgress)">Resign</button>
@@ -26,4 +28,5 @@
             </tr>
         </tbody>
     </table>
+    <p><small>The player whose turn it is to play or propose a score is marked up <span class="game-in-progress-active-player">like this</span>.</small></p>
 </div>

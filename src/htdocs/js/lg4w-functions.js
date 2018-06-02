@@ -133,6 +133,23 @@ function numberOfCapturedStonesToString(numberOfCapturedStones)
         throw new Error("Unsupported number of captured stones value: " + numberOfCapturedStones);
 }
 
+// Converts the specified number of captured stones into a string that is
+// suitable for displaying in the UI. Throws an Error object for invalid values.
+function gameStateToString(gameState)
+{
+    switch (gameState)
+    {
+        case GAME_STATE_INPROGRESS_PLAYING:
+            return "Playing";
+        case GAME_STATE_INPROGRESS_SCORING:
+            return "Scoring mode";
+        case GAME_STATE_FINISHED:
+            return "Finished";
+        default:
+            throw new Error("Unsupported game state: " + gameState);
+    }
+}
+
 // Converts the specified start time value into a string that is suitable for
 // displaying in the UI. Throws an Error object for invalid values.
 function startTimeToString(startTimeInMilliseconds)

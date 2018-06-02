@@ -1573,7 +1573,27 @@ namespace LittleGoWeb
             {
                 $lastGameMove = $dbAccess->findLastGameMove($gameInProgress->getGameID());
                 $nextMoveColor = $this->getNextMoveColor($gameInProgress, $lastGameMove);
-                $gameInProgress->setNextMoveColor($nextMoveColor);
+                $gameInProgress->setNextActionColor($nextMoveColor);
+            }
+            else
+            {
+                $score = $dbAccess->findScoreByGameID($gameInProgress->getGameID());
+                // A score is optional: Initially, when the game progresses
+                // from state "playing" to state "scoring", a score proposal
+                // does not exist yet.
+                if ($score !== null)
+                {
+                    if ($score->getLastModifiedByUserID() === $gameInProgress->getBlackPlayer()->getUserID())
+                        $gameInProgress->setNextActionColor(COLOR_BLACK);
+                    else
+                        $gameInProgress->setNextActionColor(COLOR_WHITE);
+                }
+                else
+                {
+                    $lastGameMove = $dbAccess->findLastGameMove($gameInProgress->getGameID());
+                    $nextMoveColor = $this->getNextMoveColor($gameInProgress, $lastGameMove);
+                    $gameInProgress->setNextActionColor($nextMoveColor);
+                }
             }
 
             $numberOfMovesPlayed = $dbAccess->findNumberOfMovesPlayed($gameInProgress->getGameID());

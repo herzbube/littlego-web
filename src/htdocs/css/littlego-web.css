@@ -12,6 +12,12 @@
         display: none;
     }
 
+    .game-in-progress-this-player {
+    }
+    .game-in-progress-active-player {
+        text-decoration: underline;
+    }
+
     .board-right-hand-side-section {
         margin-bottom: 2em;
     }

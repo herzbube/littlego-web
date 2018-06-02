@@ -4,7 +4,7 @@
 
 "use strict";
 
-lg4wApp.controller("lg4wGamesInProgressController", ["$scope", "$rootScope", "$location", ANGULARNAME_SERVICE_WEBSOCKET, function($scope, $rootScope, $location, webSocketService) {
+lg4wApp.controller("lg4wGamesInProgressController", ["$scope", "$rootScope", "$location", ANGULARNAME_SERVICE_WEBSOCKET, ANGULARNAME_SERVICE_SESSION, function($scope, $rootScope, $location, webSocketService, sessionService) {
 
     $scope.placeHolderMessage = "Waiting for server connection ...";
     $scope.placeHolderMessageIsErrorMessage = false;
@@ -25,8 +25,9 @@ lg4wApp.controller("lg4wGamesInProgressController", ["$scope", "$rootScope", "$l
             if (success)
             {
                 $scope.gamesInProgress = [];
+                var userID = sessionService.getUserInfo().userID;
                 gamesInProgressJsonObjects.forEach(function(gameInProgressJsonObject) {
-                    var gameInProgress = new GameInProgress(gameInProgressJsonObject);
+                    var gameInProgress = new GameInProgress(gameInProgressJsonObject, userID);
                     $scope.gamesInProgress.push(gameInProgress);
                 });
 
