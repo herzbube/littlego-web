@@ -26,12 +26,12 @@ declare(strict_types=1);
 // $config->pdoConnectionString = "unix_socket=/path/to/socket";
 
 // Specify the credentials to log in to your database. The default is
-// root and an empty password. Usually you will want to specify at least
-// a password.
-// $config->dbUsername = "root";
+// "littlego-web" and an empty password. Usually you will want to specify at
+// least a password.
+// $config->dbUsername = "littlego-web";
 // $config->dbPassword = "secret";
 
-// Specify the name of the database if it differs from the default "tictactoe".
+// Specify the name of the database. The default is "littlego-web".
 // $config->dbName = "littlego-web";
 
 // ----------------------------------------------------------------------

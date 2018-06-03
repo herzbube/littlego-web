@@ -6,7 +6,7 @@ namespace LittleGoWeb
     // Database server defaults
     const PDO_DRIVER_NAME_DEFAULT = "mysql";
     const PDO_CONNECTION_STRING_DEFAULT = "host=127.0.0.1; port=3306";
-    const DB_USER_NAME_DEFAULT = "root";
+    const DB_USER_NAME_DEFAULT = "littlego-web";
     const DB_PASSWORD_DEFAULT = "";
     const DB_DATABASE_NAME_DEFAULT = "littlego-web";
 
