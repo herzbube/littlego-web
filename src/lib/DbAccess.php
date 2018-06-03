@@ -2423,7 +2423,7 @@ namespace LittleGoWeb
             // column lists with fully qualified column names, because in
             // other contexts the view name could also be a table name
             // alias.
-            $this->pdo->query("use mysql");
+            $this->pdo->query("use `" . $this->config->dbName . "`");
 
             $selectStatement = $this->pdo->prepare($selectQueryString);
 
