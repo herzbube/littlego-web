@@ -10,30 +10,37 @@ namespace LittleGoWeb
     {
         private $clients;
         private $config;
+        private $logger;
 
         public function __construct(Config $config)
         {
             $this->clients = [];
             $this->config = $config;
+            $this->logger = new Logger($this->config);
+
+            $this->logger->logInfo("WebSocket server is now running");
 
             // We immediately discard the DbAccess object because we don't
             // really need anything from the database. We try to establish
             // a database connection merely to detect configuration problems
             // immediately upon startup of the WebSocket server.
-            new DbAccess($this->config);
-            echo "Successfully established database connection\n";
-
-            echo "WebSocket server is now running\n";
+            new DbAccess($this->config, $this->logger);
+            $this->logger->logDebug("Successfully established database connection");
 
             if ($config->webSocketMessageSendDelayInMilliseconds > 0)
             {
-                echo "WARNING: Sending of all WebSocket messages will be delayed by " . $config->webSocketMessageSendDelayInMilliseconds . " milliseconds! Fix the configuration if this is unintentional.\n";
+                $this->logger->logWarning("Sending of all WebSocket messages will be delayed by " . $config->webSocketMessageSendDelayInMilliseconds . " milliseconds! Fix the configuration if this is unintentional.");
             }
 
             if ($config->webSocketMessageReceiveDelayInMilliseconds > 0)
             {
-                echo "WARNING: Receiving of all WebSocket messages will be delayed by " . $config->webSocketMessageReceiveDelayInMilliseconds . " milliseconds! Fix the configuration if this is unintentional.\n";
+                $this->logger->logWarning("WARNING: Receiving of all WebSocket messages will be delayed by " . $config->webSocketMessageReceiveDelayInMilliseconds . " milliseconds! Fix the configuration if this is unintentional.");
             }
+        }
+
+        public function __destruct()
+        {
+            $this->logger->logInfo("WebSocket server shutting down");
         }
 
         private function getWebSocketClient(ConnectionInterface $conn) : ?WebSocketClient
@@ -60,19 +67,19 @@ namespace LittleGoWeb
 
         public function onOpen(ConnectionInterface $conn): void
         {
-            $webSocketClient = new WebSocketClient($conn, $this->config->webSocketMessageSendDelayInMilliseconds);
+            $webSocketClient = new WebSocketClient($conn, $this->config->webSocketMessageSendDelayInMilliseconds, $this->logger);
             $this->clients[$conn->resourceId] = $webSocketClient;
-            echo "New connection! ({$conn->resourceId})\n";
+            $this->logger->logInfo("New connection! ({$conn->resourceId})");
         }
 
         public function onMessage(ConnectionInterface $from, $message): void
         {
-            $webSocketMessage = WebSocketMessage::tryCreateMessageFromJson($message);
+            $webSocketMessage = WebSocketMessage::tryCreateMessageFromJson($message, $this->logger);
             if ($webSocketMessage === null)
                 return;
 
             $webSocketRequestType = $webSocketMessage->getMessageType();
-            echo "Received message from connection {$from->resourceId}: $webSocketRequestType\n";
+            $this->logger->logDebug("Received message from connection {$from->resourceId}: $webSocketRequestType");
 
             $webSocketClient = $this->getWebSocketClient($from);
             $webSocketResponseType = $this->webSocketResponseTypeForRequestType($webSocketRequestType);
@@ -141,19 +148,19 @@ namespace LittleGoWeb
                     $this->handleEmailHighscores($webSocketClient, $webSocketResponseType);
                     break;
                 default:
-                    echo "Unknown message type {$webSocketMessage->getMessageType()}\n";
+                    $this->logger->logError("Unknown message type {$webSocketMessage->getMessageType()}");
             }
         }
 
         public function onClose(ConnectionInterface $conn): void
         {
             unset($this->clients[$conn->resourceId]);
-            echo "Connection {$conn->resourceId} has disconnected\n";
+            $this->logger->logInfo("Connection {$conn->resourceId} has disconnected");
         }
 
         public function onError(ConnectionInterface $conn, \Exception $e): void
         {
-            echo "An error has occurred: {$e->getMessage()}\n";
+            $this->logger->logError("An error has occurred: {$e->getMessage()}");
             $webSocketClient = $this->getWebSocketClient($conn);
             $webSocketClient->invalidateAuthentication();
             $conn->close();
@@ -269,7 +276,7 @@ namespace LittleGoWeb
 
                     $session->setValidUntil($newValidUntil);
 
-                    $dbAccess = new DbAccess($this->config);
+                    $dbAccess = new DbAccess($this->config, $this->logger);
 
                     $success = $dbAccess->updateSession($session);
                     if ($success)
@@ -324,7 +331,7 @@ namespace LittleGoWeb
             $emailAddress = $messageData[WEBSOCKET_MESSAGEDATA_KEY_EMAILADDRESS];
             $password = $messageData[WEBSOCKET_MESSAGEDATA_KEY_PASSWORD];
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $user = $dbAccess->findUserByEmailAddress($emailAddress);
             if ($user === null)
@@ -400,7 +407,7 @@ namespace LittleGoWeb
             // outcome of the subsequent database operation
             $webSocketClient->invalidateAuthentication();
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
             $success = $dbAccess->deleteSessionBySessionKey($sessionKey);
 
             if ($success)
@@ -425,7 +432,7 @@ namespace LittleGoWeb
             $displayName = $messageData[WEBSOCKET_MESSAGEDATA_KEY_DISPLAYNAME];
             $password = $messageData[WEBSOCKET_MESSAGEDATA_KEY_PASSWORD];
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $user = $dbAccess->findUserByEmailAddress($emailAddress);
             if ($user !== null)
@@ -482,7 +489,7 @@ namespace LittleGoWeb
         {
             $sessionKey = $messageData[WEBSOCKET_MESSAGEDATA_KEY_SESSIONKEY];
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $session = $dbAccess->findSessionByKey($sessionKey);
             if ($session !== null)
@@ -524,7 +531,7 @@ namespace LittleGoWeb
             $requestedKoRule = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDKORULE]);
             $requestedScoringSystem = intval($messageData[WEBSOCKET_MESSAGEDATA_KEY_REQUESTEDSCORINGSYSTEM]);
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $gameRequestID = GAMEREQUEST_GAMEREQUESTID_DEFAULT;
             $createTime = time();
@@ -589,7 +596,7 @@ namespace LittleGoWeb
 
         private function handleGetGameRequests(WebSocketClient $webSocketClient, string $webSocketResponseType): void
         {
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $this->findAndSendGameRequests($webSocketClient, $webSocketResponseType, $dbAccess);
         }
@@ -598,7 +605,7 @@ namespace LittleGoWeb
         {
             $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $gameRequest = $dbAccess->findGameRequestByGameRequestID($gameRequestID);
             if ($gameRequest === null)
@@ -638,7 +645,7 @@ namespace LittleGoWeb
         {
             $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $gameRequestPairing = $dbAccess->findGameRequestPairingByGameRequestID($gameRequestID);
             if ($gameRequestPairing === null)
@@ -681,7 +688,7 @@ namespace LittleGoWeb
         {
             $gameRequestID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEREQUESTID];
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $gameRequest = $dbAccess->findGameRequestByGameRequestID($gameRequestID);
             if ($gameRequest === null)
@@ -770,7 +777,7 @@ namespace LittleGoWeb
 
         private function handleGetGamesInProgress(WebSocketClient $webSocketClient, string $webSocketResponseType) : void
         {
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $userID = $webSocketClient->getSession()->getUserID();
             $gamesInProgress = $dbAccess->findGamesInProgressByUserID($userID);
@@ -817,7 +824,7 @@ namespace LittleGoWeb
             $gameID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEID];
             $userID = $webSocketClient->getSession()->getUserID();
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $game = $dbAccess->findGameByGameID($gameID);
             if ($game === null)
@@ -948,7 +955,7 @@ namespace LittleGoWeb
                 $vertexY = GAMEMOVE_VERTEXY_DEFAULT;
             }
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $userID = $webSocketClient->getSession()->getUserID();
             $gameInProgress = $this->getGameInProgressWithoutAdditionalData(
@@ -1074,7 +1081,7 @@ namespace LittleGoWeb
 
             $userID = $webSocketClient->getSession()->getUserID();
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $gameInProgress = null;
             $score = null;
@@ -1189,7 +1196,7 @@ namespace LittleGoWeb
 
             $userID = $webSocketClient->getSession()->getUserID();
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             // Validate that a game that is still in scoring state exists.
             // This validation is somewhat extraneous because if a score
@@ -1308,7 +1315,7 @@ namespace LittleGoWeb
 
         private function handleGetFinishedGames(WebSocketClient $webSocketClient, string $webSocketResponseType) : void
         {
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $userID = $webSocketClient->getSession()->getUserID();
             $finishedGames = $dbAccess->findFinishedGamesByUserID($userID);
@@ -1355,7 +1362,7 @@ namespace LittleGoWeb
             $gameID = $messageData[WEBSOCKET_MESSAGEDATA_KEY_GAMEID];
             $userID = $webSocketClient->getSession()->getUserID();
 
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             // Validate that a game that is not yet finished exists.
             $game = $dbAccess->findGameByGameID($gameID);
@@ -1471,7 +1478,7 @@ namespace LittleGoWeb
 
         private function handleGetHighscores(WebSocketClient $webSocketClient, string $webSocketResponseType) : void
         {
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $highscores = $dbAccess->findHighscores($this->config->highscoreLimit);
             if ($highscores === null)
@@ -1496,7 +1503,7 @@ namespace LittleGoWeb
 
         private function handleEmailHighscores(WebSocketClient $webSocketClient, string $webSocketResponseType) : void
         {
-            $dbAccess = new DbAccess($this->config);
+            $dbAccess = new DbAccess($this->config, $this->logger);
 
             $userID = $webSocketClient->getSession()->getUserID();
             $user = $dbAccess->findUserByID($userID);

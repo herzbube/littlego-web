@@ -41,6 +41,35 @@ declare(strict_types=1);
 // $config->webSocketPort = "8001";
 
 // ----------------------------------------------------------------------
+// Logging configuration used by the WebSocket server
+// ----------------------------------------------------------------------
+
+// General switch to enable/disable logging. If disabled, none of the
+// logging options below has any effect.
+// $config->loggingEnabled = true;
+
+// An identifier that is added to every log message
+// $config->loggingIdentifier = "littlego-web";
+
+// The syslog facility to use. Note that the default LOG_USER is the only
+// facility supported on Windows. For valid values on other systems, please
+// refer to the documentation of the built-in PHP function openlog():
+//   http://php.net/manual/en/function.openlog.php
+// $config->loggingFacility = LOG_USER;
+
+// The amount of logging that the server should produce. Supported values in
+// order of increasing amount of logging are: LOG_ERR, LOG_WARNING, LOG_INFO
+// and LOG_DEBUG.
+// $config->logLevel = LOG_ERR;
+
+// If you set this to true all logging message are echoed to stdout in
+// addition to sending them to the system's logging facility. This is useful
+// during development when you're running the WebSocket server on the
+// command line. The timestamps added to the echoed messages are for the
+// timezone defined in the php.ini configuration option date.timezone.
+// $config->echoLoggingToStdout = false;
+
+// ----------------------------------------------------------------------
 // Web server configuration
 // ----------------------------------------------------------------------
 

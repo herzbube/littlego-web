@@ -16,6 +16,13 @@ namespace LittleGoWeb
     const WEBSOCKET_MESSAGESENDDELAYINMILLISECONDS_DEFAULT = 0;
     const WEBSOCKET_MESSAGERECEIVEDELAYINMILLISECONDS_DEFAULT = 0;
 
+    // Logging configuration used by the WebSocket server
+    const LOGGING_ENABLED_DEFAULT = true;
+    const LOGGING_IDENTIFIER_DEFAULT = "littlego-web";
+    const LOGGING_FACILITY_DEFAULT = LOG_USER;
+    const LOGGING_LOGLEVEL_DEFAULT = LOG_ERR;
+    const LOGGING_ECHOLOGGINGTOSTDOUT_DEFAULT = false;
+
     // WebSocket requests (client outgoing/server incoming messages)
     const WEBSOCKET_REQUEST_TYPE_LOGIN = "c2sLogin";
     const WEBSOCKET_REQUEST_TYPE_LOGOUT = "c2sLogout";

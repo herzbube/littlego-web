@@ -64,7 +64,7 @@ namespace LittleGoWeb
         //   format.
         //
         // In case of error, echoes an appropriate error message.
-        public static function tryCreateMessageFromJson(string $jsonString) : ?WebSocketMessage
+        public static function tryCreateMessageFromJson(string $jsonString, Logger $logger) : ?WebSocketMessage
         {
             $convertToAssociativeArray = true;
             $jsonObject = json_decode($jsonString, $convertToAssociativeArray);
@@ -73,9 +73,9 @@ namespace LittleGoWeb
             {
                 $jsonLastError = json_last_error();
                 if ($jsonLastError === JSON_ERROR_NONE)
-                    echo "JSON data is incorrect, no data\n";
+                    $logger->logError("JSON data is incorrect, no data");
                 else
-                    echo "JSON data is incorrect, error code = $jsonLastError\n";
+                    $logger->logError("JSON data is incorrect, error code = $jsonLastError");
 
                 return null;
             }
@@ -85,12 +85,12 @@ namespace LittleGoWeb
                 {
                     if (! array_key_exists(WEBSOCKET_JSON_KEY_MESSAGE_TYPE, $jsonObject))
                     {
-                        echo "JSON data is incorrect, message type is missing\n";
+                        $logger->logError("JSON data is incorrect, message type is missing");
                         return null;
                     }
                     if (! array_key_exists(WEBSOCKET_JSON_KEY_MESSAGE_DATA, $jsonObject))
                     {
-                        echo "JSON data is incorrect, data payload is missing\n";
+                        $logger->logError("JSON data is incorrect, data payload is missing");
                         return null;
                     }
 
@@ -100,7 +100,7 @@ namespace LittleGoWeb
                 }
                 else
                 {
-                    echo "JSON data is incorrect, result of decoding is not an array\n";
+                    $logger->logError("JSON data is incorrect, result of decoding is not an array");
                     return null;
                 }
             }

@@ -11,6 +11,7 @@ namespace LittleGoWeb
     class DbAccess
     {
         private $config;
+        private $logger;
         private $pdo;
         private $sqlGenerator;
 
@@ -19,9 +20,10 @@ namespace LittleGoWeb
         // in the specified configuration object.
         //
         // Throws a PDOException if any error occurs.
-        public function __construct(Config $config)
+        public function __construct(Config $config, Logger $logger)
         {
             $this->config = $config;
+            $this->logger = $logger;
 
             $dsn = $config->pdoDriverName . ":" . $config->pdoConnectionString;
 
@@ -63,7 +65,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return null;
             }
 
@@ -122,7 +124,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return -1;
             }
         }
@@ -165,7 +167,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return false;
             }
         }
@@ -201,7 +203,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return false;
             }
         }
@@ -356,7 +358,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return null;
             }
 
@@ -415,7 +417,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return -1;
             }
         }
@@ -504,7 +506,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return -1;
             }
         }
@@ -554,7 +556,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return false;
             }
         }
@@ -590,7 +592,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return false;
             }
         }
@@ -819,7 +821,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return null;
             }
         }
@@ -874,7 +876,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return null;
             }
 
@@ -960,7 +962,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return null;
             }
         }
@@ -1035,7 +1037,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return -1;
             }
         }
@@ -1072,7 +1074,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return false;
             }
         }
@@ -1108,7 +1110,7 @@ namespace LittleGoWeb
                 }
                 catch (\PDOException $exception)
                 {
-                    echo "PDOException: {$exception->getMessage()}\n";
+                    $this->logger->logError("PDOException: {$exception->getMessage()}");
                     return;
                 }
             }
@@ -1405,7 +1407,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return null;
             }
         }
@@ -1469,7 +1471,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return -1;
             }
 
@@ -1509,7 +1511,7 @@ namespace LittleGoWeb
                 }
                 catch (\PDOException $exception)
                 {
-                    echo "PDOException: {$exception->getMessage()}\n";
+                    $this->logger->logError("PDOException: {$exception->getMessage()}");
                     return -1;
                 }
             }
@@ -1555,7 +1557,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return false;
             }
         }
@@ -1687,7 +1689,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return null;
             }
         }
@@ -1718,7 +1720,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return -1;
             }
 
@@ -1781,7 +1783,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return -1;
             }
         }
@@ -1817,7 +1819,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return null;
             }
 
@@ -1882,7 +1884,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return -1;
             }
         }
@@ -1936,7 +1938,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return false;
             }
         }
@@ -1976,7 +1978,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return false;
             }
         }
@@ -2039,7 +2041,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return null;
             }
         }
@@ -2088,7 +2090,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return -1;
             }
         }
@@ -2130,7 +2132,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return false;
             }
         }
@@ -2167,7 +2169,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return null;
             }
 
@@ -2238,7 +2240,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return -1;
             }
         }
@@ -2459,7 +2461,7 @@ namespace LittleGoWeb
             }
             catch (\PDOException $exception)
             {
-                echo "PDOException: {$exception->getMessage()}\n";
+                $this->logger->logError("PDOException: {$exception->getMessage()}");
                 return null;
             }
         }

@@ -13,15 +13,17 @@ namespace LittleGoWeb
     {
         private $connection = null;
         private $messageSendDelayInMicroseconds = WEBSOCKET_MESSAGESENDDELAYINMILLISECONDS_DEFAULT;
+        private $logger = null;
         private $session = null;
 
         // Constructs a WebSocketClient object with the specified
         // WebSocket connection. The WebSocketClient begins its
         // life cycle in the unauthenticated state.
-        public function __construct(ConnectionInterface $connection, int $sendMessageDelayInMilliseconds)
+        public function __construct(ConnectionInterface $connection, int $sendMessageDelayInMilliseconds, Logger $logger)
         {
             $this->connection = $connection;
             $this->messageSendDelayInMicroseconds = $sendMessageDelayInMilliseconds * 1000;
+            $this->logger = $logger;
         }
 
         public function getConnection() : ConnectionInterface
@@ -38,11 +40,11 @@ namespace LittleGoWeb
         {
             if ($this->messageSendDelayInMicroseconds > 0)
             {
-                echo "Delaying sending message to connection {$this->connection->resourceId}: {$webSocketMessage->getMessageType()}\n";
+                $this->logger->logDebug("Delaying sending message to connection {$this->connection->resourceId}: {$webSocketMessage->getMessageType()}");
                 usleep($this->messageSendDelayInMicroseconds);
             }
 
-            echo "Sending message to connection {$this->connection->resourceId}: {$webSocketMessage->getMessageType()}\n";
+            $this->logger->logDebug("Sending message to connection {$this->connection->resourceId}: {$webSocketMessage->getMessageType()}");
 
             $data = $webSocketMessage->toJsonString();
             $this->connection->send($data);

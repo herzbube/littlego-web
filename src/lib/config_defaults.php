@@ -18,6 +18,13 @@ namespace LittleGoWeb
         public $webSocketHost = WEBSOCKET_HOST_DEFAULT;
         public $webSocketPort = WEBSOCKET_PORT_DEFAULT;
 
+        // Logging configuration used by the WebSocket server
+        public $loggingEnabled = LOGGING_ENABLED_DEFAULT;
+        public $loggingIdentifier = LOGGING_IDENTIFIER_DEFAULT;
+        public $loggingFacility = LOGGING_FACILITY_DEFAULT;
+        public $logLevel = LOGGING_LOGLEVEL_DEFAULT;
+        public $echoLoggingToStdout = LOGGING_ECHOLOGGINGTOSTDOUT_DEFAULT;
+
         // Web server configuration
         public $urlBasePath = URL_BASE_PATH_DEFAULT;
 
