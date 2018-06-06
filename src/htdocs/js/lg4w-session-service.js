@@ -375,7 +375,9 @@ lg4wApp.service(ANGULARNAME_SERVICE_SESSION, [ANGULARNAME_SERVICE_WEBSOCKET, "$l
 // data object that provides information about the user.
 //
 // The "displayName" property is useful for displaying in the UI. The
-// "userID" property is useful for
+// "userID" property is useful for comparison with other user IDs that
+// are part of the data received via WebSocket (e.g. which stone color
+// does the authenticated user play in a game in progress?).
 var UserInfo = (function ()
 {
     function UserInfo(userInfoJsonObject)
