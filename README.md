@@ -17,11 +17,9 @@ I also recommend that you pay a visit to [Sensei's Library](https://senseis.xmp.
 
 There have been no releases yet, and it is unlikely that this will ever see the light as an officially released software package.
 
-## Getting and deploying the project
+## Installation
 
-TODO: Write a section that explains what a developer has to do after cloning the repo in order to get the project to run.
-
-TODO: Write another section that explains what a server admin has to do to in order to deploy the project.
+Read the [INSTALL.md](INSTALL.md) file for instructions on how to get the project to run on a real server machine.
 
 ## Contributing
 
@@ -101,7 +99,7 @@ brew tap homebrew/homebrew-php   # only necessary if homebrew-php has not been t
 brew install composer
 ```
 
-Once Composer is ready to use you can install third party libraries by running Composer's ```install``` command. The exact syntax depends on how you installed Composer on your system. If in doubt, refer to Composer's manual. Here are two suggestions that might work for you:
+Once Composer is ready to use you can install third party libraries by running Composer's `install` command. The exact syntax depends on how you installed Composer on your system. If in doubt, refer to Composer's manual. Here are two suggestions that might work for you:
 
 ```
 cd /path/to/project/root
@@ -153,10 +151,10 @@ Make sure you have MySQL installed (cf. section "System requirements"). Then use
 
 ```
 # For TCP/IP connections
-php db/createDatabase.php hostname port username password
+php db/createDatabase.php hostname port username password dbname
 
 # For socket connections
-php db/createDatabase.php /path/to/socket username password
+php db/createDatabase.php /path/to/socket username password dbname
 ```
 
 As an alternative, you can run the database creation SQL script with a tool of your choice, such as phpMyAdmin. The script is located in the file `createDatabase.sql` in the subfolder `db`.
@@ -184,11 +182,17 @@ If you want to make Little Go for the Web accessible from a different base path 
 
 ## Debugging / development aids
 
+### Server-side logging
+
+The WebSocket server sends log messages to the system's log service. On Linux this typically is `syslog`.
+
+In the config file `config.php` you can specify a number of options that change the way how logging is done. Notably you can increase the log level.
+
 ### Client-side logging
 
 Search the client-side JavaScript code for the following line:
 
-        $logProvider.debugEnabled(false);
+    $logProvider.debugEnabled(false);
 
 Set this to true if you want to see some logging in the JavaScript console of your browser.
 
