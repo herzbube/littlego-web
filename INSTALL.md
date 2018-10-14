@@ -110,4 +110,23 @@ The project contains a simple script that will run the WebSocket server for you.
 sudo ./script/startWebSocketServer.sh
 ```
 
-If you want the server to run as a daemon you can send the job to the background, then log out. However, there is currently no safeguard that will restart the daemonized server if it crashes.
+If you want the server to run as a daemon you can send the job to the background, then log out. However, with this approach there is no safeguard that will restart the daemonized server if it crashes. Here's a `systemd` service configuration that will keep the WebSocket server running: 
+
+```
+ubuntu@ip-172-31-39-57:~$ cat /etc/systemd/system/littlego-web-ws.service 
+[Unit]
+Description=Little Go for the Web web socket server
+After=network.target
+
+[Service]
+User=root
+Group=root
+ExecStart=/usr/local/share/littlego-web/script/startWebSocketServer.sh
+TimeoutSec=10
+Restart=on-failure
+```
+
+To run the service:
+```
+sudo systemctl start foo
+```

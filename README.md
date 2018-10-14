@@ -1,6 +1,6 @@
 ## Introduction
 
-The [original Little Go](https://https://github.com/herzbube/littlego) is a free and open source iOS application that lets you play the game of Go on the iPhone or iPad. This project attempts to reimagine the original iOS app into the world of web applications, so that you can enjoy playing Go in a web browser in real time against a human opponent.
+The [original Little Go](https://github.com/herzbube/littlego) is a free and open source iOS application that lets you play the game of Go on the iPhone or iPad. This project attempts to reimagine the original iOS app into the world of web applications, so that you can enjoy playing Go in a web browser in real time against a human opponent.
 
 Little Go for the Web is released under the [Apache License](http://www.apache.org/licenses/LICENSE-2.0) (2.0).
 
@@ -12,10 +12,6 @@ If you are interested in playing the game of Go, then frankly you are better off
 American Go Association's page [Go on the Internet](http://www.usgo.org/go-internet).
  
 I also recommend that you pay a visit to [Sensei's Library](https://senseis.xmp.net/), an invaluable resource for Go in general.
-
-## Changes in this release
-
-There have been no releases yet, and it is unlikely that this will ever see the light as an officially released software package.
 
 ## Installation
 
@@ -29,6 +25,8 @@ In the unlikely event that you wish to contribute something to this educational 
 
 ```
 <root>
+ +-- INSTALL.md          Installation instructions to get the project to run
+ |                       on a real server. This file is formatted in Markdown.
  +-- LICENSE             The Apache license file.
  +-- LICENSE.html        The Apache license in HTML format.
  +-- NOTICE              Attribution notices.
@@ -44,7 +42,8 @@ In the unlikely event that you wish to contribute something to this educational 
  +-- doc                 This folder contains the project documentation. The
  |                       content of this folder is not relevant for running
  |                       the application.
- +-- script              This folder contains command line scripts.
+ +-- script              This folder contains command line scripts, notably
+ |                       the script that launches the WebSocket server process.
  +-- src                 This folder contains the project's source code and
  |   |                   assets, in fact everything that is required for
  |   |                   actually running the application.
@@ -63,16 +62,13 @@ In the unlikely event that you wish to contribute something to this educational 
 This is how the application is bootstrapped:
 
 1. The user retrieves `index.php`.
-1. `index.php` reads configuration, which includes WebSocket connection information.
+1. `index.php` reads configuration from `config_defaults.php` and `config.php`, which includes WebSocket connection information.
 1. `index.php` serves a HTML document which consists of these parts:
-   * The login form
-   * The registration form
-   * The main application container
+   * The AngularJS main application controller
    * A small dynamically generated inline JavaScript snippet which creates an object that holds the WebSocket connection information
    * Several `<script>` elements that reference all the JavaScript fragements that together make up the client-side application code.
 1. The client-side application connects to the WebSocket server
-1. The client-side application displays the login form.
-1. When the user logs in, the client-side application hides the login form and instead displays the main application container.
+1. The client-side application displays the login form or, depending on the initial URL, some other content.
 
 ## System requirements
 

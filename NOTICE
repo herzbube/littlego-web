@@ -1,0 +1,20 @@
+TODO Write this document
+
+The project makes use of the following frontent libraries:
+- Bootstrap 4.0
+  https://getbootstrap.com/
+- jQuery 3.2.1
+  https://jquery.com/
+- Popper.js 1.12.9
+  https://popper.js.org/
+- AngularJS 1.6.9
+  https://angularjs.org/
+- Raphaël 2.2.1
+  http://dmitrybaranovskiy.github.io/raphael/
+
+
+The project makes use of the following backend libraries:
+- Ratchet 0.4.1
+  http://socketo.me/
+- PHPMailer 6.0
+  https://github.com/PHPMailer/PHPMailer
